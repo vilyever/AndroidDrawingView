@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true"
+        android:drawable="@drawable/drawing_layer_border" />
+    <item
+        android:drawable="@drawable/drawing_layer_transparent" /><!--默认效果-->
+</selector>
