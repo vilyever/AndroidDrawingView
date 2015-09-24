@@ -1,6 +1,9 @@
 package com.vilyever.androiddrawingview;
 
 import android.app.Fragment;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,7 @@ import com.vilyever.drawingview.VDDrawingView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * DrawingFragment
@@ -64,6 +68,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(35));
         self.undoButton = (Button) rootView.findViewById(R.id.undoButton);
         self.undoButton.setEnabled(false);
         self.undoButton.setOnClickListener(new View.OnClickListener() {
@@ -110,8 +115,22 @@ public class DrawingFragment extends Fragment {
         });
 
         self.shapeButton = (Button) rootView.findViewById(R.id.shapeButton);
+        self.shapeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bitmap bitmap = BitmapFactory.decodeResource(self.getContext().getResources(), R.drawable.redo);
+                self.drawingView.setBackgroundImage(bitmap, "redo");
+            }
+        });
 
         self.backgroundColorButton = (Button) rootView.findViewById(R.id.backgroundColorButton);
+        self.backgroundColorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Random random = new Random();
+                self.drawingView.setBackgroundColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256));
+            }
+        });
 
         self.thicknessButton = (Button) rootView.findViewById(R.id.thicknessButton);
         self.thicknessButton.setOnClickListener(new View.OnClickListener() {
@@ -123,6 +142,13 @@ public class DrawingFragment extends Fragment {
         });
 
         self.colorButton = (Button) rootView.findViewById(R.id.colorButton);
+        self.colorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Random random = new Random();
+                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256)));
+            }
+        });
 
         self.fillColorButton = (Button) rootView.findViewById(R.id.fillColorButton);
 
@@ -146,7 +172,6 @@ public class DrawingFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        drawingView.destroy();
     }
 
     

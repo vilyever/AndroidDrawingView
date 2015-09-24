@@ -77,7 +77,12 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
         switch (self.getBrush().getShape()) {
             case None:
             case Eraser:
-                self.points.add(point);
+                if (self.getPoints().size() > 0 && self.getPoints().get(self.getPoints().size() - 1).isSamePoint(point)) {
+                }
+                else {
+                    self.points.add(point);
+                }
+
                 break;
             case Line:
                 if (self.points.size() == 2) {
@@ -99,18 +104,21 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
         switch (self.getBrush().getShape()) {
             case None:
             case Eraser: {
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(self.getPoints().get(0).x, self.getPoints().get(0).y, paint.getStrokeWidth() * 0.5f, paint);
-                paint.setStyle(Paint.Style.STROKE);
-
-                Path path = new Path();
-                path.moveTo(self.getPoints().get(0).x, self.getPoints().get(0).y);
-                for (int i = 1; i < self.getPoints().size(); i++) {
-                    path.quadTo(self.getPoints().get(i - 1).x, self.getPoints().get(i- 1).y,
-                            (self.getPoints().get(i - 1).x + self.getPoints().get(i).x) / 2,
-                            (self.getPoints().get(i - 1).y + self.getPoints().get(i).y) / 2);
+                if (self.getPoints().size() == 1) {
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(self.getPoints().get(0).x, self.getPoints().get(0).y, paint.getStrokeWidth() * 0.5f, paint);
+                    paint.setStyle(Paint.Style.STROKE);
                 }
-                canvas.drawPath(path, paint);
+                else if (self.getPoints().size() > 1) {
+                    Path path = new Path();
+                    path.moveTo(self.getPoints().get(0).x, self.getPoints().get(0).y);
+                    for (int i = 1; i < self.getPoints().size(); i++) {
+                        path.quadTo(self.getPoints().get(i - 1).x, self.getPoints().get(i - 1).y,
+                                (self.getPoints().get(i - 1).x + self.getPoints().get(i).x) / 2,
+                                (self.getPoints().get(i - 1).y + self.getPoints().get(i).y) / 2);
+                    }
+                    canvas.drawPath(path, paint);
+                }
                 break;
             }
             case Line: {
@@ -143,8 +151,8 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
         paint.setStrokeJoin(Paint.Join.ROUND);
 
         if (self.getBrush() != null) {
-            paint.setColor(self.getBrush().getColor());
             paint.setStrokeWidth(self.getBrush().getSize());
+            paint.setColor(self.getBrush().getColor());
 
             if (self.getBrush().getShape() == VDDrawingBrush.Shape.Eraser) {
                 paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));

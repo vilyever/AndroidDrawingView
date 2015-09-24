@@ -30,6 +30,9 @@ public class VDDrawingPoint extends VDModel {
     /* #Private Methods */    
     
     /* #Public Methods */
+    public boolean isSamePoint(VDDrawingPoint point) {
+        return this.x == point.x && this.y == point.y;
+    }
 
     /* #Classes */
 

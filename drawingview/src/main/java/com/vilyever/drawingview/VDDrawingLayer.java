@@ -22,10 +22,13 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     private long hierarchy; // from 0 to max
 
     private int backgroundColor = Color.TRANSPARENT;
-    private String backgroundImagePath;
+    private String backgroundImageIdentifier;
 
-    private String imagePath;
+    private String imageIdentifer;
     private String text;
+    private int textSize;
+    private int textColor;
+    private int textType;
 
     private float left;
     private float top;
@@ -69,20 +72,20 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         this.backgroundColor = backgroundColor;
     }
 
-    public String getBackgroundImagePath() {
-        return backgroundImagePath;
+    public String getBackgroundImageIdentifier() {
+        return backgroundImageIdentifier;
     }
 
-    public void setBackgroundImagePath(String backgroundImagePath) {
-        this.backgroundImagePath = backgroundImagePath;
+    public void setBackgroundImageIdentifier(String backgroundImageIdentifier) {
+        this.backgroundImageIdentifier = backgroundImageIdentifier;
     }
 
-    public String getImagePath() {
-        return imagePath;
+    public String getImageIdentifer() {
+        return imageIdentifer;
     }
 
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+    public void setImageIdentifer(String imageIdentifer) {
+        this.imageIdentifer = imageIdentifer;
     }
 
     public String getText() {
@@ -91,6 +94,30 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public int getTextSize() {
+        return textSize;
+    }
+
+    public void setTextSize(int textSize) {
+        this.textSize = textSize;
+    }
+
+    public int getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(int textColor) {
+        this.textColor = textColor;
+    }
+
+    public int getTextType() {
+        return textType;
+    }
+
+    public void setTextType(int textType) {
+        this.textType = textType;
     }
 
     public RectF getFrame() {
@@ -197,6 +224,8 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
                 (int) Math.floor(self.height));
         layoutParams.leftMargin = (int) Math.floor(self.left);
         layoutParams.topMargin = (int) Math.floor(self.top);
+        layoutParams.rightMargin = -(int) Math.floor(self.width);
+        layoutParams.bottomMargin = -(int) Math.floor(self.height);
 
         return layoutParams;
     }
