@@ -80,15 +80,15 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
                 if (self.getPoints().size() > 0 && self.getPoints().get(self.getPoints().size() - 1).isSamePoint(point)) {
                 }
                 else {
-                    self.points.add(point);
+                    self.getPoints().add(point);
                 }
 
                 break;
             case Line:
-                if (self.points.size() == 2) {
-                    self.points.remove(1);
+                if (self.getPoints().size() == 2) {
+                    self.getPoints().remove(1);
                 }
-                self.points.add(point);
+                self.getPoints().add(point);
                 break;
             case Rectangle:
                 break;

@@ -60,6 +60,7 @@ public class DrawingFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
+        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setColor(Color.YELLOW));
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
             public void undoStateDidChangeFromDrawingView(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {

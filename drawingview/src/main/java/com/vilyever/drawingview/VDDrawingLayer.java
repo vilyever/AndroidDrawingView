@@ -1,6 +1,5 @@
 package com.vilyever.drawingview;
 
-import android.graphics.Color;
 import android.graphics.RectF;
 import android.widget.RelativeLayout;
 
@@ -19,26 +18,32 @@ import java.util.List;
 public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer> {
     private final VDDrawingLayer self = this;
 
+    public static final int UnsetValue = -1;
+
     private long hierarchy; // from 0 to max
 
-    private int backgroundColor = Color.TRANSPARENT;
+    private LayerType layerType;
+
+    private int backgroundColor = UnsetValue;
     private String backgroundImageIdentifier;
 
     private String imageIdentifer;
     private String text;
-    private int textSize;
-    private int textColor;
-    private int textType;
+    private int textSize = UnsetValue;
+    private int textColor = UnsetValue;
+    private int textType = UnsetValue;
 
-    private float left;
-    private float top;
-    private float width;
-    private float height;
+    private float left = UnsetValue;
+    private float top = UnsetValue;
+    private float width = UnsetValue;
+    private float height = UnsetValue;
 
-    private float scale = 1.0f;
-    private float rotation = 0.0f;
+    private float scale = UnsetValue;
+    private float rotation = UnsetValue;
 
     private List<VDDrawingPath> paths = new ArrayList<>();
+
+    private boolean deleted;
 
     /* #Constructors */
     public VDDrawingLayer() {
@@ -62,6 +67,14 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public void setHierarchy(long hierarchy) {
         this.hierarchy = hierarchy;
+    }
+
+    public LayerType getLayerType() {
+        return layerType;
+    }
+
+    public void setLayerType(LayerType layerType) {
+        this.layerType = layerType;
     }
 
     public int getBackgroundColor() {
@@ -186,6 +199,14 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         return paths;
     }
 
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
     /* #Delegates */
     // Comparable<VDDrawingLayer>
     @Override
@@ -197,14 +218,14 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     
     /* #Public Methods */
     public void addPath(VDDrawingPath path) {
-        self.paths.add(path);
-        Collections.sort(self.paths);
+        self.getPaths().add(path);
+        Collections.sort(self.getPaths());
     }
 
     public VDDrawingPath newPath(VDDrawingBrush brush) {
         long sequence = 0;
-        if (self.paths.size() > 0) {
-            sequence = self.paths.get(self.paths.size() - 1).getSequence() + 1;
+        if (self.getPaths().size() > 0) {
+            sequence = self.getPaths().get(self.getPaths().size() - 1).getSequence() + 1;
         }
         VDDrawingPath path = new VDDrawingPath(sequence, brush);
         self.addPath(path);
@@ -212,20 +233,24 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     }
 
     public VDDrawingPath currentPath() {
-        if (self.paths.size() == 0) {
+        if (self.getPaths().size() == 0) {
             return null;
         }
 
-        return self.paths.get(self.paths.size() - 1);
+        return self.getPaths().get(self.getPaths().size() - 1);
     }
 
     public RelativeLayout.LayoutParams getLayoutParams() {
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Math.floor(self.width),
-                (int) Math.floor(self.height));
-        layoutParams.leftMargin = (int) Math.floor(self.left);
-        layoutParams.topMargin = (int) Math.floor(self.top);
-        layoutParams.rightMargin = -(int) Math.floor(self.width);
-        layoutParams.bottomMargin = -(int) Math.floor(self.height);
+        if (self.getLeft() == UnsetValue) {
+            return null;
+        }
+
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Math.floor(self.getWidth()),
+                (int) Math.floor(self.getHeight()));
+        layoutParams.leftMargin = (int) Math.floor(self.getLeft());
+        layoutParams.topMargin = (int) Math.floor(self.getTop());
+        layoutParams.rightMargin = -(int) Math.floor(self.getWidth());
+        layoutParams.bottomMargin = -(int) Math.floor(self.getHeight());
 
         return layoutParams;
     }
@@ -237,4 +262,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     /* #Annotations @interface */    
     
     /* #Enums */
+    public enum LayerType {
+        Image, Text;
+    }
 }

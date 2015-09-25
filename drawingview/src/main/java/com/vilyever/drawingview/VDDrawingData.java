@@ -1,39 +1,30 @@
 package com.vilyever.drawingview;
 
-import com.vilyever.jsonmodel.VDModel;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * VDDrawingData
- * AndroidDrawingBoard <com.vilyever.drawingboard>
- * Created by vilyever on 2015/9/18.
+ * AndroidDrawingView <com.vilyever.drawingview>
+ * Created by vilyever on 2015/9/25.
  * Feature:
  */
-public class VDDrawingData extends VDModel {
+public class VDDrawingData {
     private final VDDrawingData self = this;
 
-    private List<VDDrawingLayer> drawingLayers = new ArrayList<>();
+    public static final long NextHierarchy = -1;
 
-    private boolean cleared;
+    private List<VDDrawingStep> drawingSteps = new ArrayList<>();
+
+    private long topHierarchy = -1;
 
     /* #Constructors */    
     
     /* #Overrides */    
     
     /* #Accessors */
-    public List<VDDrawingLayer> getDrawingLayers() {
-        return drawingLayers;
-    }
-
-    public boolean isCleared() {
-        return cleared;
-    }
-
-    public void setCleared(boolean cleared) {
-        this.cleared = cleared;
+    public List<VDDrawingStep> getDrawingSteps() {
+        return drawingSteps;
     }
 
     /* #Delegates */
@@ -41,34 +32,44 @@ public class VDDrawingData extends VDModel {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public void addLayer(VDDrawingLayer layer) {
-        self.drawingLayers.add(layer);
-        Collections.sort(self.drawingLayers);
+    public VDDrawingStep newDrawingStepWithLayer() {
+        return newDrawingStepWithLayer(NextHierarchy);
     }
 
-    public VDDrawingLayer newLayer() {
-        long hierarchy = 0;
-        if (self.drawingLayers.size() > 0) {
-            hierarchy = self.drawingLayers.get(self.drawingLayers.size() - 1).getHierarchy() + 1;
+    public VDDrawingStep newDrawingStepWithLayer(long layerHierarchy) {
+        long step = 0;
+        if (self.getDrawingSteps().size() > 0) {
+            step = self.getDrawingSteps().get(self.getDrawingSteps().size() - 1).getStep() + 1;
         }
-        VDDrawingLayer layer = new VDDrawingLayer(hierarchy);
-        self.addLayer(layer);
-        return layer;
+
+        VDDrawingStep drawingStep = new VDDrawingStep(step);
+
+        if (layerHierarchy >= 0) {
+            drawingStep.addLayer(new VDDrawingLayer(layerHierarchy));
+            self.topHierarchy = layerHierarchy > self.topHierarchy ? layerHierarchy : self.topHierarchy;
+        }
+        else if (layerHierarchy == NextHierarchy) {
+            self.topHierarchy++;
+            drawingStep.addLayer(new VDDrawingLayer(self.topHierarchy));
+        }
+
+        return drawingStep;
     }
 
-    public VDDrawingLayer baseLayer() {
-        if (self.drawingLayers.size() == 0) {
-            return null;
+    public void addDrawingStep(VDDrawingStep drawingStep) {
+        self.getDrawingSteps().add(drawingStep);
+        if (drawingStep.isCleared()) {
+            self.topHierarchy = 0;
         }
-        return self.drawingLayers.get(0);
     }
 
-    public VDDrawingLayer topLayer() {
-        if (self.drawingLayers.size() == 0) {
-            return null;
-        }
-
-        return self.drawingLayers.get(self.drawingLayers.size() - 1);
+    /**
+     *
+     * @param from include
+     * @param to exclude
+     */
+    public void removeDrawingSteps(int from, int to) {
+        self.getDrawingSteps().subList(from, to).clear();
     }
 
     /* #Classes */
