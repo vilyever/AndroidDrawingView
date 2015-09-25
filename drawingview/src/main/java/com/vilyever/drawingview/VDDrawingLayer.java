@@ -249,8 +249,8 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
                 (int) Math.floor(self.getHeight()));
         layoutParams.leftMargin = (int) Math.floor(self.getLeft());
         layoutParams.topMargin = (int) Math.floor(self.getTop());
-        layoutParams.rightMargin = -(int) Math.floor(self.getWidth());
-        layoutParams.bottomMargin = -(int) Math.floor(self.getHeight());
+        layoutParams.rightMargin = -Integer.MAX_VALUE;
+        layoutParams.bottomMargin = -Integer.MAX_VALUE;
 
         return layoutParams;
     }

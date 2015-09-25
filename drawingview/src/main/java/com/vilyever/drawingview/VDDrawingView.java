@@ -1,7 +1,6 @@
 package com.vilyever.drawingview;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -10,7 +9,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -46,9 +44,10 @@ public class VDDrawingView extends RelativeLayout {
 
     private List<View> layerViews = new ArrayList<>();
 
+    private VDDrawingBrush drawingBrush;
     private Bitmap baseBitmap;
     private Canvas baseCanvas;
-    private VDDrawingBrush drawingBrush;
+    private ImageView baseImageView;
 
     private VDDrawingData drawingData;
     private VDDrawingStep drawingStep;
@@ -70,24 +69,30 @@ public class VDDrawingView extends RelativeLayout {
     /* #Constructors */
     public VDDrawingView(Context context) {
         super(context);
+        self.init(context, null, 0);
     }
 
     public VDDrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        self.init(context, attrs, 0);
     }
 
     public VDDrawingView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        self.init(context, attrs, defStyle);
     }
 
     /* #Overrides */
     @Override
-    protected void dispatchDraw(Canvas canvas) {
-        if (self.baseBitmap != null) {
-            canvas.drawBitmap(self.baseBitmap, 0, 0, null);
-        }
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        self.initial();
+    }
 
-        super.dispatchDraw(canvas);
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        self.destroy();
     }
 
     @Override
@@ -136,47 +141,6 @@ public class VDDrawingView extends RelativeLayout {
         return true;
     }
 
-    @Override
-    public void setBackgroundColor(int color) {
-        self.ensureBaseCanvas();
-        self.nativeSetBackgroundColor(color);
-
-        self.drawingStep = self.getDrawingData().newDrawingStepWithLayer(0);
-        self.drawingStep.drawingLayer().setBackgroundColor(color);
-        self.saveDrawingCache();
-    }
-
-    @Override
-    public void setBackground(Drawable background) {
-    }
-
-    @Override
-    public void setBackgroundResource(int resid) {
-    }
-
-    @Override
-    public void setBackgroundDrawable(Drawable background) {
-    }
-    @Override
-    public void setBackgroundTintList(ColorStateList tint) {
-    }
-    @Override
-    public void setDrawingCacheBackgroundColor(int color) {
-    }
-
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        self.init();
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        self.destroy();
-    }
-
     /* #Accessors */
     public DrawingDelegate getDelegate() {
         return delegate;
@@ -218,13 +182,18 @@ public class VDDrawingView extends RelativeLayout {
     /* #Delegates */
 
     /* #Private Methods */
-    private void init() {
+    private void init(Context context, AttributeSet attrs, int defStyle) {
+    }
+
+    private void initial() {
         if (BeforeFirstDrawingViewCreated) {
             BeforeFirstDrawingViewCreated = false;
             VDDrawingView.clearStorageCaches();
             VDFileConstant.getCacheDir(self.getClass().getSimpleName());
         }
 
+        self.setClipChildren(false);
+        self.setClipToPadding(false);
         self.setFocusable(true);
         self.setFocusableInTouchMode(true);
 
@@ -235,6 +204,12 @@ public class VDDrawingView extends RelativeLayout {
         self.drawingStep = self.getDrawingData().newDrawingStepWithLayer(0);
         self.drawingStep.setCleared(true);
         self.saveDrawingCache();
+
+        self.baseImageView = new ImageView(self.getContext());
+        self.baseImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        self.baseImageView.setTag(0l);
+        self.addView(self.baseImageView);
+        self.layerViews.add(self.baseImageView);
 
         self.layerImageView = new ImageView(self.getContext());
         self.layerImageView.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -251,12 +226,14 @@ public class VDDrawingView extends RelativeLayout {
                     Bitmap.Config.ARGB_8888);
             self.baseCanvas = new Canvas(self.baseBitmap);
             self.baseCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            self.baseImageView.setImageBitmap(self.baseBitmap);
         }
 
         if (self.getDrawingData().getDrawingSteps().size() > 0) {
             self.getDrawingData().getDrawingSteps().get(0).drawingLayer().setFrame(new RectF(0, 0, self.getWidth(), self.getHeight()));
         }
 
+        self.baseImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         self.layerImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
@@ -396,16 +373,15 @@ public class VDDrawingView extends RelativeLayout {
     }
 
     private void focusLayer(long layerHierarchy) {
+        if (layerHierarchy <= 0) {
+            return;
+        }
         for (View view : self.layerViews) {
             view.setSelected((view.getTag() == layerHierarchy) || (layerHierarchy == FocusAllLayer));
         }
     }
 
     private View findViewByLayerHierarchy(long layerHierarchy) {
-        if (layerHierarchy == 0) {
-            return self;
-        }
-
         for (View view : self.layerViews) {
             if (view.getTag() == layerHierarchy) {
                 return view;
@@ -413,10 +389,6 @@ public class VDDrawingView extends RelativeLayout {
         }
 
         return null;
-    }
-
-    public void nativeSetBackgroundColor(int color) {
-        self.nativeSetBackgroundColor(color, 0);
     }
 
     public void nativeSetBackgroundColor(int color, long layerHierarchy) {
@@ -429,19 +401,9 @@ public class VDDrawingView extends RelativeLayout {
                 return;
             }
 
-            if (layerView == self) {
-                super.setBackgroundColor(color);
-            }
-            else {
-                layerView.setBackgroundColor(color);
-            }
-
+            layerView.setBackgroundColor(color);
             self.invalidate();
         }
-    }
-
-    public void nativeSetBackgroundImage(Bitmap bitmap) {
-        self.nativeSetBackgroundImage(bitmap, 0);
     }
 
     public void nativeSetBackgroundImage(Bitmap bitmap, long layerHierarchy) {
@@ -454,22 +416,15 @@ public class VDDrawingView extends RelativeLayout {
                 return;
             }
 
-            Bitmap preBitmap = null;
             if (layerView.getBackground() != null
                     && layerView.getBackground() instanceof BitmapDrawable) {
-                preBitmap = ((BitmapDrawable) layerView.getBackground()).getBitmap();
+                Bitmap preBitmap = ((BitmapDrawable) layerView.getBackground()).getBitmap();
+                if (preBitmap != null) {
+                    preBitmap.recycle();
+                }
             }
 
-            if (layerView == self) {
-                super.setBackground(new BitmapDrawable(layerView.getResources(), bitmap));
-            }
-            else {
-                layerView.setBackground(new BitmapDrawable(layerView.getResources(), bitmap));
-            }
-
-            if (preBitmap != null) {
-                preBitmap.recycle();
-            }
+            layerView.setBackground(new BitmapDrawable(layerView.getResources(), bitmap));
 
             self.invalidate();
         }
@@ -489,20 +444,27 @@ public class VDDrawingView extends RelativeLayout {
                 }
             }
 
-            if (view instanceof ImageView) {
-                ImageView imageView = (ImageView) view;
-                if (imageView.getDrawable() != null
-                        && imageView.getDrawable() instanceof BitmapDrawable) {
-                    Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-                    if (bitmap != null) {
-                        bitmap.recycle();
+            view.setBackground(null);
+
+            if (view != self.baseImageView) { // never recycle the bastBitmap until this view destroyed
+                if (view instanceof ImageView) {
+
+                    ImageView imageView = (ImageView) view;
+                    if (imageView.getDrawable() != null
+                            && imageView.getDrawable() instanceof BitmapDrawable) {
+                        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+                        if (bitmap != null) {
+                            bitmap.recycle();
+                        }
                     }
                 }
+                self.removeView(view);
             }
-            self.removeView(view);
         }
 
-        self.layerViews.clear();
+        if (self.layerViews.size() > 1) {
+            self.layerViews.subList(1, self.layerViews.size()).clear();
+        }
     }
 
     private void nativeDrawData() {
@@ -556,26 +518,6 @@ public class VDDrawingView extends RelativeLayout {
                     }
                 }
 
-                if (layerHierarchy == 0
-                        && lastBackgroundIndex >= 0) {
-                    VDDrawingStep lastBackgroundDrawingStep = layerSteps.get(layerHierarchy).get(lastBackgroundIndex);
-                    if (lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier() != null) {
-                        if (self.getDrawingCacheDir() != null) {
-                            String filePath = self.getDrawingCacheDir().getAbsolutePath() + "/" + lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier();
-                            File imageFile = new File(filePath);
-                            if (imageFile.exists()) {
-                                self.nativeSetBackgroundImage(VDFileReader.readBitmap(imageFile));
-                            }
-                            else {
-                                // TODO: 2015/9/24 call delegate to put the image by identifier
-                            }
-                        }
-                    }
-                    else if (lastBackgroundDrawingStep.drawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
-                        self.nativeSetBackgroundColor(lastBackgroundDrawingStep.drawingLayer().getBackgroundColor());
-                    }
-                }
-
                 if (layerHierarchy > 0) {
                     VDDrawingStep firstDrawingStep = layerSteps.get(layerHierarchy).get(0);
                     switch (firstDrawingStep.drawingLayer().getLayerType()) {
@@ -607,6 +549,10 @@ public class VDDrawingView extends RelativeLayout {
                                     }
                                 }
                             }
+
+                            if (lastImageIndex > 0) {
+                                // TODO: 2015/9/18 add imageview with image from imagePath
+                            }
                         }
                             break;
                         case Text: {
@@ -614,28 +560,24 @@ public class VDDrawingView extends RelativeLayout {
                         }
                             break;
                     }
+                }
 
-                    if (lastBackgroundIndex > 0) {
-                        VDDrawingStep lastBackgroundDrawingStep = layerSteps.get(layerHierarchy).get(lastBackgroundIndex);
-                        if (lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier() != null) {
-                            if (self.getDrawingCacheDir() != null) {
-                                String filePath = self.getDrawingCacheDir().getAbsolutePath() + "/" + lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier();
-                                File imageFile = new File(filePath);
-                                if (imageFile.exists()) {
-                                    self.nativeSetBackgroundImage(VDFileReader.readBitmap(imageFile), layerHierarchy);
-                                }
-                                else {
-                                    // TODO: 2015/9/24 call delegate to put the image by identifier
-                                }
+                if (lastBackgroundIndex >= 0) {
+                    VDDrawingStep lastBackgroundDrawingStep = layerSteps.get(layerHierarchy).get(lastBackgroundIndex);
+                    if (lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier() != null) {
+                        if (self.getDrawingCacheDir() != null) {
+                            String filePath = self.getDrawingCacheDir().getAbsolutePath() + "/" + lastBackgroundDrawingStep.drawingLayer().getBackgroundImageIdentifier();
+                            File imageFile = new File(filePath);
+                            if (imageFile.exists()) {
+                                self.nativeSetBackgroundImage(VDFileReader.readBitmap(imageFile), layerHierarchy);
+                            }
+                            else {
+                                // TODO: 2015/9/24 call delegate to put the image by identifier
                             }
                         }
-                        else if (lastBackgroundDrawingStep.drawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
-                            self.nativeSetBackgroundColor(lastBackgroundDrawingStep.drawingLayer().getBackgroundColor(), layerHierarchy);
-                        }
                     }
-
-                    if (lastImageIndex > 0) {
-                        // TODO: 2015/9/18 add imageview with image from imagePath
+                    else if (lastBackgroundDrawingStep.drawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
+                        self.nativeSetBackgroundColor(lastBackgroundDrawingStep.drawingLayer().getBackgroundColor(), layerHierarchy);
                     }
                 }
             }
@@ -697,19 +639,29 @@ public class VDDrawingView extends RelativeLayout {
         self.drawingData = data;
         self.drawingIndex = data.getDrawingSteps().size() - 1;
         self.undoIndex = self.drawingIndex;
+        self.nativeClear();
         self.nativeDrawData();
         self.invalidate();
     }
 
-    public void setBackgroundImage(Bitmap bitmap, String identifier) {
+    public void setBackgroundColor(int color, long layerHierarchy) {
         self.ensureBaseCanvas();
-        self.nativeSetBackgroundImage(bitmap);
+        self.nativeSetBackgroundColor(color, layerHierarchy);
+
+        self.drawingStep = self.getDrawingData().newDrawingStepWithLayer(layerHierarchy);
+        self.drawingStep.drawingLayer().setBackgroundColor(color);
+        self.saveDrawingCache();
+    }
+
+    public void setBackgroundImage(Bitmap bitmap, String identifier, long layerHierarchy) {
+        self.ensureBaseCanvas();
+        self.nativeSetBackgroundImage(bitmap, layerHierarchy);
 
         if (self.getDrawingCacheDir() != null) {
             String filePath = self.getDrawingCacheDir() + "/" + identifier;
             VDFileWriter.writeBitmap(new File(filePath), bitmap);
         }
-        self.drawingStep = self.getDrawingData().newDrawingStepWithLayer(0);
+        self.drawingStep = self.getDrawingData().newDrawingStepWithLayer(layerHierarchy);
         self.drawingStep.drawingLayer().setBackgroundImageIdentifier(identifier);
         self.saveDrawingCache();
     }
@@ -798,6 +750,9 @@ public class VDDrawingView extends RelativeLayout {
                 layoutParams.leftMargin = (int) Math.floor(originalLeftMargin + dx);
                 layoutParams.topMargin = (int) Math.floor(originalTopMargin + dy);
                 self.gestureView.setLayoutParams(layoutParams);
+
+                self.gestureView.invalidate();
+                self.invalidate();
             }
             return true;
         }
@@ -822,6 +777,9 @@ public class VDDrawingView extends RelativeLayout {
 //                self.gestureView.setScaleY(Math.max(1.0f, self.gestureView.getScaleY() * scaleFactor));
                 self.gestureView.setScaleX(self.gestureView.getScaleX() * scaleFactor);
                 self.gestureView.setScaleY(self.gestureView.getScaleY() * scaleFactor);
+
+                self.gestureView.invalidate();
+                self.invalidate();
             }
             return true;
         }
@@ -858,6 +816,9 @@ public class VDDrawingView extends RelativeLayout {
             if (self.gestureView != null
                     && ((self.gestureViewOperationState & GestureViewOperation.Rotation.state()) == GestureViewOperation.Rotation.state()) ) {
                 self.gestureView.setRotation(-(angle + triggerOffset - originalRotation));
+
+                self.gestureView.invalidate();
+                self.invalidate();
             }
         }
     }

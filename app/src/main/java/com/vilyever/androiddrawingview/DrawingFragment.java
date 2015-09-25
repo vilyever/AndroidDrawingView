@@ -120,7 +120,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Bitmap bitmap = BitmapFactory.decodeResource(self.getContext().getResources(), R.drawable.redo);
-                self.drawingView.setBackgroundImage(bitmap, "redo");
+                self.drawingView.setBackgroundImage(bitmap, "redo", 0);
             }
         });
 
@@ -129,7 +129,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Random random = new Random();
-                self.drawingView.setBackgroundColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256));
+                self.drawingView.setBackgroundColor(Color.argb(255, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256), 0);
             }
         });
 
