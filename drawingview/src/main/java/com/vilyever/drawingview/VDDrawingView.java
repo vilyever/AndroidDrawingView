@@ -36,7 +36,6 @@ import java.util.List;
 public class VDDrawingView extends RelativeLayout {
     private final VDDrawingView self = this;
 
-    private static final int UndoCachesCount = 10;
     private static boolean BeforeFirstDrawingViewCreated = true;
 
     private static final long UnfocusAnyLayer = -1;
