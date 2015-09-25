@@ -1,8 +1,6 @@
 package com.vilyever.androiddrawingview;
 
 import android.app.Fragment;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -39,7 +37,7 @@ public class DrawingFragment extends Fragment {
 
     private Button thicknessButton;
     private Button colorButton;
-    private Button fillColorButton;
+    private Button solidColorButton;
     private Button oneStrokeOneLayerButton;
 
     private ThicknessAdjustController thicknessAdjustController;
@@ -70,6 +68,7 @@ public class DrawingFragment extends Fragment {
         });
 
         self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(35));
+        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSolidColor(Color.BLUE));
         self.undoButton = (Button) rootView.findViewById(R.id.undoButton);
         self.undoButton.setEnabled(false);
         self.undoButton.setOnClickListener(new View.OnClickListener() {
@@ -119,8 +118,66 @@ public class DrawingFragment extends Fragment {
         self.shapeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Bitmap bitmap = BitmapFactory.decodeResource(self.getContext().getResources(), R.drawable.redo);
-                self.drawingView.setBackgroundImage(bitmap, "redo", 0);
+                VDDrawingBrush.Shape shape = VDDrawingBrush.Shape.Line;
+                if (v.getTag() != null) {
+                    shape = (VDDrawingBrush.Shape) v.getTag();
+                }
+
+                if (!v.isSelected()) {
+                    self.selectButton(self.singleSelectionButtons, (Button) v);
+                }
+                else {
+                    switch (shape) {
+                        case Polygon:
+                            shape = VDDrawingBrush.Shape.Line;
+                            break;
+                        case Line:
+                            shape = VDDrawingBrush.Shape.Rectangle;
+                            break;
+                        case Rectangle:
+                            shape = VDDrawingBrush.Shape.RoundedRetangle;
+                            break;
+                        case RoundedRetangle:
+                            shape = VDDrawingBrush.Shape.Circle;
+                            break;
+                        case Circle:
+                            shape = VDDrawingBrush.Shape.Ellipse;
+                            break;
+                        case Ellipse:
+                            shape = VDDrawingBrush.Shape.Triangle;
+                            break;
+                        case Triangle:
+                            shape = VDDrawingBrush.Shape.RightAngledRriangle;
+                            break;
+                        case RightAngledRriangle:
+                            shape = VDDrawingBrush.Shape.IsoscelesTriangle;
+                            break;
+                        case IsoscelesTriangle:
+                            shape = VDDrawingBrush.Shape.Rhombus;
+                            break;
+                        case Rhombus:
+                            shape = VDDrawingBrush.Shape.CenterSquare;
+                            break;
+                        case CenterSquare:
+                            shape = VDDrawingBrush.Shape.CenterCircle;
+                            break;
+                        case CenterCircle:
+                            shape = VDDrawingBrush.Shape.CenterEquilateralTrangle;
+                            break;
+                        case CenterEquilateralTrangle:
+                            shape = VDDrawingBrush.Shape.Line;
+                            break;
+                        default:
+                            shape = VDDrawingBrush.Shape.Line;
+                            break;
+                    }
+
+                }
+
+                v.setTag(shape);
+                ((Button) v).setText(shape.name());
+
+                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setShape(shape));
             }
         });
 
@@ -151,7 +208,14 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.fillColorButton = (Button) rootView.findViewById(R.id.fillColorButton);
+        self.solidColorButton = (Button) rootView.findViewById(R.id.solidColorButton);
+        self.solidColorButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Random random = new Random();
+                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSolidColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256)));
+            }
+        });
 
         self.oneStrokeOneLayerButton = (Button) rootView.findViewById(R.id.oneStrokeOneLayerButton);
         self.oneStrokeOneLayerButton.setOnClickListener(new View.OnClickListener() {

@@ -15,6 +15,8 @@ public class VDDrawingBrush extends VDModel {
 
     private float size;
     private int color;
+    private int solidColor;
+    private boolean rounded;
     private Shape shape;
     private boolean oneStrokeToLayer;
     
@@ -23,12 +25,14 @@ public class VDDrawingBrush extends VDModel {
     }
 
     public VDDrawingBrush(float size, int color, Shape shape) {
-        this(size, color, shape, false);
+        this(size, color, Color.TRANSPARENT, true, shape, false);
     }
 
-    public VDDrawingBrush(float size, int color, Shape shape, boolean oneStrokeToLayer) {
+    public VDDrawingBrush(float size, int color, int solidColor, boolean rounded, Shape shape, boolean oneStrokeToLayer) {
         this.size = size;
         this.color = color;
+        this.solidColor = solidColor;
+        this.rounded = rounded;
         this.shape = shape;
         this.oneStrokeToLayer = oneStrokeToLayer;
     }
@@ -49,8 +53,29 @@ public class VDDrawingBrush extends VDModel {
         return color;
     }
 
+    public int getSolidColor() {
+        return solidColor;
+    }
+
+    public VDDrawingBrush setSolidColor(int solidColor) {
+        this.solidColor = solidColor;
+        return self;
+    }
+
     public VDDrawingBrush setColor(int color) {
         this.color = color;
+        return self;
+    }
+
+    public boolean isRounded() {
+        if (self.getShape() == Shape.RoundedRetangle) {
+            return true;
+        }
+        return rounded;
+    }
+
+    public VDDrawingBrush setRounded(boolean rounded) {
+        this.rounded = rounded;
         return self;
     }
 
@@ -96,6 +121,9 @@ public class VDDrawingBrush extends VDModel {
     
     /* #Enums */
     public enum Shape {
-        None, Eraser, Signature, Line, Rectangle, Circle, Ellipse
+        None,
+        Eraser, LayerEraser, LayerEraserRectangle,
+        Polygon, Line, Rectangle, RoundedRetangle, Circle, Ellipse, Triangle, RightAngledRriangle, IsoscelesTriangle, Rhombus,
+        CenterSquare, CenterCircle, CenterEquilateralTrangle,
     }
 }
