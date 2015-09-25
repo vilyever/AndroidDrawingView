@@ -16,6 +16,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -56,6 +57,7 @@ public class VDDrawingView extends RelativeLayout {
 
     private Bitmap layerBitmap;
     private Canvas layerCanvas;
+    private ImageView layerImageView;
 
     private GestureDetector gestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
@@ -85,9 +87,6 @@ public class VDDrawingView extends RelativeLayout {
             canvas.drawBitmap(self.baseBitmap, 0, 0, null);
         }
 
-        if (self.layerBitmap != null) {
-            canvas.drawBitmap(self.layerBitmap, 0, 0, null);
-        }
         super.dispatchDraw(canvas);
     }
 
@@ -237,6 +236,10 @@ public class VDDrawingView extends RelativeLayout {
         self.drawingStep.setCleared(true);
         self.saveDrawingCache();
 
+        self.layerImageView = new ImageView(self.getContext());
+        self.layerImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        self.addView(self.layerImageView);
+
         self.gestureDetector = new GestureDetector(self.getContext(), new GestureListener());
         self.scaleGestureDetector = new ScaleGestureDetector(self.getContext(), new ScaleListener());
         self.rotationDetector = new VDRotationGestureDetector(new RotationListener());
@@ -253,6 +256,8 @@ public class VDDrawingView extends RelativeLayout {
         if (self.getDrawingData().getDrawingSteps().size() > 0) {
             self.getDrawingData().getDrawingSteps().get(0).drawingLayer().setFrame(new RectF(0, 0, self.getWidth(), self.getHeight()));
         }
+
+        self.layerImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private void saveDrawingCache() {
@@ -281,6 +286,9 @@ public class VDDrawingView extends RelativeLayout {
         self.layerBitmap = Bitmap.createBitmap(self.getWidth(), self.getHeight(),
                 Bitmap.Config.ARGB_8888);
         self.layerCanvas = new Canvas(self.layerBitmap);
+        self.layerImageView.setImageBitmap(self.layerBitmap);
+        self.layerImageView.setVisibility(VISIBLE);
+        self.layerImageView.bringToFront();
 
         if (self.getDrawingBrush().isOneStrokeToLayer()) {
             self.drawingStep = self.getDrawingData().newDrawingStepWithLayer();
@@ -299,6 +307,9 @@ public class VDDrawingView extends RelativeLayout {
         self.drawing(x, y);
 
         if (self.layerBitmap != null) {
+            self.layerImageView.setImageBitmap(null);
+            self.layerImageView.setVisibility(INVISIBLE);
+
             if (self.getDrawingBrush().isOneStrokeToLayer()) {
                 self.drawingStep.drawingLayer().setFrame(self.drawingStep.drawingLayer().currentPath().getFrame(true));
                 self.addDrawingLayerImageView(self.drawingStep.drawingLayer(), false);
