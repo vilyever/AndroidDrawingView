@@ -5,10 +5,6 @@ import android.widget.RelativeLayout;
 
 import com.vilyever.jsonmodel.VDModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * VDDrawingLayer
  * AndroidDrawingBoard <com.vilyever.drawingboard>
@@ -20,7 +16,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public static final int UnsetValue = -1;
 
-    private long hierarchy; // from 0 to max
+    private int hierarchy; // from 0 to max
 
     private LayerType layerType;
 
@@ -41,7 +37,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     private float scale = UnsetValue;
     private float rotation = UnsetValue;
 
-    private List<VDDrawingPath> paths = new ArrayList<>();
+    private VDDrawingPath drawingPath;
 
     private boolean deleted;
 
@@ -49,11 +45,11 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     public VDDrawingLayer() {
     }
 
-    public VDDrawingLayer(long hierarchy) {
+    public VDDrawingLayer(int hierarchy) {
         this(hierarchy, null);
     }
 
-    public VDDrawingLayer(long hierarchy, RectF frame) {
+    public VDDrawingLayer(int hierarchy, RectF frame) {
         this.hierarchy = hierarchy;
         self.setFrame(frame);
     }
@@ -61,11 +57,11 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     /* #Overrides */    
     
     /* #Accessors */
-    public long getHierarchy() {
+    public int getHierarchy() {
         return hierarchy;
     }
 
-    public void setHierarchy(long hierarchy) {
+    public void setHierarchy(int hierarchy) {
         this.hierarchy = hierarchy;
     }
 
@@ -195,8 +191,8 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         this.rotation = rotation;
     }
 
-    public List<VDDrawingPath> getPaths() {
-        return paths;
+    public VDDrawingPath getDrawingPath() {
+        return drawingPath;
     }
 
     public boolean isDeleted() {
@@ -211,33 +207,24 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     // Comparable<VDDrawingLayer>
     @Override
     public int compareTo(VDDrawingLayer another) {
-        return (int) (self.getHierarchy() - another.getHierarchy());
+        return self.getHierarchy() - another.getHierarchy();
     }
      
     /* #Private Methods */    
     
     /* #Public Methods */
-    public void addPath(VDDrawingPath path) {
-        self.getPaths().add(path);
-        Collections.sort(self.getPaths());
-    }
-
     public VDDrawingPath newPath(VDDrawingBrush brush) {
-        long sequence = 0;
-        if (self.getPaths().size() > 0) {
-            sequence = self.getPaths().get(self.getPaths().size() - 1).getSequence() + 1;
-        }
-        VDDrawingPath path = new VDDrawingPath(sequence, brush);
-        self.addPath(path);
+        VDDrawingPath path = new VDDrawingPath(brush);
+        self.drawingPath = path;
         return path;
     }
 
-    public VDDrawingPath currentPath() {
-        if (self.getPaths().size() == 0) {
-            return null;
-        }
+    public VDDrawingPath drawingPath() {
+        return drawingPath;
+    }
 
-        return self.getPaths().get(self.getPaths().size() - 1);
+    public void updateFrame() {
+        self.setFrame(self.drawingPath().getFrame());
     }
 
     public RelativeLayout.LayoutParams getLayoutParams() {

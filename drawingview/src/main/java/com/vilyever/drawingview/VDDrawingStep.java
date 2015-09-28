@@ -2,10 +2,6 @@ package com.vilyever.drawingview;
 
 import com.vilyever.jsonmodel.VDModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * VDDrawingStep
  * AndroidDrawingBoard <com.vilyever.drawingboard>
@@ -15,9 +11,9 @@ import java.util.List;
 public class VDDrawingStep extends VDModel {
     private final VDDrawingStep self = this;
 
-    private List<VDDrawingLayer> drawingLayers = new ArrayList<>();
+    private VDDrawingLayer drawingLayer;
 
-    private long step;
+    private int step;
 
     private boolean cleared;
 
@@ -26,22 +22,22 @@ public class VDDrawingStep extends VDModel {
 
     }
 
-    public VDDrawingStep(long step) {
+    public VDDrawingStep(int step) {
         this.step = step;
     }
 
     /* #Overrides */    
     
     /* #Accessors */
-    public List<VDDrawingLayer> getDrawingLayers() {
-        return drawingLayers;
+    public VDDrawingLayer getDrawingLayer() {
+        return drawingLayer;
     }
 
-    public long getStep() {
+    public int getStep() {
         return step;
     }
 
-    public void setStep(long step) {
+    public void setStep(int step) {
         this.step = step;
     }
 
@@ -58,27 +54,14 @@ public class VDDrawingStep extends VDModel {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public void addLayer(VDDrawingLayer layer) {
-        self.getDrawingLayers().add(layer);
-        Collections.sort(self.getDrawingLayers());
-    }
-
-    public VDDrawingLayer newLayer() {
-        long hierarchy = 0;
-        if (self.getDrawingLayers().size() > 0) {
-            hierarchy = self.getDrawingLayers().get(self.getDrawingLayers().size() - 1).getHierarchy() + 1;
-        }
+    public VDDrawingLayer newLayer(int hierarchy) {
         VDDrawingLayer layer = new VDDrawingLayer(hierarchy);
-        self.addLayer(layer);
+        self.drawingLayer = layer;
         return layer;
     }
 
     public VDDrawingLayer drawingLayer() {
-        if (self.getDrawingLayers().size() == 0) {
-            return null;
-        }
-
-        return self.getDrawingLayers().get(self.getDrawingLayers().size() - 1);
+        return self.drawingLayer;
     }
 
     /* #Classes */

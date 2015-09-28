@@ -12,11 +12,13 @@ import java.util.List;
 public class VDDrawingData {
     private final VDDrawingData self = this;
 
-    public static final long NextHierarchy = -1;
+    public static final int NextLayerHierarchy = -1;
 
     private List<VDDrawingStep> drawingSteps = new ArrayList<>();
 
-    private long topHierarchy = -1;
+    private int topLayerHierarchy = -1;
+
+    private int showingStep = -1;
 
     /* #Constructors */    
     
@@ -27,17 +29,25 @@ public class VDDrawingData {
         return drawingSteps;
     }
 
+    public int getTopLayerHierarchy() {
+        return topLayerHierarchy;
+    }
+
+    public int getShowingStep() {
+        return showingStep;
+    }
+
     /* #Delegates */
      
     /* #Private Methods */    
     
     /* #Public Methods */
-    public VDDrawingStep newDrawingStepWithLayer() {
-        return newDrawingStepWithLayer(NextHierarchy);
+    public VDDrawingStep newDrawingStepOnLayer() {
+        return newDrawingStepOnLayer(NextLayerHierarchy);
     }
 
-    public VDDrawingStep newDrawingStepWithLayer(long layerHierarchy) {
-        long step = 0;
+    public VDDrawingStep newDrawingStepOnLayer(int layerHierarchy) {
+        int step = 0;
         if (self.getDrawingSteps().size() > 0) {
             step = self.getDrawingSteps().get(self.getDrawingSteps().size() - 1).getStep() + 1;
         }
@@ -45,21 +55,51 @@ public class VDDrawingData {
         VDDrawingStep drawingStep = new VDDrawingStep(step);
 
         if (layerHierarchy >= 0) {
-            drawingStep.addLayer(new VDDrawingLayer(layerHierarchy));
-            self.topHierarchy = layerHierarchy > self.topHierarchy ? layerHierarchy : self.topHierarchy;
+            drawingStep.newLayer(layerHierarchy);
+            self.topLayerHierarchy = layerHierarchy > self.topLayerHierarchy ? layerHierarchy : self.topLayerHierarchy;
         }
-        else if (layerHierarchy == NextHierarchy) {
-            self.topHierarchy++;
-            drawingStep.addLayer(new VDDrawingLayer(self.topHierarchy));
+        else if (layerHierarchy == NextLayerHierarchy) {
+            self.topLayerHierarchy++;
+            drawingStep.newLayer(self.topLayerHierarchy);
         }
+
+        self.addDrawingStep(drawingStep);
 
         return drawingStep;
     }
 
     public void addDrawingStep(VDDrawingStep drawingStep) {
+        if (self.showingStep != self.getDrawingSteps().size() - 1) {
+            self.removeDrawingSteps(self.showingStep + 1, self.getDrawingSteps().size());
+        }
+        self.showingStep++;
+
         self.getDrawingSteps().add(drawingStep);
         if (drawingStep.isCleared()) {
-            self.topHierarchy = 0;
+            self.topLayerHierarchy = 0;
+        }
+    }
+
+    public VDDrawingStep drawingStep() {
+        if (self.getDrawingSteps().size() > self.showingStep
+            && self.showingStep >= 0) {
+            return self.getDrawingSteps().get(self.showingStep);
+        }
+        return null;
+    }
+
+    public List<VDDrawingStep> stepsToDraw( ) {
+        int lastClearedIndex = 0;
+        for (int i = 1; i <= self.showingStep; i++) {
+            if (self.getDrawingSteps().get(i).isCleared()) lastClearedIndex = i;
+        }
+
+        if (lastClearedIndex == self.showingStep) {
+            return new ArrayList<>();
+        }
+        else {
+            List<VDDrawingStep> stepsToDraw = self.getDrawingSteps().subList(lastClearedIndex + 1, self.showingStep + 1);
+            return stepsToDraw;
         }
     }
 
@@ -70,6 +110,28 @@ public class VDDrawingData {
      */
     public void removeDrawingSteps(int from, int to) {
         self.getDrawingSteps().subList(from, to).clear();
+    }
+
+    public boolean canUndo() {
+        return self.showingStep > 0;
+    }
+
+    public boolean canRedo() {
+        return self.showingStep < self.getDrawingSteps().size() - 1;
+    }
+
+    public boolean undo() {
+        if (self.canUndo()) {
+            self.showingStep--;
+        }
+        return false;
+    }
+
+    public boolean redo() {
+        if (self.canRedo()) {
+            self.showingStep++;
+        }
+        return false;
     }
 
     /* #Classes */

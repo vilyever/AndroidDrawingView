@@ -18,10 +18,8 @@ import java.util.List;
  * Created by vilyever on 2015/9/18.
  * Feature:
  */
-public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> {
+public class VDDrawingPath extends VDModel {
     private final VDDrawingPath self = this;
-
-    private long sequence; // from 0 to max
 
     private VDDrawingBrush brush;
 
@@ -31,26 +29,13 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
     public VDDrawingPath() {
     }
 
-    public VDDrawingPath(long sequence) {
-        this.sequence = sequence;
-    }
-
-    public VDDrawingPath(long sequence, VDDrawingBrush brush) {
-        this.sequence = sequence;
+    public VDDrawingPath(VDDrawingBrush brush) {
         self.setBrush(brush);
     }
 
     /* #Overrides */    
     
     /* #Accessors */
-    public long getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(long sequence) {
-        this.sequence = sequence;
-    }
-
     public VDDrawingBrush getBrush() {
         return brush;
     }
@@ -64,12 +49,7 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
     }
 
     /* #Delegates */
-    // Comparable<VDDrawingPath>
-    @Override
-    public int compareTo(VDDrawingPath another) {
-        return (int) (self.getSequence() - another.getSequence());
-    }
-     
+
     /* #Private Methods */    
     
     /* #Public Methods */
@@ -261,7 +241,7 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
         return paint;
     }
 
-    public RectF getFrame(boolean offsetToZero) {
+    public RectF getFrame() {
         float leftest = self.getPoints().get(0).x;
         float rightest = self.getPoints().get(0).x;
         float topest = self.getPoints().get(0).y;
@@ -272,13 +252,6 @@ public class VDDrawingPath extends VDModel implements Comparable<VDDrawingPath> 
             rightest = Math.max(point.x, rightest);
             topest = Math.min(point.y, topest);
             bottomest = Math.max(point.y, bottomest);
-        }
-
-        if (offsetToZero) {
-            for (VDDrawingPoint point : self.getPoints()) {
-                point.x -= leftest - self.getBrush().getSize();
-                point.y -= topest - self.getBrush().getSize();
-            }
         }
 
         return new RectF(leftest - self.getBrush().getSize(),
