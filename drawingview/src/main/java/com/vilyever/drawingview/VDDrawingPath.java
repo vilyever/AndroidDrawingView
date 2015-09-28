@@ -7,6 +7,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 
+import com.vilyever.jsonmodel.VDJsonModelDelegate;
 import com.vilyever.jsonmodel.VDModel;
 
 import java.util.ArrayList;
@@ -24,6 +25,12 @@ public class VDDrawingPath extends VDModel {
     private VDDrawingBrush brush;
 
     private List<VDDrawingPoint> points = new ArrayList<>();
+
+    @VDJsonModelDelegate.VDJsonKeyIgnore
+    private boolean canFinish = true;
+
+    @VDJsonModelDelegate.VDJsonKeyIgnore
+    private boolean canDraw = true;
 
     /* #Constructors */
     public VDDrawingPath() {
@@ -48,173 +55,336 @@ public class VDDrawingPath extends VDModel {
         return points;
     }
 
+    public boolean isCanFinish() {
+        return canFinish;
+    }
+
+    public boolean isCanDraw() {
+        return canDraw;
+    }
+
     /* #Delegates */
 
     /* #Private Methods */    
     
     /* #Public Methods */
     public void addPoint(VDDrawingPoint point) {
-        switch (self.getBrush().getShape()) {
-            case None:
-            case Eraser:
-            case LayerEraser: {
-                if (self.getPoints().size() > 0 && self.getPoints().get(self.getPoints().size() - 1).isSamePoint(point)) {
-                } else {
+        if (self.getPoints().size() > 0
+                && self.getPoints().get(self.getPoints().size() - 1).isSamePoint(point)) {
+        }
+        else {
+            if (self.getBrush().getType() == VDDrawingBrush.Type.Shape
+                    && self.getBrush().getShape() == VDDrawingBrush.Shape.Polygon) {
+                if (!self.isCanFinish()) {
+                    if (self.getPoints().size() > 1) {
+                        self.getPoints().remove(self.getPoints().size() - 1);
+                    }
                     self.getPoints().add(point);
                 }
-                break;
             }
-            case LayerEraserRectangle: {
+            else {
+                self.getPoints().add(point);
+            }
 
-                break;
-            }
-            case Polygon: {
-                if (self.getPoints().size() == 2) {
-                    self.getPoints().remove(1);
-                }
-                self.getPoints().add(point);
-                break;
-            }
-            case Line:
-            case Rectangle:
-            case RoundedRetangle:
-            case Circle:
-            case Ellipse:
-            case Triangle:
-            case RightAngledRriangle:
-            case IsoscelesTriangle:
-            case Rhombus:
-            case CenterSquare:
-            case CenterCircle:
-            case CenterEquilateralTrangle: {
-                if (self.getPoints().size() == 2) {
-                    self.getPoints().remove(1);
-                }
-                self.getPoints().add(point);
-                break;
+            if (self.getBrush().getType() == VDDrawingBrush.Type.Shape) {
+                self.canDraw = self.getPoints().size() >= 2;
             }
         }
     }
 
+    public void addBeginPoint(VDDrawingPoint point) {
+        if (self.getBrush().getType() == VDDrawingBrush.Type.Shape
+                && self.getBrush().getShape() == VDDrawingBrush.Shape.Polygon) {
+            self.canFinish = false;
+            self.getPoints().add(point);
+        }
+    }
+
+    public void addEndPoint(VDDrawingPoint point) {
+        if (self.getBrush().getType() == VDDrawingBrush.Type.Shape
+                && self.getBrush().getShape() == VDDrawingBrush.Shape.Polygon) {
+            self.canFinish = false;
+            VDDrawingPoint beginPoint = self.getPoints().get(0);
+            if (point.isSamePoint(self.finishPathPoint())) {
+                self.getPoints().add(point);
+                self.canFinish = true;
+            }
+            else {
+                if (self.getPoints().size() > 0) {
+                    self.getPoints().remove(self.getPoints().size() - 1);
+                }
+                self.getPoints().add(point);
+                if (Math.abs(beginPoint.x - point.x) < 10.0f + self.getPaint().getStrokeWidth()
+                        && Math.abs(beginPoint.y - point.y) < 10.0f + self.getPaint().getStrokeWidth()) {
+                    self.canFinish = true;
+                }
+            }
+        }
+    }
+
+    public VDDrawingPoint finishPathPoint() {
+        if (self.getBrush().getType() == VDDrawingBrush.Type.Shape
+                && self.getBrush().getShape() == VDDrawingBrush.Shape.Polygon) {
+            return VDDrawingPoint.copy(self.getPoints().get(0));
+        }
+        return null;
+    }
+
     public void drawOnCanvas(Canvas canvas) {
+        drawOnCanvas(canvas, false);
+    }
+
+    public void drawOnCanvas(Canvas canvas, boolean topLeftIsOrigin) {
         Paint paint = self.getPaint();
-        switch (self.getBrush().getShape()) {
-            case None:
-            case Eraser: {
+
+        float offsetX = 0.0f;
+        float offsetY = 0.0f;
+
+        if (topLeftIsOrigin) {
+            offsetX = self.getPoints().get(0).x;
+            offsetY = self.getPoints().get(0).y;
+            for (int i = 1; i < self.getPoints().size(); i++) {
+                offsetX = Math.min(offsetX, self.getPoints().get(i).x);
+                offsetY = Math.min(offsetY, self.getPoints().get(i).y);
+            }
+            offsetX -=  paint.getStrokeWidth();
+            offsetY -=  paint.getStrokeWidth();
+        }
+
+        VDDrawingPoint beginPoint = self.getPoints().get(0);
+        VDDrawingPoint endPoint = self.getPoints().get(self.getPoints().size() - 1);
+
+        RectF rect = new RectF();
+        rect.left = Math.min(beginPoint.x - offsetX, endPoint.x - offsetX);
+        rect.top = Math.min(beginPoint.y - offsetY, endPoint.y - offsetY);
+        rect.right = Math.max(beginPoint.x - offsetX, endPoint.x - offsetX);
+        rect.bottom = Math.max(beginPoint.y - offsetY, endPoint.y - offsetY);
+
+        switch (self.getBrush().getType()) {
+            case Pen: {
                 if (self.getPoints().size() == 1) {
                     paint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(self.getPoints().get(0).x, self.getPoints().get(0).y, paint.getStrokeWidth() * 0.5f, paint);
+                    canvas.drawCircle(beginPoint.x - offsetX, beginPoint.y - offsetY, paint.getStrokeWidth() * 0.5f, paint);
                     paint.setStyle(Paint.Style.STROKE);
                 }
                 else if (self.getPoints().size() > 1) {
                     Path path = new Path();
-                    path.moveTo(self.getPoints().get(0).x, self.getPoints().get(0).y);
+                    path.moveTo(beginPoint.x - offsetX, beginPoint.y - offsetY);
                     for (int i = 1; i < self.getPoints().size(); i++) {
-                        path.quadTo(self.getPoints().get(i - 1).x, self.getPoints().get(i - 1).y,
-                                (self.getPoints().get(i - 1).x + self.getPoints().get(i).x) / 2,
-                                (self.getPoints().get(i - 1).y + self.getPoints().get(i).y) / 2);
+                        path.quadTo(self.getPoints().get(i - 1).x - offsetX, self.getPoints().get(i - 1).y - offsetY,
+                                    (self.getPoints().get(i - 1).x - offsetX + self.getPoints().get(i).x - offsetX) / 2,
+                                    (self.getPoints().get(i - 1).y - offsetY + self.getPoints().get(i).y - offsetY) / 2);
                     }
 
                     canvas.drawPath(path, paint);
                 }
                 break;
             }
-            case LayerEraserRectangle: {
-
-            }
-                break;
-            case Polygon: {
-
-            }
-                break;
-            case Line: {
-                if (self.getPoints().size() > 1) {
-                    Path path = new Path();
-                    path.moveTo(self.getPoints().get(0).x, self.getPoints().get(0).y);
-                    path.lineTo(self.getPoints().get(1).x, self.getPoints().get(1).y);
-
-                    canvas.drawPath(path, paint);
-                }
-                break;
-            }
-            case Rectangle: {
-                if (self.getPoints().size() > 1) {
-                    Path path = new Path();
-                    RectF rect = new RectF();
-                    rect.left = Math.min(self.getPoints().get(0).x, self.getPoints().get(1).x);
-                    rect.top = Math.min(self.getPoints().get(0).y, self.getPoints().get(1).y);
-                    rect.right = Math.max(self.getPoints().get(0).x, self.getPoints().get(1).x);
-                    rect.bottom = Math.max(self.getPoints().get(0).y, self.getPoints().get(1).y);
-                    path.addRect(rect, Path.Direction.CW);
-
-                    canvas.drawPath(path, paint);
-
+            case Eraser: {
+                if (self.getPoints().size() == 1) {
                     paint.setStyle(Paint.Style.FILL);
-                    paint.setColor(self.getBrush().getSolidColor());
-                    canvas.drawRect(rect, paint);
+                    canvas.drawCircle(beginPoint.x - offsetX, beginPoint.y - offsetY, paint.getStrokeWidth() * 0.5f, paint);
+                    paint.setStyle(Paint.Style.STROKE);
                 }
-            }
-                break;
-            case RoundedRetangle: {
-                if (self.getPoints().size() > 1) {
+                else if (self.getPoints().size() > 1) {
                     Path path = new Path();
-                    RectF rect = new RectF();
-                    rect.left = Math.min(self.getPoints().get(0).x, self.getPoints().get(1).x);
-                    rect.top = Math.min(self.getPoints().get(0).y, self.getPoints().get(1).y);
-                    rect.right = Math.max(self.getPoints().get(0).x, self.getPoints().get(1).x);
-                    rect.bottom = Math.max(self.getPoints().get(0).y, self.getPoints().get(1).y);
-                    float round = Math.min(Math.abs(self.getPoints().get(0).x - self.getPoints().get(1).x), Math.abs(self.getPoints().get(0).y - self.getPoints().get(1).y)) / 10.0f;
-                    round = Math.max(round, paint.getStrokeWidth());
-                    path.addRoundRect(rect, round, round, Path.Direction.CW);
+                    path.moveTo(beginPoint.x - offsetX, beginPoint.y - offsetY);
+                    for (int i = 1; i < self.getPoints().size(); i++) {
+                        path.quadTo(self.getPoints().get(i - 1).x - offsetX, self.getPoints().get(i - 1).y - offsetY,
+                                    (self.getPoints().get(i - 1).x - offsetX + self.getPoints().get(i).x - offsetX) / 2,
+                                    (self.getPoints().get(i - 1).y - offsetY + self.getPoints().get(i).y - offsetY) / 2);
+                    }
 
                     canvas.drawPath(path, paint);
                 }
-            }
                 break;
-            case Circle: {
-                if (self.getPoints().size() > 1) {
-                    Path path = new Path();
-                    float centerX = (self.getPoints().get(0).x + self.getPoints().get(1).x) / 2.0f;
-                    float centerY = (self.getPoints().get(0).y + self.getPoints().get(1).y) / 2.0f;
-                    float radius = Math.min(Math.abs(self.getPoints().get(0).x - self.getPoints().get(1).x), Math.abs(self.getPoints().get(0).y - self.getPoints().get(1).y)) / 2.0f;
-                    path.addCircle(centerX, centerY, radius, Path.Direction.CW);
+            }
+            case LayerEraser: {
 
-                    canvas.drawPath(path, paint);
+                break;
+            }
+            case Shape:
+                switch (self.getBrush().getShape()) {
+                    case Polygon: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.moveTo(beginPoint.x - offsetX, beginPoint.y - offsetY);
+                            for (int i = 1; i < self.getPoints().size() - 1; i++) {
+                                path.lineTo(self.getPoints().get(i).x - offsetX, self.getPoints().get(i).y - offsetY);
+                            }
+
+                            if (self.isCanFinish()) {
+                                path.lineTo(beginPoint.x - offsetX, beginPoint.y - offsetY);
+                            }
+                            else {
+                                path.lineTo(endPoint.x - offsetX, endPoint.y - offsetY);
+                            }
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case Line: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.moveTo(beginPoint.x - offsetX, beginPoint.y - offsetY);
+                            path.lineTo(endPoint.x - offsetX, endPoint.y - offsetY);
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case Rectangle: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.addRect(rect, Path.Direction.CW);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case RoundedRetangle: {
+                        if (self.getPoints().size() > 1) {
+                            float round = Math.min(Math.abs(beginPoint.x - endPoint.x), Math.abs(beginPoint.y - endPoint.y)) / 10.0f;
+                            round = Math.max(round, paint.getStrokeWidth());
+
+                            Path path = new Path();
+                            path.addRoundRect(rect, round, round, Path.Direction.CW);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case Circle: {
+                        if (self.getPoints().size() > 1) {
+                            float centerX = (beginPoint.x - offsetX + endPoint.x - offsetX) / 2.0f;
+                            float centerY = (beginPoint.y - offsetY + endPoint.y - offsetY) / 2.0f;
+                            float radius = Math.min(Math.abs(beginPoint.x - endPoint.x), Math.abs(beginPoint.y - endPoint.y)) / 2.0f;
+
+                            Path path = new Path();
+                            path.addCircle(centerX, centerY, radius, Path.Direction.CW);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case Ellipse: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.addOval(rect, Path.Direction.CW);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case RightAngledRriangle: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.moveTo(rect.left, rect.bottom);
+                            path.lineTo(rect.right, rect.bottom);
+                            path.lineTo(rect.left, rect.top);
+                            path.lineTo(rect.left, rect.bottom);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case IsoscelesTriangle: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.moveTo(rect.left, rect.bottom);
+                            path.lineTo(rect.right, rect.bottom);
+                            path.lineTo((rect.left + rect.right) / 2, rect.top);
+                            path.lineTo(rect.left, rect.bottom);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case Rhombus: {
+                        if (self.getPoints().size() > 1) {
+                            Path path = new Path();
+                            path.moveTo((rect.left + rect.right) / 2, rect.bottom);
+                            path.lineTo(rect.right, (rect.top + rect.bottom) / 2);
+                            path.lineTo((rect.left + rect.right) / 2, rect.top);
+                            path.lineTo(rect.left, (rect.top + rect.bottom) / 2);
+                            path.lineTo((rect.left + rect.right) / 2, rect.bottom);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
+                    case CenterCircle: {
+                        if (self.getPoints().size() > 1) {
+                            float centerX = beginPoint.x;
+                            float centerY = beginPoint.y;
+                            float radius = Math.min(Math.abs(beginPoint.x - endPoint.x), Math.abs(beginPoint.y - endPoint.y));
+
+                            if (topLeftIsOrigin) {
+                                centerX = radius + paint.getStrokeWidth();
+                                centerY = radius + paint.getStrokeWidth();
+                            }
+
+                            Path path = new Path();
+                            path.addCircle(centerX, centerY, radius, Path.Direction.CW);
+
+                            canvas.drawPath(path, paint);
+
+                            paint.setStyle(Paint.Style.FILL);
+                            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OVER));
+                            paint.setColor(self.getBrush().getSolidColor());
+
+                            canvas.drawPath(path, paint);
+                        }
+                        break;
+                    }
                 }
-            }
                 break;
-            case Ellipse: {
-
-            }
+            case Clip: {
                 break;
-            case Triangle: {
-
             }
-                break;
-            case RightAngledRriangle: {
-
-            }
-                break;
-            case IsoscelesTriangle: {
-
-            }
-                break;
-            case Rhombus: {
-
-            }
-                break;
-            case CenterSquare: {
-
-            }
-                break;
-            case CenterCircle: {
-
-            }
-                break;
-            case CenterEquilateralTrangle: {
-
-            }
-                break;
         }
     }
 
@@ -233,7 +403,7 @@ public class VDDrawingPath extends VDModel {
             paint.setStrokeWidth(self.getBrush().getSize());
             paint.setColor(self.getBrush().getColor());
 
-            if (self.getBrush().getShape() == VDDrawingBrush.Shape.Eraser) {
+            if (self.getBrush().getType() == VDDrawingBrush.Type.Eraser) {
                 paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             }
         }
@@ -242,22 +412,48 @@ public class VDDrawingPath extends VDModel {
     }
 
     public RectF getFrame() {
-        float leftest = self.getPoints().get(0).x;
-        float rightest = self.getPoints().get(0).x;
-        float topest = self.getPoints().get(0).y;
-        float bottomest = self.getPoints().get(0).y;
-        for (int i = 1; i < self.getPoints().size(); i++) {
-            VDDrawingPoint point = self.getPoints().get(i);
-            leftest = Math.min(point.x, leftest);
-            rightest = Math.max(point.x, rightest);
-            topest = Math.min(point.y, topest);
-            bottomest = Math.max(point.y, bottomest);
-        }
+        VDDrawingPoint beginPoint = self.getPoints().get(0);
+        VDDrawingPoint endPoint = self.getPoints().get(self.getPoints().size() - 1);
 
-        return new RectF(leftest - self.getBrush().getSize(),
-                            topest - self.getBrush().getSize(),
-                            rightest + self.getBrush().getSize(),
-                            bottomest + self.getBrush().getSize());
+        switch (self.getBrush().getType()) {
+            case Shape: {
+                if (self.getBrush().getShape() == VDDrawingBrush.Shape.CenterCircle) {
+                    if (self.getPoints().size() > 1) {
+                        float centerX = beginPoint.x;
+                        float centerY = beginPoint.y;
+                        float radius = Math.min(Math.abs(beginPoint.x - endPoint.x), Math.abs(beginPoint.y - endPoint.y));
+
+                        float leftest = centerX - radius;
+                        float rightest = centerX + radius;
+                        float topest = centerY - radius;
+                        float bottomest = centerY + radius;
+
+                        return new RectF(leftest - self.getBrush().getSize(),
+                                            topest - self.getBrush().getSize(),
+                                            rightest + self.getBrush().getSize(),
+                                            bottomest + self.getBrush().getSize());
+                    }
+                }
+            }
+            default: {
+                float leftest = self.getPoints().get(0).x;
+                float rightest = self.getPoints().get(0).x;
+                float topest = self.getPoints().get(0).y;
+                float bottomest = self.getPoints().get(0).y;
+                for (int i = 1; i < self.getPoints().size(); i++) {
+                    VDDrawingPoint point = self.getPoints().get(i);
+                    leftest = Math.min(point.x, leftest);
+                    rightest = Math.max(point.x, rightest);
+                    topest = Math.min(point.y, topest);
+                    bottomest = Math.max(point.y, bottomest);
+                }
+
+                return new RectF(leftest - self.getBrush().getSize(),
+                                    topest - self.getBrush().getSize(),
+                                    rightest + self.getBrush().getSize(),
+                                    bottomest + self.getBrush().getSize());
+            }
+        }
     }
 
     /* #Classes */

@@ -214,9 +214,11 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     
     /* #Public Methods */
     public VDDrawingPath newPath(VDDrawingBrush brush) {
-        VDDrawingPath path = new VDDrawingPath(brush);
-        self.drawingPath = path;
-        return path;
+        if (self.drawingPath == null) {
+            VDDrawingPath path = new VDDrawingPath(brush);
+            self.drawingPath = path;
+        }
+        return self.drawingPath;
     }
 
     public VDDrawingPath drawingPath() {
@@ -233,7 +235,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         }
 
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Math.floor(self.getWidth()),
-                (int) Math.floor(self.getHeight()));
+                                                                                    (int) Math.floor(self.getHeight()));
         layoutParams.leftMargin = (int) Math.floor(self.getLeft());
         layoutParams.topMargin = (int) Math.floor(self.getTop());
         layoutParams.rightMargin = -Integer.MAX_VALUE;

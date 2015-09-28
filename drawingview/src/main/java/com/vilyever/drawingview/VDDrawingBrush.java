@@ -17,6 +17,7 @@ public class VDDrawingBrush extends VDModel {
     private int color;
     private int solidColor;
     private boolean rounded;
+    private Type type;
     private Shape shape;
     private boolean oneStrokeToLayer;
     
@@ -24,15 +25,16 @@ public class VDDrawingBrush extends VDModel {
     public VDDrawingBrush() {
     }
 
-    public VDDrawingBrush(float size, int color, Shape shape) {
-        this(size, color, Color.TRANSPARENT, true, shape, false);
+    public VDDrawingBrush(float size, int color, Type type) {
+        this(size, color, Color.TRANSPARENT, true, type, null, false);
     }
 
-    public VDDrawingBrush(float size, int color, int solidColor, boolean rounded, Shape shape, boolean oneStrokeToLayer) {
+    public VDDrawingBrush(float size, int color, int solidColor, boolean rounded, Type type, Shape shape, boolean oneStrokeToLayer) {
         this.size = size;
         this.color = color;
         this.solidColor = solidColor;
         this.rounded = rounded;
+        this.type = type;
         this.shape = shape;
         this.oneStrokeToLayer = oneStrokeToLayer;
     }
@@ -79,6 +81,15 @@ public class VDDrawingBrush extends VDModel {
         return self;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public VDDrawingBrush setType(Type type) {
+        this.type = type;
+        return self;
+    }
+
     public Shape getShape() {
         return shape;
     }
@@ -89,8 +100,11 @@ public class VDDrawingBrush extends VDModel {
     }
 
     public boolean isOneStrokeToLayer() {
-        if (self.getShape() == Shape.Eraser) {
-            return false;
+        switch (self.getType()) {
+            case Eraser:
+            case LayerEraser:
+            case Clip:
+                return false;
         }
         return oneStrokeToLayer;
     }
@@ -106,11 +120,11 @@ public class VDDrawingBrush extends VDModel {
     
     /* #Public Methods */
     public static VDDrawingBrush copy(VDDrawingBrush brush) {
-        return new VDDrawingBrush(brush.getSize(), brush.getColor(), brush.getShape());
+        return new VDDrawingBrush(brush.getSize(), brush.getColor(), brush.getSolidColor(), brush.isRounded(), brush.getType(), brush.getShape(), brush.isOneStrokeToLayer());
     }
 
     public static VDDrawingBrush defaultBrush() {
-        return new VDDrawingBrush(5, Color.BLACK, Shape.None);
+        return new VDDrawingBrush(5, Color.BLACK, Type.Pen);
     }
 
     /* #Classes */
@@ -120,10 +134,12 @@ public class VDDrawingBrush extends VDModel {
     /* #Annotations @interface */    
     
     /* #Enums */
+    public enum Type {
+        Pen, Eraser, LayerEraser, Shape, Clip
+    }
+
     public enum Shape {
-        None,
-        Eraser, LayerEraser, LayerEraserRectangle,
-        Polygon, Line, Rectangle, RoundedRetangle, Circle, Ellipse, Triangle, RightAngledRriangle, IsoscelesTriangle, Rhombus,
-        CenterSquare, CenterCircle, CenterEquilateralTrangle,
+        Polygon, Line, Rectangle, RoundedRetangle, Circle, Ellipse, RightAngledRriangle, IsoscelesTriangle, Rhombus,
+        CenterCircle
     }
 }

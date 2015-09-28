@@ -80,6 +80,18 @@ public class VDDrawingData {
         }
     }
 
+    public void cancelDrawingStep() {
+        if (self.drawingStep().isCleared()) {
+            return;
+        }
+
+        self.showingStep--;
+        if (self.drawingStep().drawingLayer().getHierarchy() > 0) {
+            self.topLayerHierarchy--;
+        }
+        self.getDrawingSteps().remove(self.getDrawingSteps().size() - 1);
+    }
+
     public VDDrawingStep drawingStep() {
         if (self.getDrawingSteps().size() > self.showingStep
             && self.showingStep >= 0) {

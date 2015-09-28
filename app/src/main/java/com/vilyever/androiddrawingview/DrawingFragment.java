@@ -59,6 +59,7 @@ public class DrawingFragment extends Fragment {
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
         self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setColor(Color.YELLOW));
+        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(35));
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
             public void undoStateDidChangeFromDrawingView(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
@@ -67,8 +68,6 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(35));
-        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSolidColor(Color.BLUE));
         self.undoButton = (Button) rootView.findViewById(R.id.undoButton);
         self.undoButton.setEnabled(false);
         self.undoButton.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +100,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 self.selectButton(self.singleSelectionButtons, self.penButton);
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setShape(VDDrawingBrush.Shape.None));
+                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Pen));
             }
         });
 
@@ -110,7 +109,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 self.selectButton(self.singleSelectionButtons, self.eraserButton);
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setShape(VDDrawingBrush.Shape.Eraser));
+                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Eraser));
             }
         });
 
@@ -125,6 +124,7 @@ public class DrawingFragment extends Fragment {
 
                 if (!v.isSelected()) {
                     self.selectButton(self.singleSelectionButtons, (Button) v);
+                    self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Shape));
                 }
                 else {
                     switch (shape) {
@@ -144,9 +144,6 @@ public class DrawingFragment extends Fragment {
                             shape = VDDrawingBrush.Shape.Ellipse;
                             break;
                         case Ellipse:
-                            shape = VDDrawingBrush.Shape.Triangle;
-                            break;
-                        case Triangle:
                             shape = VDDrawingBrush.Shape.RightAngledRriangle;
                             break;
                         case RightAngledRriangle:
@@ -156,19 +153,13 @@ public class DrawingFragment extends Fragment {
                             shape = VDDrawingBrush.Shape.Rhombus;
                             break;
                         case Rhombus:
-                            shape = VDDrawingBrush.Shape.CenterSquare;
-                            break;
-                        case CenterSquare:
                             shape = VDDrawingBrush.Shape.CenterCircle;
                             break;
                         case CenterCircle:
-                            shape = VDDrawingBrush.Shape.CenterEquilateralTrangle;
-                            break;
-                        case CenterEquilateralTrangle:
-                            shape = VDDrawingBrush.Shape.Line;
+                            shape = VDDrawingBrush.Shape.Polygon;
                             break;
                         default:
-                            shape = VDDrawingBrush.Shape.Line;
+                            shape = VDDrawingBrush.Shape.Polygon;
                             break;
                     }
 

@@ -34,6 +34,10 @@ public class VDDrawingPoint extends VDModel {
         return this.x == point.x && this.y == point.y;
     }
 
+    public static VDDrawingPoint copy(VDDrawingPoint point) {
+        return new VDDrawingPoint(point.x, point.y);
+    }
+
     /* #Classes */
 
     /* #Interfaces */     
