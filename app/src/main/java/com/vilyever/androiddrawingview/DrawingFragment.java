@@ -8,8 +8,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.vilyever.drawingview.VDDrawingBrush;
 import com.vilyever.drawingview.VDDrawingView;
+import com.vilyever.drawingview.brush.VDCenterCircleBrush;
+import com.vilyever.drawingview.brush.VDCircleBrush;
+import com.vilyever.drawingview.brush.VDDrawingBrush;
+import com.vilyever.drawingview.brush.VDEllipseBrush;
+import com.vilyever.drawingview.brush.VDIsoscelesTriangleBrush;
+import com.vilyever.drawingview.brush.VDLineBrush;
+import com.vilyever.drawingview.brush.VDPenBrush;
+import com.vilyever.drawingview.brush.VDPolygonBrush;
+import com.vilyever.drawingview.brush.VDRectangleBrush;
+import com.vilyever.drawingview.brush.VDRhombusBrush;
+import com.vilyever.drawingview.brush.VDRightAngledTriangleBrush;
+import com.vilyever.drawingview.brush.VDRoundedRetangleBrush;
+import com.vilyever.drawingview.brush.VDShapeBrush;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +56,10 @@ public class DrawingFragment extends Fragment {
 
     private List<Button> singleSelectionButtons;
 
+    private List<VDShapeBrush> shapeBrushes = new ArrayList<>();
+    private VDPenBrush penBrush;
+    private VDPenBrush eraserBrush;
+
     /* #Constructors */
     public DrawingFragment() {
         // Required empty public constructor
@@ -58,8 +74,6 @@ public class DrawingFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setColor(Color.YELLOW));
-        self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(35));
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
             public void undoStateDidChangeFromDrawingView(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
@@ -94,81 +108,59 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        self.penBrush = VDPenBrush.defaultBrush();
+        self.drawingView.setDrawingBrush(self.penBrush);
         self.penButton = (Button) rootView.findViewById(R.id.penButton);
         self.penButton.setSelected(true);
         self.penButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 self.selectButton(self.singleSelectionButtons, self.penButton);
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Pen));
+                self.drawingView.setDrawingBrush(self.penBrush);
             }
         });
 
+        self.eraserBrush = VDPenBrush.defaultBrush().setIsEraser(true);
         self.eraserButton = (Button) rootView.findViewById(R.id.eraserButton);
         self.eraserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 self.selectButton(self.singleSelectionButtons, self.eraserButton);
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Eraser));
+                self.drawingView.setDrawingBrush(self.eraserBrush);
             }
         });
 
+        self.shapeBrushes.add(VDPolygonBrush.defaultBrush());
+        self.shapeBrushes.add(VDLineBrush.defaultBrush());
+        self.shapeBrushes.add(VDRectangleBrush.defaultBrush());
+        self.shapeBrushes.add(VDRoundedRetangleBrush.defaultBrush());
+        self.shapeBrushes.add(VDCircleBrush.defaultBrush());
+        self.shapeBrushes.add(VDEllipseBrush.defaultBrush());
+        self.shapeBrushes.add(VDRightAngledTriangleBrush.defaultBrush());
+        self.shapeBrushes.add(VDIsoscelesTriangleBrush.defaultBrush());
+        self.shapeBrushes.add(VDRhombusBrush.defaultBrush());
+        self.shapeBrushes.add(VDCenterCircleBrush.defaultBrush());
         self.shapeButton = (Button) rootView.findViewById(R.id.shapeButton);
         self.shapeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                VDDrawingBrush.Shape shape = VDDrawingBrush.Shape.Line;
-                if (v.getTag() != null) {
-                    shape = (VDDrawingBrush.Shape) v.getTag();
-                }
+                VDDrawingBrush brush = null;
 
                 if (!v.isSelected()) {
+                    if (v.getTag() == null) {
+                        v.setTag(1);
+                    }
                     self.selectButton(self.singleSelectionButtons, (Button) v);
-                    self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setType(VDDrawingBrush.Type.Shape));
                 }
                 else {
-                    switch (shape) {
-                        case Polygon:
-                            shape = VDDrawingBrush.Shape.Line;
-                            break;
-                        case Line:
-                            shape = VDDrawingBrush.Shape.Rectangle;
-                            break;
-                        case Rectangle:
-                            shape = VDDrawingBrush.Shape.RoundedRetangle;
-                            break;
-                        case RoundedRetangle:
-                            shape = VDDrawingBrush.Shape.Circle;
-                            break;
-                        case Circle:
-                            shape = VDDrawingBrush.Shape.Ellipse;
-                            break;
-                        case Ellipse:
-                            shape = VDDrawingBrush.Shape.RightAngledRriangle;
-                            break;
-                        case RightAngledRriangle:
-                            shape = VDDrawingBrush.Shape.IsoscelesTriangle;
-                            break;
-                        case IsoscelesTriangle:
-                            shape = VDDrawingBrush.Shape.Rhombus;
-                            break;
-                        case Rhombus:
-                            shape = VDDrawingBrush.Shape.CenterCircle;
-                            break;
-                        case CenterCircle:
-                            shape = VDDrawingBrush.Shape.Polygon;
-                            break;
-                        default:
-                            shape = VDDrawingBrush.Shape.Polygon;
-                            break;
-                    }
-
+                    int index = (int) v.getTag() + 1;
+                    index = index % self.shapeBrushes.size();
+                    v.setTag(index);
                 }
 
-                v.setTag(shape);
-                ((Button) v).setText(shape.name());
-
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setShape(shape));
+                brush = self.shapeBrushes.get((Integer) v.getTag());
+                self.drawingView.setDrawingBrush(brush);
+                ((Button) v).setText(brush.getClass().getSimpleName());
             }
         });
 
@@ -195,7 +187,13 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Random random = new Random();
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256)));
+                int color = Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256);
+                v.setBackgroundColor(color);
+
+                self.penBrush.setColor(color);
+                for (VDDrawingBrush brush : self.shapeBrushes) {
+                    brush.setColor(color);
+                }
             }
         });
 
@@ -204,7 +202,14 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Random random = new Random();
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSolidColor(Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256)));
+                int color = Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256);
+                if (self.drawingView.getDrawingBrush() instanceof VDShapeBrush) {
+                    v.setBackgroundColor(color);
+
+                    for (VDShapeBrush brush : self.shapeBrushes) {
+                        brush.setSolidColor(color);
+                    }
+                }
             }
         });
 
@@ -213,7 +218,10 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 v.setSelected(!v.isSelected());
-                self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setOneStrokeToLayer(v.isSelected()));
+                self.penBrush.setOneStrokeToLayer(true);
+                for (VDDrawingBrush brush : self.shapeBrushes) {
+                    brush.setOneStrokeToLayer(true);
+                }
             }
         });
 
@@ -239,7 +247,11 @@ public class DrawingFragment extends Fragment {
             self.thicknessAdjustController.setDelegate(new ThicknessAdjustController.ThicknessDelegate() {
                 @Override
                 public void thicknessDidChangeFromThicknessAdjustController(ThicknessAdjustController controller, int thickness) {
-                    self.drawingView.setDrawingBrush(self.drawingView.getDrawingBrush().setSize(thickness));
+                    self.penBrush.setSize(thickness);
+                    self.eraserBrush.setSize(thickness);
+                    for (VDDrawingBrush brush : self.shapeBrushes) {
+                        brush.setSize(thickness);
+                    }
                 }
             });
         }

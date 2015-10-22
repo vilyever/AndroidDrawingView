@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.vilyever.drawingview.brush.VDDrawingBrush;
+import com.vilyever.drawingview.brush.VDPenBrush;
 import com.vilyever.filereadwrite.VDFileConstant;
 import com.vilyever.filereadwrite.VDFileReader;
 import com.vilyever.filereadwrite.VDFileWriter;
@@ -49,9 +50,9 @@ public class VDDrawingView extends RelativeLayout {
     private Canvas baseCanvas;
     private ImageView baseImageView;
 
-    private Bitmap layerBitmap;
-    private Canvas layerCanvas;
-    private ImageView layerImageView;
+    private Bitmap drawingLayerBitmap;
+    private Canvas drawingLayerCanvas;
+    private ImageView drawingLayerImageView;
 
     private List<View> layerViews = new ArrayList<>();
 
@@ -65,13 +66,11 @@ public class VDDrawingView extends RelativeLayout {
 
     /* #Constructors */
     public VDDrawingView(Context context) {
-        super(context);
-        self.init(context, null, 0);
+        this(context, null);
     }
 
     public VDDrawingView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        self.init(context, attrs, 0);
+        this(context, attrs, 0);
     }
 
     public VDDrawingView(Context context, AttributeSet attrs, int defStyle) {
@@ -93,6 +92,35 @@ public class VDDrawingView extends RelativeLayout {
     }
 
     @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+
+        int width = r - l;
+        int height = b - t;
+        if (changed) {
+            if (self.baseBitmap == null) {
+                self.baseBitmap = Bitmap.createBitmap(width, height,
+                        Bitmap.Config.ARGB_8888);
+                self.baseCanvas = new Canvas(self.baseBitmap);
+                self.baseCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                self.baseImageView.setImageBitmap(self.baseBitmap);
+            }
+            else {
+                Bitmap bitmap = self.baseBitmap;
+                self.baseBitmap = Bitmap.createBitmap(width, height,
+                        Bitmap.Config.ARGB_8888);
+                self.baseCanvas = new Canvas(self.baseBitmap);
+                self.baseCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                self.baseCanvas.drawBitmap(bitmap, 0, 0, null);
+                self.baseImageView.setImageBitmap(self.baseBitmap);
+                bitmap.recycle();
+            }
+
+            self.getDrawingData().getDrawingSteps().get(0).drawingLayer().setFrame(new RectF(0, 0, width, height));
+        }
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (self.gestureView != null) {
             self.scaleGestureDetector.onTouchEvent(event);
@@ -101,7 +129,7 @@ public class VDDrawingView extends RelativeLayout {
 
             if (event.getAction() == MotionEvent.ACTION_UP
                     || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                self.getDrawingData().newDrawingStepOnLayer((int) self.gestureView.getTag());
+                self.getDrawingData().newDrawingStepOnLayer((int) self.gestureView.getTag()).setDrawingBrush(VDDrawingBrush.copy(self.getDrawingBrush()));;
 
                 RelativeLayout.LayoutParams layoutParams = (LayoutParams) self.gestureView.getLayoutParams();
                 self.getDrawingData().drawingStep().drawingLayer().setLeft(layoutParams.leftMargin);
@@ -115,12 +143,12 @@ public class VDDrawingView extends RelativeLayout {
                 self.gestureView = null;
                 self.gestureViewOperationState = GestureViewOperation.None.state();
 
+                self.getDrawingData().drawingStep().setStepOver(true);
                 self.didDrawNewStep();
                 self.invalidate();
             }
         }
         else {
-            self.gestureView = null;
             self.focusLayer(UnfocusAnyLayer);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -159,8 +187,8 @@ public class VDDrawingView extends RelativeLayout {
     }
 
     public VDDrawingBrush getDrawingBrush() {
-        if (drawingBrush == null) {
-            drawingBrush = VDDrawingBrush.defaultBrush();
+        if (self.drawingBrush == null) {
+            self.drawingBrush = VDPenBrush.defaultBrush();
         }
         return drawingBrush;
     }
@@ -169,6 +197,14 @@ public class VDDrawingView extends RelativeLayout {
         this.drawingBrush = drawingBrush;
 
         self.endUnfinishedStep();
+    }
+
+    public Canvas getBaseCanvas() {
+        return baseCanvas;
+    }
+
+    public Canvas getDrawingLayerCanvas() {
+        return drawingLayerCanvas;
     }
 
     public File getDrawingCacheDir() {
@@ -185,34 +221,45 @@ public class VDDrawingView extends RelativeLayout {
     }
 
     private void initial() {
+        // clear caches
         if (BeforeFirstDrawingViewCreated) {
             BeforeFirstDrawingViewCreated = false;
             VDDrawingView.clearStorageCaches();
             VDFileConstant.getCacheDir(self.getClass().getSimpleName());
         }
 
+        // layer view can display ouside
         disableClipOnParents(self);
 
+        // focusable
         self.setFocusable(true);
         self.setFocusableInTouchMode(true);
 
+        // make sure drawing brush not null
         self.setDrawingBrush(self.getDrawingBrush());
 
+        // clear the drawing view
         self.nativeClear();
 
-        self.getDrawingData().newDrawingStepOnLayer(0).setCleared(true);
+        // init first drawing step that clear the view
+        self.getDrawingData().newDrawingStepOnLayer(0).setCleared(true).setStepOver(true);
         self.didDrawNewStep();
 
+        // setup base layer view
         self.baseImageView = new ImageView(self.getContext());
+        self.baseImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         self.baseImageView.setScaleType(ImageView.ScaleType.FIT_XY);
         self.baseImageView.setTag(0);
         self.addView(self.baseImageView);
         self.layerViews.add(self.baseImageView);
 
-        self.layerImageView = new ImageView(self.getContext());
-        self.layerImageView.setScaleType(ImageView.ScaleType.CENTER);
-        self.addView(self.layerImageView);
+        // setup drawing layer view, which is a temp display view
+        self.drawingLayerImageView = new ImageView(self.getContext());
+        self.drawingLayerImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        self.drawingLayerImageView.setScaleType(ImageView.ScaleType.CENTER);
+        self.addView(self.drawingLayerImageView);
 
+        // setup gesture listener
         self.gestureDetector = new GestureDetector(self.getContext(), new GestureListener());
         self.scaleGestureDetector = new ScaleGestureDetector(self.getContext(), new ScaleListener());
         self.rotationDetector = new VDRotationGestureDetector(new RotationListener());
@@ -230,25 +277,8 @@ public class VDDrawingView extends RelativeLayout {
 
         if (v.getParent() != null
                 && v.getParent() instanceof View) {
-            disableClipOnParents( (View) v.getParent() );
+            disableClipOnParents((View) v.getParent());
         }
-    }
-
-    private void ensureBaseCanvas() {
-        if (self.baseBitmap == null) {
-            self.baseBitmap = Bitmap.createBitmap(self.getWidth(), self.getHeight(),
-                    Bitmap.Config.ARGB_8888);
-            self.baseCanvas = new Canvas(self.baseBitmap);
-            self.baseCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            self.baseImageView.setImageBitmap(self.baseBitmap);
-        }
-
-        if (self.getDrawingData().getDrawingSteps().size() > 0) {
-            self.getDrawingData().getDrawingSteps().get(0).drawingLayer().setFrame(new RectF(0, 0, self.getWidth(), self.getHeight()));
-        }
-
-        self.baseImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        self.layerImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     private void didDrawNewStep() {
@@ -260,90 +290,94 @@ public class VDDrawingView extends RelativeLayout {
     private void beginDraw(float x, float y) {
         self.getParent().requestDisallowInterceptTouchEvent(true);
 
-        self.ensureBaseCanvas();
+        VDDrawingPoint.IncrementPointerID();
 
-        if (self.getDrawingData().drawingStep().drawingLayer().drawingPath() == null
-                || self.getDrawingData().drawingStep().drawingLayer().drawingPath().isCanFinish()) {
-            self.layerBitmap = Bitmap.createBitmap(self.getWidth(),
+        if (self.getDrawingData().drawingStep().isStepOver()) {
+            self.drawingLayerBitmap = Bitmap.createBitmap(self.getWidth(),
                     self.getHeight(),
                     Bitmap.Config.ARGB_8888);
-            self.layerCanvas = new Canvas(self.layerBitmap);
+            self.drawingLayerCanvas = new Canvas(self.drawingLayerBitmap);
 
-            self.layerImageView.setImageBitmap(self.layerBitmap);
-            self.layerImageView.setVisibility(VISIBLE);
-            self.layerImageView.bringToFront();
+            self.drawingLayerImageView.setImageBitmap(self.drawingLayerBitmap);
+            self.drawingLayerImageView.setVisibility(VISIBLE);
+            self.drawingLayerImageView.bringToFront();
 
-            if (self.getDrawingBrush().isOneStrokeToLayer()) {
-                self.getDrawingData().newDrawingStepOnLayer();
-            } else {
-                self.getDrawingData().newDrawingStepOnLayer(0);
+            if (self.getDrawingBrush().isEraser()) {
+                self.getDrawingData().newDrawingStepOnLayer(0).setDrawingCanvas(self.baseCanvas).setDrawingBrush(VDDrawingBrush.copy(self.getDrawingBrush()));
             }
+            else {
+                self.getDrawingData().newDrawingStepOnLayer().setDrawingCanvas(self.drawingLayerCanvas).setDrawingBrush(VDDrawingBrush.copy(self.getDrawingBrush()));
+            }
+
+            self.drawingLayerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            self.getDrawingData().drawingStep().drawingPath().addPoint(new VDDrawingPoint(VDDrawingPoint.CurrentPointerID(), x, y));
+            self.getDrawingData().drawingStep().updateDrawing(VDDrawingBrush.DrawingPointerState.Begin);
+            self.invalidate();
+        }
+        else {
+            self.drawing(x, y);
         }
 
-        self.getDrawingData().drawingStep().drawingLayer().newPath(self.getDrawingBrush()).addBeginPoint(new VDDrawingPoint(x, y));
-        self.drawing(x, y);
+        self.invalidate();
+    }
 
+    private void drawing(float x, float y) {
+        self.drawingLayerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        self.getDrawingData().drawingStep().drawingPath().addPoint(new VDDrawingPoint(VDDrawingPoint.CurrentPointerID(), x, y));
+        self.getDrawingData().drawingStep().updateDrawing(VDDrawingBrush.DrawingPointerState.Drawing);
         self.invalidate();
     }
 
     private void endDraw(float x, float y) {
-        self.getDrawingData().drawingStep().drawingLayer().drawingPath().addEndPoint(new VDDrawingPoint(x, y));
-        self.drawing(x, y);
+        self.drawingLayerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        self.getDrawingData().drawingStep().drawingPath().addPoint(new VDDrawingPoint(VDDrawingPoint.CurrentPointerID(), x, y));
+        boolean stepOver = self.getDrawingData().drawingStep().updateDrawing(VDDrawingBrush.DrawingPointerState.End);
+        self.getDrawingData().drawingStep().setStepOver(stepOver);
+        self.invalidate();
 
-        if (!self.getDrawingData().drawingStep().drawingLayer().drawingPath().isCanDraw()) {
+        self.finishDraw();
+
+        self.getParent().requestDisallowInterceptTouchEvent(false);
+    }
+
+    private void finishDraw() {
+        if (self.getDrawingData().drawingStep().getDrawingLayerFrame() == null) {
+            // noting to draw, e.g. draw line with one point is pointless
             self.getDrawingData().cancelDrawingStep();
         }
         else {
-            if (self.getDrawingData().drawingStep().drawingLayer().drawingPath().isCanFinish()) {
-                if (self.layerBitmap != null) {
-                    self.layerImageView.setImageBitmap(null);
-                    self.layerImageView.setVisibility(INVISIBLE);
+            if (self.getDrawingData().drawingStep().isStepOver()) {
+                if (!self.getDrawingData().drawingStep().drawingBrush().isEraser()) {
+                    self.getDrawingData().drawingStep().updateDrawingLayerFrame();
 
-                    if (self.getDrawingBrush().isOneStrokeToLayer()) {
-                        self.getDrawingData().drawingStep().drawingLayer().updateFrame();
-                        self.addDrawingLayerImageView(self.getDrawingData().drawingStep().drawingLayer());
-                    } else {
-                        self.baseCanvas.drawBitmap(self.layerBitmap, 0.0f, 0.0f, new Paint());
+                    if (self.drawingLayerBitmap != null) {
+                        self.drawingLayerImageView.setImageBitmap(null);
+                        self.drawingLayerImageView.setVisibility(INVISIBLE);
+
+                        if (self.getDrawingBrush().isOneStrokeToLayer()) {
+                            self.addDrawingLayerImageView(self.getDrawingData().drawingStep().drawingLayer());
+                        } else {
+                            self.baseCanvas.drawBitmap(self.drawingLayerBitmap, 0.0f, 0.0f, null);
+                        }
+
+                        self.drawingLayerBitmap.recycle();
+                        self.drawingLayerBitmap = null;
+                        self.drawingLayerCanvas = null;
                     }
-
-                    self.layerBitmap.recycle();
-                    self.layerBitmap = null;
-                    self.layerCanvas = null;
                 }
-
                 self.didDrawNewStep();
             }
         }
-
-        self.getParent().requestDisallowInterceptTouchEvent(true);
-    }
-
-    private void drawing(float x, float y) {
-        self.layerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        self.getDrawingData().drawingStep().drawingLayer().drawingPath().addPoint(new VDDrawingPoint(x, y));
-        if (self.getDrawingBrush().isOneStrokeToLayer()) {
-            self.getDrawingData().drawingStep().drawingLayer().drawingPath().drawOnCanvas(self.layerCanvas);
-        }
-        else {
-            if (self.getDrawingBrush().getType() == VDDrawingBrush.Type.Eraser) {
-                self.getDrawingData().drawingStep().drawingLayer().drawingPath().drawOnCanvas(self.baseCanvas);
-            }
-            else {
-                self.getDrawingData().drawingStep().drawingLayer().drawingPath().drawOnCanvas(self.layerCanvas);
-            }
-        }
-
-        self.invalidate();
     }
 
     private void endUnfinishedStep() {
         if (self.getDrawingData() != null
                 && self.getDrawingData().drawingStep() != null
-                && self.getDrawingData().drawingStep().drawingLayer() != null
-                && self.getDrawingData().drawingStep().drawingLayer().drawingPath() != null
-                && !self.getDrawingData().drawingStep().drawingLayer().drawingPath().isCanFinish()) {
-            VDDrawingPoint point = self.getDrawingData().drawingStep().drawingLayer().drawingPath().finishPathPoint();
-            self.endDraw(point.x, point.y);
+                && !self.getDrawingData().drawingStep().isStepOver()) {
+            self.getDrawingData().drawingStep().setStepOver(true);
+            self.invalidate();
+
+            self.finishDraw();
         }
     }
 
@@ -364,8 +398,7 @@ public class VDDrawingView extends RelativeLayout {
 
         Bitmap bitmap = Bitmap.createBitmap(imageView.getLayoutParams().width, imageView.getLayoutParams().height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
-//        drawingLayer.drawingPath().drawOnCanvas(canvas, true);
-        canvas.drawBitmap(self.layerBitmap,
+        canvas.drawBitmap(self.drawingLayerBitmap,
                 -((LayoutParams) imageView.getLayoutParams()).leftMargin,
                 -((LayoutParams) imageView.getLayoutParams()).topMargin,
                 null);
@@ -402,7 +435,7 @@ public class VDDrawingView extends RelativeLayout {
         }
     }
 
-    private View findViewByLayerHierarchy(int layerHierarchy) {
+    private View findLayerViewByLayerHierarchy(int layerHierarchy) {
         for (View view : self.layerViews) {
             if (view.getTag() == layerHierarchy) {
                 return view;
@@ -417,7 +450,7 @@ public class VDDrawingView extends RelativeLayout {
             return;
         }
 
-        View layerView = self.findViewByLayerHierarchy(layerHierarchy);
+        View layerView = self.findLayerViewByLayerHierarchy(layerHierarchy);
         if (layerView == null) {
             return;
         }
@@ -431,7 +464,7 @@ public class VDDrawingView extends RelativeLayout {
             return;
         }
 
-        View layerView = self.findViewByLayerHierarchy(layerHierarchy);
+        View layerView = self.findLayerViewByLayerHierarchy(layerHierarchy);
         if (layerView == null) {
             return;
         }
@@ -489,11 +522,8 @@ public class VDDrawingView extends RelativeLayout {
     private void nativeDrawData() {
         self.getParent().requestDisallowInterceptTouchEvent(true);
 
-        self.ensureBaseCanvas();
-        self.layerBitmap = Bitmap.createBitmap(self.getWidth(),
-                                                    self.getHeight(),
-                                                    Bitmap.Config.ARGB_8888);
-        self.layerCanvas = new Canvas(self.layerBitmap);
+        self.drawingLayerBitmap = Bitmap.createBitmap(self.getWidth(), self.getHeight(), Bitmap.Config.ARGB_8888);
+        self.drawingLayerCanvas = new Canvas(self.drawingLayerBitmap);
 
         List<VDDrawingStep> stepsToDraw = self.getDrawingData().stepsToDraw();
 
@@ -504,7 +534,7 @@ public class VDDrawingView extends RelativeLayout {
             while (layerSteps.size() <= step.drawingLayer().getHierarchy()) {
                 layerSteps.add(new ArrayList<VDDrawingStep>());
             }
-            layerSteps.get( step.drawingLayer().getHierarchy()).add(step);
+            layerSteps.get(step.drawingLayer().getHierarchy()).add(step);
         }
 
         for (int layerHierarchy = 0; layerHierarchy < layerSteps.size(); layerHierarchy++) {
@@ -515,14 +545,16 @@ public class VDDrawingView extends RelativeLayout {
             int lastBackgroundIndex = -1;
             int lastImageIndex = -1;
 
-            self.layerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            self.drawingLayerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             for (int i = 0; i < layerSteps.get(layerHierarchy).size(); i++) {
                 VDDrawingStep step = layerSteps.get(layerHierarchy).get(i);
                 if (layerHierarchy == 0) {
-                    if (step.drawingLayer().drawingPath() != null) {
-                        self.layerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                        step.drawingLayer().drawingPath().drawOnCanvas(self.layerCanvas);
-                        self.baseCanvas.drawBitmap(self.layerBitmap, 0.0f, 0.0f, new Paint());
+                    step.setDrawingCanvas(self.drawingLayerCanvas);
+                    step.setStepOver(true);
+                    if (step.drawingPath() != null) {
+                        self.drawingLayerCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                        step.updateDrawing(VDDrawingBrush.DrawingPointerState.End);
+                        self.baseCanvas.drawBitmap(self.drawingLayerBitmap, 0.0f, 0.0f, null);
                     }
                 }
 
@@ -541,15 +573,17 @@ public class VDDrawingView extends RelativeLayout {
                 switch (firstDrawingStep.drawingLayer().getLayerType()) {
                     case Image: {
                         for (VDDrawingStep step : layerSteps.get(layerHierarchy)) {
-                            if (step.drawingLayer().drawingPath() != null) {
-                                step.drawingLayer().drawingPath().drawOnCanvas(self.layerCanvas);
+                            step.setDrawingCanvas(self.drawingLayerCanvas);
+                            step.setStepOver(true);
+                            if (step.drawingPath() != null) {
+                                step.updateDrawing(VDDrawingBrush.DrawingPointerState.End);
                             }
                         }
                         self.addDrawingLayerImageView(firstDrawingStep.drawingLayer());
 
                         for (VDDrawingStep step : layerSteps.get(layerHierarchy)) {
-                            if (self.findViewByLayerHierarchy(layerHierarchy) != null) {
-                                ImageView imageView = (ImageView) self.findViewByLayerHierarchy(layerHierarchy);
+                            if (self.findLayerViewByLayerHierarchy(layerHierarchy) != null) {
+                                ImageView imageView = (ImageView) self.findLayerViewByLayerHierarchy(layerHierarchy);
                                 VDDrawingLayer layer = step.drawingLayer();
                                 if (layer != null) {
                                     if (layer.getLayoutParams() != null) {
@@ -600,10 +634,10 @@ public class VDDrawingView extends RelativeLayout {
             }
         }
 
-        if (self.layerBitmap != null) {
-            self.layerBitmap.recycle();
-            self.layerBitmap = null;
-            self.layerCanvas = null;
+        if (self.drawingLayerBitmap != null) {
+            self.drawingLayerBitmap.recycle();
+            self.drawingLayerBitmap = null;
+            self.drawingLayerCanvas = null;
         }
 
         self.focusLayer(-1);
@@ -630,7 +664,7 @@ public class VDDrawingView extends RelativeLayout {
         }
         self.endUnfinishedStep();
         self.nativeClear();
-        self.getDrawingData().newDrawingStepOnLayer(0).setCleared(true);
+        self.getDrawingData().newDrawingStepOnLayer(0).setCleared(true).setStepOver(true);
         self.didDrawNewStep();
         self.invalidate();
     }
@@ -661,16 +695,14 @@ public class VDDrawingView extends RelativeLayout {
     }
 
     public void setBackgroundColor(int color, int layerHierarchy) {
-        self.ensureBaseCanvas();
         self.endUnfinishedStep();
         self.nativeSetBackgroundColor(color, layerHierarchy);
 
-        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy).drawingLayer().setBackgroundColor(color);
+        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy).setStepOver(true).drawingLayer().setBackgroundColor(color);
         self.didDrawNewStep();
     }
 
     public void setBackgroundImage(Bitmap bitmap, String identifier, int layerHierarchy) {
-        self.ensureBaseCanvas();
         self.endUnfinishedStep();
         self.nativeSetBackgroundImage(bitmap, layerHierarchy);
 
@@ -678,7 +710,7 @@ public class VDDrawingView extends RelativeLayout {
             String filePath = self.getDrawingCacheDir() + "/" + identifier;
             VDFileWriter.writeBitmap(new File(filePath), bitmap);
         }
-        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy).drawingLayer().setBackgroundImageIdentifier(identifier);
+        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy).setStepOver(true).drawingLayer().setBackgroundImageIdentifier(identifier);
         self.didDrawNewStep();
     }
 
@@ -718,6 +750,14 @@ public class VDDrawingView extends RelativeLayout {
 
     public boolean canRedo() {
         return self.getDrawingData().canRedo();
+    }
+
+    public void removeLayersAtPoint(VDDrawingPoint point) {
+
+    }
+
+    public void removeLayersInRect(RectF rect) {
+
     }
 
     /* #Classes */

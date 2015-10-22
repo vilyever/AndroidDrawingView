@@ -55,12 +55,12 @@ public class VDDrawingData {
         VDDrawingStep drawingStep = new VDDrawingStep(step);
 
         if (layerHierarchy >= 0) {
-            drawingStep.newLayer(layerHierarchy);
+            drawingStep.newDrawingLayer(layerHierarchy);
             self.topLayerHierarchy = layerHierarchy > self.topLayerHierarchy ? layerHierarchy : self.topLayerHierarchy;
         }
         else if (layerHierarchy == NextLayerHierarchy) {
             self.topLayerHierarchy++;
-            drawingStep.newLayer(self.topLayerHierarchy);
+            drawingStep.newDrawingLayer(self.topLayerHierarchy);
         }
 
         self.addDrawingStep(drawingStep);

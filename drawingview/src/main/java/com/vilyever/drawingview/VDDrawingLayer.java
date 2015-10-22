@@ -37,14 +37,9 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     private float scale = UnsetValue;
     private float rotation = UnsetValue;
 
-    private VDDrawingPath drawingPath;
-
     private boolean deleted;
 
     /* #Constructors */
-    public VDDrawingLayer() {
-    }
-
     public VDDrawingLayer(int hierarchy) {
         this(hierarchy, null);
     }
@@ -130,6 +125,9 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     }
 
     public RectF getFrame() {
+        if (self.left == UnsetValue) {
+            return null;
+        }
         return new RectF(self.left, self.top, self.left + self.width, self.top + self.height);
     }
 
@@ -191,10 +189,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         this.rotation = rotation;
     }
 
-    public VDDrawingPath getDrawingPath() {
-        return drawingPath;
-    }
-
     public boolean isDeleted() {
         return deleted;
     }
@@ -213,22 +207,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     /* #Private Methods */    
     
     /* #Public Methods */
-    public VDDrawingPath newPath(VDDrawingBrush brush) {
-        if (self.drawingPath == null) {
-            VDDrawingPath path = new VDDrawingPath(brush);
-            self.drawingPath = path;
-        }
-        return self.drawingPath;
-    }
-
-    public VDDrawingPath drawingPath() {
-        return drawingPath;
-    }
-
-    public void updateFrame() {
-        self.setFrame(self.drawingPath().getFrame());
-    }
-
     public RelativeLayout.LayoutParams getLayoutParams() {
         if (self.getLeft() == UnsetValue) {
             return null;
