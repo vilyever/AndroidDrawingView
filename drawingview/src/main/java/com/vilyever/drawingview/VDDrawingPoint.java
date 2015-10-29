@@ -18,7 +18,7 @@ public class VDDrawingPoint extends VDModel {
 
     /* #Constructors */
     public VDDrawingPoint() {
-        this(0, 0);
+
     }
 
     public VDDrawingPoint(float x, float y) {

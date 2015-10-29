@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -45,63 +46,78 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
     }
 
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            RectF rect = new RectF();
-            rect.left = Math.min(beginPoint.x, lastPoint.x);
-            rect.top = Math.min(beginPoint.y, lastPoint.y);
-            rect.right = Math.max(beginPoint.x, lastPoint.x);
-            rect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            RectF drawingRect = new RectF();
+            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
+            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
+            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
+            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
+
+            RectF pathFrame;
+            if (!self.isEdgeRounded()) {
+                if ((drawingRect.right - drawingRect.left) < (self.getSize() * 2.0f)) {
+                    if (beginPoint.x <= lastPoint.x) {
+                        drawingRect.right = drawingRect.left + self.getSize() * 2.0f + 1;
+                    }
+                    else {
+                        drawingRect.left = drawingRect.right - self.getSize() * 2.0f - 1;
+                    }
+                }
+                if ((drawingRect.bottom - drawingRect.top) < (self.getSize() * 2.0f)) {
+                    if (beginPoint.y <= lastPoint.y) {
+                        drawingRect.bottom = drawingRect.top + self.getSize() * 2.0f + 1;
+                    }
+                    else {
+                        drawingRect.top = drawingRect.bottom - self.getSize() * 2.0f - 1;
+                    }
+                }
+
+                pathFrame = new RectF(drawingRect);
+
+                // 计算相似三角形比例
+                double x = pathFrame.right - pathFrame.left; // 底边
+                double y = pathFrame.bottom - pathFrame.top; // 左侧边
+                double z = Math.sqrt(x * x + y * y); // 斜边
+                double cos = y / z; // 左上角cos值
+                double tan = x / y; // 左上角tan值
+                double u = (self.getSize() / 2.0f) * (1 + 1 / cos); // 内外三角顶部间辅助相似三角形底边
+                double q = u / tan; // 内外三角顶部间辅助相似三角形左侧边
+                double factor = (y + (self.getSize() / 2.0f) + q) / y; // 相似比
+
+                pathFrame.top -= y * (factor - 1) - self.getSize() / 2.0f;
+                pathFrame.right += x * (factor - 1) - self.getSize() / 2.0f;
+
+                pathFrame.left -= self.getSize() / 2.0f;
+                pathFrame.bottom += self.getSize() / 2.0f;
+            }
+            else {
+                pathFrame = super.drawPath(canvas, drawingPath, state);
+            }
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
 
             Path path = new Path();
-            path.moveTo(rect.left, rect.bottom);
-            path.lineTo(rect.right, rect.bottom);
-            path.lineTo(rect.left, rect.top);
-            path.lineTo(rect.left, rect.bottom);
+            path.moveTo(drawingRect.left, drawingRect.bottom);
+            path.lineTo(drawingRect.right, drawingRect.bottom);
+            path.lineTo(drawingRect.left, drawingRect.top);
+            path.lineTo(drawingRect.left, drawingRect.bottom);
+
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
 
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public RectF getDrawingFrame(VDDrawingPath drawingPath) {
-        RectF rect = super.getDrawingFrame(drawingPath);
-        if (self.isEdgeRounded()
-            || rect == null) {
-            return rect;
-        }
-
-        VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-        VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
-
-        RectF pathRect = new RectF();
-        pathRect.left = Math.min(beginPoint.x, lastPoint.x);
-        pathRect.top = Math.min(beginPoint.y, lastPoint.y);
-        pathRect.right = Math.max(beginPoint.x, lastPoint.x);
-        pathRect.bottom = Math.max(beginPoint.y, lastPoint.y);
-
-        float x = pathRect.right - pathRect.left;
-        float y = pathRect.bottom - pathRect.top;
-        double h = (x * y) / (Math.sqrt(x * x + y * y));
-        double factor = (h + self.getSize() / 2 * Math.sqrt(2)) / h;
-
-        rect.right += x * (factor - 1);
-        rect.top -= y * (factor - 1);
-
-        return rect;
+        return null;
     }
 
     /* #Accessors */

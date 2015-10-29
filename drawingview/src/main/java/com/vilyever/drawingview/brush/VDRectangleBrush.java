@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -37,32 +38,36 @@ public class VDRectangleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
+            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            RectF rect = new RectF();
-            rect.left = Math.min(beginPoint.x, lastPoint.x);
-            rect.top = Math.min(beginPoint.y, lastPoint.y);
-            rect.right = Math.max(beginPoint.x, lastPoint.x);
-            rect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            RectF drawingRect = new RectF();
+            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
+            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
+            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
+            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
             Path path = new Path();
-            path.addRect(rect, Path.Direction.CW);
+            path.addRect(drawingRect, Path.Direction.CW);
+
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
 
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
+        return null;
     }
     
     /* #Accessors */     

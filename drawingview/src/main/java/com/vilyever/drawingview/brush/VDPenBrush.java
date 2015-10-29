@@ -4,6 +4,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -29,39 +31,59 @@ public class VDPenBrush extends VDDrawingBrush {
 
     /* #Overrides */
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
+    public Paint getPaint() {
+        Paint paint = super.getPaint();
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeMiter(0);
+        return paint;
+    }
 
+    @Override
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 0) {
-            Paint paint = self.getPaint();
+            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
 
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint endPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
+            Paint paint = self.getPaint();
+            Path path = new Path();
             if (drawingPath.getPoints().size() == 1) {
                 paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(beginPoint.x, beginPoint.y, paint.getStrokeWidth() * 0.5f, paint);
-                paint.setStyle(Paint.Style.STROKE);
-            } else if (drawingPath.getPoints().size() > 1) {
-                Path path = new Path();
+                path.addCircle(beginPoint.x, beginPoint.y, self.getSize() / 2.0f, Path.Direction.CW);
+            }
+            else if (drawingPath.getPoints().size() > 1) {
                 path.moveTo(beginPoint.x, beginPoint.y);
                 for (int i = 1; i < drawingPath.getPoints().size(); i++) {
-                    path.quadTo(drawingPath.getPoints().get(i - 1).x, drawingPath.getPoints().get(i - 1).y,
-                            (drawingPath.getPoints().get(i - 1).x + drawingPath.getPoints().get(i).x) / 2.0f,
-                            (drawingPath.getPoints().get(i - 1).y + drawingPath.getPoints().get(i).y) / 2.0f);
+                    VDDrawingPoint prePoint = drawingPath.getPoints().get(i - 1);
+                    VDDrawingPoint currentPoint = drawingPath.getPoints().get(i);
+
+                    double s = Math.sqrt(Math.pow(currentPoint.x - prePoint.x, 2) + Math.pow(currentPoint.y - prePoint.y, 2));
+
+                    if (s < 2) { // 往复颤抖估值，高分辨率上使用quadTo会出现异常绘画
+                        path.lineTo(currentPoint.x, currentPoint.y);
+                    }
+                    else {
+                        path.quadTo(prePoint.x, prePoint.y,
+                                     (prePoint.x + currentPoint.x) / 2.0f, (prePoint.y + currentPoint.y) / 2.0f);
+                    }
                 }
-
-                canvas.drawPath(path, paint);
             }
+
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
+
+            canvas.drawPath(path, paint);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
+        return null;
     }
     
     /* #Accessors */     

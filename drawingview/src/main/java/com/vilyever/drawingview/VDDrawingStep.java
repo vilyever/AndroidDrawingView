@@ -3,8 +3,11 @@ package com.vilyever.drawingview;
 import android.graphics.Canvas;
 import android.graphics.RectF;
 
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.drawingview.brush.VDDrawingBrush;
 import com.vilyever.jsonmodel.VDModel;
+
+import java.lang.ref.WeakReference;
 
 /**
  * VDDrawingStep
@@ -15,7 +18,7 @@ import com.vilyever.jsonmodel.VDModel;
 public class VDDrawingStep extends VDModel {
     private final VDDrawingStep self = this;
 
-    private VDDrawingBrush drawingBrush;
+    private VDBrush brush;
     private VDDrawingLayer drawingLayer;
     private VDDrawingPath drawingPath;
 
@@ -24,12 +27,15 @@ public class VDDrawingStep extends VDModel {
     private boolean cleared;
 
     @VDJsonKeyIgnore
-    private Canvas drawingCanvas;
+    private WeakReference<Canvas> drawingCanvas;
 
     @VDJsonKeyIgnore
     private boolean stepOver;
 
     /* #Constructors */
+    public VDDrawingStep() {
+    }
+
     public VDDrawingStep(int step) {
         this.step = step;
     }
@@ -37,12 +43,12 @@ public class VDDrawingStep extends VDModel {
     /* #Overrides */    
     
     /* #Accessors */
-    public VDDrawingBrush drawingBrush() {
-        return drawingBrush;
+    public <T extends VDBrush> T drawingBrush() {
+        return (T) brush;
     }
 
-    public void setDrawingBrush(VDDrawingBrush drawingBrush) {
-        this.drawingBrush = drawingBrush;
+    public void setBrush(VDBrush brush) {
+        this.brush = brush;
     }
 
     public VDDrawingLayer drawingLayer() {
@@ -77,11 +83,14 @@ public class VDDrawingStep extends VDModel {
     }
 
     public Canvas getDrawingCanvas() {
-        return drawingCanvas;
+        if (self.drawingCanvas != null) {
+            return self.drawingCanvas.get();
+        }
+        return null;
     }
 
     public VDDrawingStep setDrawingCanvas(Canvas drawingCanvas) {
-        this.drawingCanvas = drawingCanvas;
+        this.drawingCanvas = new WeakReference<>(drawingCanvas);
         return self;
     }
 
@@ -103,25 +112,18 @@ public class VDDrawingStep extends VDModel {
         return self.drawingLayer(hierarchy);
     }
 
-    public boolean updateDrawing(VDDrawingBrush.DrawingPointerState state) {
+    public RectF updateDrawing(VDDrawingBrush.DrawingPointerState state) {
         if (self.drawingBrush() == null
                 || self.getDrawingCanvas() == null
                 || self.drawingPath() == null) {
-            return true;
+            return null;
         }
-        return self.drawingBrush().drawPath(self.getDrawingCanvas(), self.drawingPath(), state);
-    }
-
-    public void updateDrawingLayerFrame() {
-        if (self.drawingLayer() != null
-                && self.drawingBrush() != null
-                && self.drawingPath() != null) {
-            self.drawingLayer().setFrame(self.drawingBrush().getDrawingFrame(self.drawingPath()));
-        }
+        RectF frame = self.drawingBrush().drawPath(self.getDrawingCanvas(), self.drawingPath(), state);
+        self.drawingLayer().setFrame(frame);
+        return frame;
     }
 
     public RectF getDrawingLayerFrame() {
-        self.updateDrawingLayerFrame();
         return self.drawingLayer().getFrame();
     }
 

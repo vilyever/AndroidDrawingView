@@ -18,16 +18,13 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     private int hierarchy; // from 0 to max
 
-    private LayerType layerType;
+    private LayerType layerType = LayerType.Image;
 
     private int backgroundColor = UnsetValue;
     private String backgroundImageIdentifier;
 
     private String imageIdentifer;
     private String text;
-    private int textSize = UnsetValue;
-    private int textColor = UnsetValue;
-    private int textType = UnsetValue;
 
     private float left = UnsetValue;
     private float top = UnsetValue;
@@ -40,12 +37,16 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     private boolean deleted;
 
     /* #Constructors */
+    public VDDrawingLayer() {
+    }
+
     public VDDrawingLayer(int hierarchy) {
         this(hierarchy, null);
     }
 
     public VDDrawingLayer(int hierarchy, RectF frame) {
         this.hierarchy = hierarchy;
+        self.layerType = LayerType.Image;
         self.setFrame(frame);
     }
 
@@ -98,30 +99,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public int getTextSize() {
-        return textSize;
-    }
-
-    public void setTextSize(int textSize) {
-        this.textSize = textSize;
-    }
-
-    public int getTextColor() {
-        return textColor;
-    }
-
-    public void setTextColor(int textColor) {
-        this.textColor = textColor;
-    }
-
-    public int getTextType() {
-        return textType;
-    }
-
-    public void setTextType(int textType) {
-        this.textType = textType;
     }
 
     public RectF getFrame() {

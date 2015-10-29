@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -43,13 +44,14 @@ public class VDEllipseBrush extends VDShapeBrush {
     }
 
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
+            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
@@ -62,13 +64,16 @@ public class VDEllipseBrush extends VDShapeBrush {
             Path path = new Path();
             path.addOval(rect, Path.Direction.CW);
 
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
+
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
+        return null;
     }
     
     /* #Accessors */     

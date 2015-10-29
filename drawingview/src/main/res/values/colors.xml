@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<color name="DodgerBlue">#1E90FF</color>
+	<color name="White">#FFFFFF</color>
+	
+	<color name="Black">#000000</color>
+
+	<integer-array name="DrawingLayerImageBorder">
+		<item>@color/DodgerBlue</item>
+		<item>@color/White</item>
+	</integer-array>
+
+	<integer-array name="DrawingLayerTextBorder">
+		<item>@color/Black</item>
+		<item>@color/White</item>
+	</integer-array>
+
+</resources>

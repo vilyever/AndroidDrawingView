@@ -7,6 +7,7 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -60,31 +61,22 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     }
 
     @Override
-    public RectF getDrawingFrame(VDDrawingPath drawingPath) {
-        if (drawingPath == null
-            || drawingPath.getPoints().size() < 2) {
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+        if (drawingPath.getPoints().size() < 2) {
             return null;
         }
         else {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            float leftest = beginPoint.x;
-            float rightest = beginPoint.x;
-            float topest = beginPoint.y;
-            float bottomest = beginPoint.y;
+            RectF pathFrame = new RectF();
 
-            leftest = Math.min(lastPoint.x, leftest);
-            rightest = Math.max(lastPoint.x, rightest);
-            topest = Math.min(lastPoint.y, topest);
-            bottomest = Math.max(lastPoint.y, bottomest);
+            pathFrame.left = Math.min(beginPoint.x, lastPoint.x);
+            pathFrame.top = Math.min(beginPoint.y, lastPoint.y);
+            pathFrame.right = Math.max(beginPoint.x, lastPoint.x);
+            pathFrame.bottom = Math.max(beginPoint.y, lastPoint.y);
 
-            float offset = self.getSize() + 16;
-
-            return new RectF(leftest - offset,
-                    topest - offset,
-                    rightest + offset,
-                    bottomest + offset);
+            return self.attachBrushSpace(pathFrame);
         }
     }
 
@@ -96,7 +88,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
         return solidColor;
     }
 
-    public <T extends VDDrawingBrush> T setSolidColor(int solidColor) {
+    public <T extends VDShapeBrush> T setSolidColor(int solidColor) {
         this.solidColor = solidColor;
         return (T) self;
     }
@@ -105,7 +97,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
         return edgeRounded;
     }
 
-    public <T extends VDDrawingBrush> T setEdgeRounded(boolean edgeRounded) {
+    public <T extends VDShapeBrush> T setEdgeRounded(boolean edgeRounded) {
         this.edgeRounded = edgeRounded;
         return (T) self;
     }
@@ -115,7 +107,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     /* #Private Methods */
 
     /* #Protected Mothods */
-    protected void drawSolidShapePath(Canvas canvas, Path path) {
+    protected void drawSolidShapePath(@NonNull Canvas canvas, @NonNull Path path) {
         Paint paint = self.getPaint();
 
         // draw solid color

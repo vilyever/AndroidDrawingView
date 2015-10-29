@@ -56,18 +56,18 @@
                 android:text="pen"
                 android:background="@drawable/button_background"/>
             <Button
-                android:id="@+id/eraserButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="eraser"
-                android:background="@drawable/button_background"/>
-            <Button
                 android:id="@+id/shapeButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="shape"
+                android:background="@drawable/button_background"/>
+            <Button
+                android:id="@+id/textButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="text"
                 android:background="@drawable/button_background"/>
             <Button
                 android:id="@+id/backgroundColorButton"
@@ -90,6 +90,13 @@
                 android:text="thickness"
                 android:background="@drawable/button_background"/>
             <Button
+                android:id="@+id/eraserButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="eraser"
+                android:background="@drawable/button_background"/>
+            <Button
                 android:id="@+id/colorButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,7 +108,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="solidColor"
+                android:text="solid Color"
+                android:background="@drawable/button_background"/>
+            <Button
+                android:id="@+id/edgeRoundedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="edgeRounded"
                 android:background="@drawable/button_background"/>
             <Button
                 android:id="@+id/oneStrokeOneLayerButton"

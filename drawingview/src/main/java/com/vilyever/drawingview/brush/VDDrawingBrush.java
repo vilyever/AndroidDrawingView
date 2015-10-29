@@ -6,11 +6,10 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
-import com.vilyever.jsonmodel.VDJson;
-import com.vilyever.jsonmodel.VDModel;
 
 /**
  * VDDrawingBrush
@@ -18,12 +17,13 @@ import com.vilyever.jsonmodel.VDModel;
  * Created by vilyever on 2015/10/20.
  * Feature:
  */
-public abstract class VDDrawingBrush extends VDModel {
+public abstract class VDDrawingBrush extends VDBrush {
     final VDDrawingBrush self = this;
 
     protected float size;
     protected int color;
-    private boolean isEraser;
+    protected boolean isEraser;
+    protected boolean isLayerEraser;
     protected boolean oneStrokeToLayer;
 
     /* #Constructors */
@@ -68,6 +68,14 @@ public abstract class VDDrawingBrush extends VDModel {
         return (T) self;
     }
 
+    public boolean isLayerEraser() {
+        return isLayerEraser;
+    }
+
+    public void setIsLayerEraser(boolean isLayerEraser) {
+        this.isLayerEraser = isLayerEraser;
+    }
+
     public boolean isOneStrokeToLayer() {
         if (self.isEraser()) {
             return false;
@@ -83,16 +91,16 @@ public abstract class VDDrawingBrush extends VDModel {
     /* #Delegates */
      
     /* #Private Methods */
-    
+
+    /* #Protected Methods */
+    protected RectF attachBrushSpace(RectF drawingRect) {
+        return new RectF(drawingRect.left - self.getSize() / 2.0f,
+                            drawingRect.top - self.getSize() / 2.0f,
+                            drawingRect.right + self.getSize() / 2.0f,
+                            drawingRect.bottom + self.getSize() / 2.0f);
+    }
+
     /* #Public Methods */
-    public static <T extends VDDrawingBrush> T copy(VDDrawingBrush brush) {
-        return (T) new VDJson<>(brush.getClass()).modelFromJson(brush.toJson());
-    }
-
-    public boolean disableLayerTouch() {
-        return false;
-    }
-
     public Paint getPaint() {
         Paint paint = new Paint();
         paint.setAntiAlias(true);
@@ -109,42 +117,30 @@ public abstract class VDDrawingBrush extends VDModel {
         return paint;
     }
 
-    /**
-     *
-     * @param canvas the canvas in drawing
-     * @param drawingPath the path will draw
-     * @param state the finger pointer touching event state
-     * @return is this path has enough points to finish a single draw with such brush
-     */
-    public abstract boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state);
-
-    public RectF getDrawingFrame(VDDrawingPath drawingPath) {
-        if (drawingPath == null
-                || drawingPath.getPoints().size() < 1) {
+    @Override
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+        if (drawingPath.getPoints().size() < 1) {
             return null;
         }
 
         VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
 
-        float leftest = beginPoint.x;
-        float rightest = beginPoint.x;
-        float topest = beginPoint.y;
-        float bottomest = beginPoint.y;
+        RectF drawingRect = new RectF();
+
+        drawingRect.left = beginPoint.x;
+        drawingRect.top = beginPoint.y;
+        drawingRect.right = beginPoint.x;
+        drawingRect.bottom = beginPoint.y;
 
         for (int i = 1; i < drawingPath.getPoints().size(); i++) {
             VDDrawingPoint point = drawingPath.getPoints().get(i);
-            leftest = Math.min(point.x, leftest);
-            rightest = Math.max(point.x, rightest);
-            topest = Math.min(point.y, topest);
-            bottomest = Math.max(point.y, bottomest);
+            drawingRect.left = Math.min(point.x, drawingRect.left);
+            drawingRect.top = Math.min(point.y, drawingRect.top);
+            drawingRect.right = Math.max(point.x, drawingRect.right);
+            drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
         }
 
-        float offset = self.getSize() + 16;
-
-        return new RectF(leftest - offset,
-                            topest - offset,
-                            rightest + offset,
-                            bottomest + offset);
+        return self.attachBrushSpace(drawingRect);
     }
 
     /* #Classes */
@@ -154,7 +150,4 @@ public abstract class VDDrawingBrush extends VDModel {
     /* #Annotations @interface */    
     
     /* #Enums */
-    public enum DrawingPointerState {
-        Begin, Drawing, End;
-    }
 }

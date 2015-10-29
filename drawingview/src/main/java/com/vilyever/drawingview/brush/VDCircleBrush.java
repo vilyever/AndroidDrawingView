@@ -3,6 +3,8 @@ package com.vilyever.drawingview.brush;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
+import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -36,12 +38,7 @@ public class VDCircleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -50,19 +47,34 @@ public class VDCircleBrush extends VDShapeBrush {
             float centerY = (beginPoint.y + lastPoint.y) / 2.0f;
             float radius = Math.min(Math.abs(beginPoint.x - lastPoint.x), Math.abs(beginPoint.y - lastPoint.y)) / 2.0f;
 
+            RectF drawingRect = new RectF();
+            drawingRect.left = centerX - radius;
+            drawingRect.top = centerY - radius;
+            drawingRect.right = centerX + radius;
+            drawingRect.bottom = centerY + radius;
+
+            RectF pathFrame = self.attachBrushSpace(drawingRect);
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
             Path path = new Path();
             path.addCircle(centerX, centerY, radius, Path.Direction.CW);
 
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
+
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
+        return null;
     }
-    
-    /* #Accessors */     
+
+    /* #Accessors */
      
     /* #Delegates */     
      

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -40,16 +41,15 @@ public class VDPolygonBrush extends VDShapeBrush {
     }
 
     /* #Overrides */
+
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
+    public boolean isEdgeRounded() {
+        return true;
+    }
 
+    @Override
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
-            Paint paint = self.getPaint();
-
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
             List<VDDrawingPoint> endPoints = new ArrayList<>();
@@ -65,73 +65,68 @@ public class VDPolygonBrush extends VDShapeBrush {
             endPoints.add(lastPoint);
 
             boolean drawOver = false;
-            if (state == DrawingPointerState.End
-                    && beginPoint.pointerID != lastPoint.pointerID
-                    && Math.abs(beginPoint.x - lastPoint.x) < (10.0f + self.getSize())
-                    && Math.abs(beginPoint.y - lastPoint.y) < (10.0f + self.getSize())) {
+            if (beginPoint.pointerID != lastPoint.pointerID
+                    && Math.abs(beginPoint.x - lastPoint.x) < (16.0f + self.getSize())
+                    && Math.abs(beginPoint.y - lastPoint.y) < (16.0f + self.getSize())) {
+                endPoints.remove(lastPoint);
+                endPoints.add(beginPoint);
+                drawOver = true;
+            }
+            else if (state.shouldForceFinish()) {
+                endPoints.add(beginPoint);
                 drawOver = true;
             }
 
-            Path path = new Path();
-            path.moveTo(beginPoint.x, beginPoint.y);
-            for (int i = 0; i < endPoints.size() - 1; i++) {
-                path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
-            }
-
-            if (!drawOver) {
-                path.lineTo(lastPoint.x, lastPoint.y);
-                canvas.drawPath(path, paint);
-            }
-            else {
-                path.lineTo(beginPoint.x, beginPoint.y);
-                self.drawSolidShapePath(canvas, path);
-            }
-
-            return drawOver;
-        }
-
-        return false;
-    }
-
-    @Override
-    public RectF getDrawingFrame(VDDrawingPath drawingPath) {
-        if (drawingPath == null
-                || drawingPath.getPoints().size() < 2) {
-            return null;
-        }
-        else {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
-            List<VDDrawingPoint> endPoints = new ArrayList<>();
-
-            int currentPointerID = beginPoint.pointerID;
-            for (int i = 1; i < drawingPath.getPoints().size() - 1; i++) {
-                VDDrawingPoint drawingPoint = drawingPath.getPoints().get(i);
-                if (drawingPoint.pointerID != currentPointerID) {
-                    endPoints.add(drawingPath.getPoints().get(i - 1));
-                    currentPointerID = drawingPoint.pointerID;
-                }
-            }
-            endPoints.add(lastPoint);
-
-            float leftest = beginPoint.x;
-            float rightest = beginPoint.x;
-            float topest = beginPoint.y;
-            float bottomest = beginPoint.y;
+            RectF drawingRect = new RectF();
+            drawingRect.left = beginPoint.x;
+            drawingRect.top = beginPoint.y;
+            drawingRect.right = beginPoint.x;
+            drawingRect.bottom = beginPoint.y;
 
             for (int i = 0; i < endPoints.size(); i++) {
                 VDDrawingPoint point = endPoints.get(i);
-                leftest = Math.min(point.x, leftest);
-                rightest = Math.max(point.x, rightest);
-                topest = Math.min(point.y, topest);
-                bottomest = Math.max(point.y, bottomest);
+                drawingRect.left = Math.min(point.x, drawingRect.left);
+                drawingRect.top = Math.min(point.y, drawingRect.top);
+                drawingRect.right = Math.max(point.x, drawingRect.right);
+                drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
             }
 
-            return new RectF(leftest - self.getSize(),
-                    topest - self.getSize(),
-                    rightest + self.getSize(),
-                    bottomest + self.getSize());
+            RectF pathFrame = self.attachBrushSpace(drawingRect);;
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
+            Paint paint = self.getPaint();
+
+            if (!drawOver) {
+                Path path = new Path();
+                path.moveTo(beginPoint.x, beginPoint.y);
+                for (int i = 0; i < endPoints.size(); i++) {
+                    path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
+                }
+
+                canvas.drawPath(path, paint);
+            }
+            else {
+                Path path = new Path();
+                path.moveTo((beginPoint.x + endPoints.get(0).x) / 2.0f, (beginPoint.y + endPoints.get(0).y) / 2.0f);
+                for (int i = 0; i < endPoints.size(); i++) {
+                    path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
+                }
+                path.lineTo((beginPoint.x + endPoints.get(0).x) / 2.0f, (beginPoint.y + endPoints.get(0).y) / 2.0f);
+
+                if (state == DrawingPointerState.CalibrateToOrigin) {
+                    path.offset(-pathFrame.left, -pathFrame.top);
+                }
+
+                self.drawSolidShapePath(canvas, path);
+            }
+
+            return drawOver ? pathFrame : UnfinishFrame;
         }
+
+        return null;
     }
 
     /* #Accessors */

@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
@@ -36,12 +37,7 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -50,41 +46,31 @@ public class VDCenterCircleBrush extends VDShapeBrush {
             float centerY = beginPoint.y;
             float radius = Math.min(Math.abs(beginPoint.x - lastPoint.x), Math.abs(beginPoint.y - lastPoint.y));
 
+            RectF drawingRect = new RectF();
+            drawingRect.left = centerX - radius;
+            drawingRect.top = centerY - radius;
+            drawingRect.right = centerX + radius;
+            drawingRect.bottom = centerY + radius;
+
+            RectF pathFrame = self.attachBrushSpace(drawingRect);
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
             Path path = new Path();
             path.addCircle(centerX, centerY, radius, Path.Direction.CW);
 
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
+
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public RectF getDrawingFrame(VDDrawingPath drawingPath) {
-        if (drawingPath != null
-                && drawingPath.getPoints().size() > 1) {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
-
-            float centerX = beginPoint.x;
-            float centerY = beginPoint.y;
-            float radius = Math.min(Math.abs(beginPoint.x - lastPoint.x), Math.abs(beginPoint.y - lastPoint.y));
-
-            float leftest = centerX - radius;
-            float rightest = centerX + radius;
-            float topest = centerY - radius;
-            float bottomest = centerY + radius;
-
-            return new RectF(leftest - self.getSize(),
-                    topest - self.getSize(),
-                    rightest + self.getSize(),
-                    bottomest + self.getSize());
-        }
-
-        return super.getDrawingFrame(drawingPath);
+        return null;
     }
 
     /* #Accessors */

@@ -32,12 +32,14 @@ public class VDDrawingPath extends VDModel {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public void addPoint(VDDrawingPoint point) {
+    public boolean addPoint(VDDrawingPoint point) {
         if (self.getPoints().size() > 0
                 && self.getPoints().get(self.getPoints().size() - 1).isSamePoint(point)) {
+            return false;
         }
         else {
             self.getPoints().add(point);
+            return true;
         }
     }
 

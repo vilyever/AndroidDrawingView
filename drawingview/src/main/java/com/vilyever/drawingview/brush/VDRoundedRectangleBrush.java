@@ -4,34 +4,35 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.VDDrawingPath;
 import com.vilyever.drawingview.VDDrawingPoint;
 
 /**
- * VDRoundedRetangleBrush
+ * VDRoundedRectangleBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
  */
-public class VDRoundedRetangleBrush extends VDShapeBrush {
-    final VDRoundedRetangleBrush self = this;
+public class VDRoundedRectangleBrush extends VDShapeBrush {
+    final VDRoundedRectangleBrush self = this;
 
     
     /* #Constructors */
-    public VDRoundedRetangleBrush() {
+    public VDRoundedRectangleBrush() {
 
     }
 
-    public VDRoundedRetangleBrush(float size, int color) {
+    public VDRoundedRectangleBrush(float size, int color) {
         this(size, color, Color.TRANSPARENT);
     }
 
-    public VDRoundedRetangleBrush(float size, int color, int solidColor) {
+    public VDRoundedRectangleBrush(float size, int color, int solidColor) {
         this(size, color, solidColor, false);
     }
 
-    public VDRoundedRetangleBrush(float size, int color, int solidColor, boolean edgeRounded) {
+    public VDRoundedRectangleBrush(float size, int color, int solidColor, boolean edgeRounded) {
         super(size, color, solidColor, edgeRounded);
     }
 
@@ -42,13 +43,14 @@ public class VDRoundedRetangleBrush extends VDShapeBrush {
     }
 
     @Override
-    public boolean drawPath(Canvas canvas, VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (canvas == null
-                || drawingPath == null) {
-            return true;
-        }
-
+    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
+            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
+
+            if (state == DrawingPointerState.FetchFrame) {
+                return pathFrame;
+            }
+
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
@@ -64,13 +66,16 @@ public class VDRoundedRetangleBrush extends VDShapeBrush {
             Path path = new Path();
             path.addRoundRect(rect, round, round, Path.Direction.CW);
 
+            if (state == DrawingPointerState.CalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
+            }
+
             self.drawSolidShapePath(canvas, path);
+
+            return pathFrame;
         }
 
-        if (state == DrawingPointerState.End) {
-            return true;
-        }
-        return false;
+        return null;
     }
     
     /* #Accessors */     
@@ -80,8 +85,8 @@ public class VDRoundedRetangleBrush extends VDShapeBrush {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public static VDRoundedRetangleBrush defaultBrush() {
-        return new VDRoundedRetangleBrush(5, Color.BLACK);
+    public static VDRoundedRectangleBrush defaultBrush() {
+        return new VDRoundedRectangleBrush(5, Color.BLACK);
     }
 
     /* #Classes */

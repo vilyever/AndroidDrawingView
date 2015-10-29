@@ -24,6 +24,7 @@ dependencies {
 
     compile 'com.github.vilyever:AndroidJsonModel:1.0.4'
     compile 'com.github.vilyever:AndroidFileReadWrite:1.0.3'
+    compile 'com.github.vilyever:AndroidUnitConversion:1.0.1'
 }
 
 apply plugin: 'com.github.dcendents.android-maven'
