@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -24,6 +23,13 @@ public class VDDrawingLayerImageView extends ImageView {
 
     public final static int DefaultPadding = VDDimenConversion.dpToPixel(16);
 
+    private RectF outlineRect = new RectF();
+    private Path outlinePath = new Path();
+    private Paint outlinePaint = new Paint();
+
+    private DashPathEffect firstDashPathEffect = new DashPathEffect(new float[]{10, 10}, 1);
+    private DashPathEffect secondDashPathEffect = new DashPathEffect(new float[]{0, 10, 10, 0}, 1);
+
     /* #Constructors */
     public VDDrawingLayerImageView(Context context) {
         super(context);
@@ -32,26 +38,36 @@ public class VDDrawingLayerImageView extends ImageView {
 
     /* #Overrides */
     @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        if (changed) {
+            self.outlineRect.left = -1;
+            self.outlineRect.top = -1;
+            self.outlineRect.right = right - left + 1;
+            self.outlineRect.bottom = bottom - top + 1;
+        }
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (self.isSelected()) {
-            Paint paint = new Paint();
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(2);
+            int offset = canvas.getClipBounds().bottom - canvas.getHeight();
+            self.outlineRect.offset(0, offset);
 
-            Rect rect = canvas.getClipBounds();
-            RectF outline = new RectF(-1, -1, rect.right + 1, rect.bottom + 1);
-            Path path = new Path();
-            path.addRect(outline, Path.Direction.CW);
+            self.outlinePath.reset();
+            self.outlinePath.addRect(self.outlineRect, Path.Direction.CW);
 
-            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerImageBorder);
-            paint.setColor(colors[0]);
-            paint.setPathEffect(new DashPathEffect(new float[]{10, 10}, 1));
-            canvas.drawPath(path, paint);
+            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerBorder);
+            self.outlinePaint.setColor(colors[0]);
+            self.outlinePaint.setPathEffect(self.firstDashPathEffect);
+            canvas.drawPath(self.outlinePath, self.outlinePaint);
 
-            paint.setColor(colors[1]);
-            paint.setPathEffect(new DashPathEffect(new float[]{0, 10, 10, 0}, 1));
-            canvas.drawPath(path, paint);
+            self.outlinePaint.setColor(colors[1]);
+            self.outlinePaint.setPathEffect(self.secondDashPathEffect);
+            canvas.drawPath(self.outlinePath, self.outlinePaint);
+
+            self.outlineRect.offsetTo(0, 0);
         }
     }
 
@@ -62,6 +78,9 @@ public class VDDrawingLayerImageView extends ImageView {
     /* #Private Methods */
     private void init(Context context) {
         self.setFocusable(true);
+
+        self.outlinePaint.setStyle(Paint.Style.STROKE);
+        self.outlinePaint.setStrokeWidth(2);
     }
     
     /* #Public Methods */

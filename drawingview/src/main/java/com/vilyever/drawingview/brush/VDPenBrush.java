@@ -64,12 +64,19 @@ public class VDPenBrush extends VDDrawingBrush {
 
                     double s = Math.sqrt(Math.pow(currentPoint.x - prePoint.x, 2) + Math.pow(currentPoint.y - prePoint.y, 2));
 
-                    if (s < 2) { // 往复颤抖估值，高分辨率上使用quadTo会出现异常绘画
+                    if (s < 2) { // 往复颤抖间距估值，高分辨率上使用quadTo会出现异常绘画，反复在一点来回抖动会出现毛刺
                         path.lineTo(currentPoint.x, currentPoint.y);
                     }
                     else {
                         path.quadTo(prePoint.x, prePoint.y,
                                      (prePoint.x + currentPoint.x) / 2.0f, (prePoint.y + currentPoint.y) / 2.0f);
+                    }
+
+                    if (state.shouldEnd()) {
+                        if (i == drawingPath.getPoints().size() - 1) {
+                            path.quadTo((prePoint.x + currentPoint.x) / 2.0f, (prePoint.y + currentPoint.y) / 2.0f,
+                                    currentPoint.x, currentPoint.y);
+                        }
                     }
                 }
             }

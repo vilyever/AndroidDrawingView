@@ -5,7 +5,7 @@
 	
 	<color name="Black">#000000</color>
 
-	<integer-array name="DrawingLayerImageBorder">
+	<integer-array name="DrawingLayerBorder">
 		<item>@color/DodgerBlue</item>
 		<item>@color/White</item>
 	</integer-array>

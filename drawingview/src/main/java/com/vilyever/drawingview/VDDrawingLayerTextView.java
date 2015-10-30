@@ -73,7 +73,7 @@ public class VDDrawingLayerTextView extends EditText {
             self.outlinePath.reset();
             self.outlinePath.addRoundRect(self.outlineRect, 16, 16, Path.Direction.CW);
 
-            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerImageBorder);
+            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerBorder);
             self.outlinePaint.setColor(colors[0]);
             self.outlinePaint.setPathEffect(self.firstDashPathEffect);
             canvas.drawPath(self.outlinePath, self.outlinePaint);
