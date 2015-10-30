@@ -247,7 +247,7 @@ public class VDDrawingView extends RelativeLayout {
 
                 int width = right - left;
                 int height = bottom - top;
-                if (changed) {
+                if (changed && width > 0 && height > 0) {
                     if (self.baseBitmap == null) {
                         self.baseBitmap = Bitmap.createBitmap(width, height,
                                 Bitmap.Config.ARGB_8888);
