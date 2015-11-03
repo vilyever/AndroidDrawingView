@@ -1,13 +1,7 @@
 package com.vilyever.drawingview;
 
-import android.graphics.Canvas;
-import android.graphics.RectF;
-
 import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.brush.VDDrawingBrush;
 import com.vilyever.jsonmodel.VDModel;
-
-import java.lang.ref.WeakReference;
 
 /**
  * VDDrawingStep
@@ -27,9 +21,6 @@ public class VDDrawingStep extends VDModel {
     private boolean cleared;
 
     @VDJsonKeyIgnore
-    private WeakReference<Canvas> drawingCanvas;
-
-    @VDJsonKeyIgnore
     private boolean stepOver;
 
     /* #Constructors */
@@ -43,7 +34,7 @@ public class VDDrawingStep extends VDModel {
     /* #Overrides */    
     
     /* #Accessors */
-    public <T extends VDBrush> T drawingBrush() {
+    public <T extends VDBrush> T getBrush() {
         return (T) brush;
     }
 
@@ -51,18 +42,11 @@ public class VDDrawingStep extends VDModel {
         this.brush = brush;
     }
 
-    public VDDrawingLayer drawingLayer() {
+    public VDDrawingLayer getDrawingLayer() {
         return drawingLayer;
     }
 
-    public VDDrawingLayer drawingLayer(int hierarchy) {
-        if (self.drawingLayer == null) {
-            self.drawingLayer = new VDDrawingLayer(hierarchy);
-        }
-        return drawingLayer;
-    }
-
-    public VDDrawingPath drawingPath() {
+    public VDDrawingPath getDrawingPath() {
         if (self.drawingPath == null) {
             self.drawingPath = new VDDrawingPath();
         }
@@ -82,18 +66,6 @@ public class VDDrawingStep extends VDModel {
         return self;
     }
 
-    public Canvas getDrawingCanvas() {
-        if (self.drawingCanvas != null) {
-            return self.drawingCanvas.get();
-        }
-        return null;
-    }
-
-    public VDDrawingStep setDrawingCanvas(Canvas drawingCanvas) {
-        this.drawingCanvas = new WeakReference<>(drawingCanvas);
-        return self;
-    }
-
     public boolean isStepOver() {
         return stepOver;
     }
@@ -108,23 +80,12 @@ public class VDDrawingStep extends VDModel {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public VDDrawingLayer newDrawingLayer(int hierarchy) {
-        return self.drawingLayer(hierarchy);
-    }
-
-    public RectF updateDrawing(VDDrawingBrush.DrawingPointerState state) {
-        if (self.drawingBrush() == null
-                || self.getDrawingCanvas() == null
-                || self.drawingPath() == null) {
-            return null;
+    public VDDrawingLayer newDrawingLayer(int hierarchy, VDDrawingLayer.LayerType layerType) {
+        if (self.drawingLayer == null) {
+            self.drawingLayer = new VDDrawingLayer(hierarchy);
+            self.drawingLayer.setLayerType(layerType);
         }
-        RectF frame = self.drawingBrush().drawPath(self.getDrawingCanvas(), self.drawingPath(), state);
-        self.drawingLayer().setFrame(frame);
-        return frame;
-    }
-
-    public RectF getDrawingLayerFrame() {
-        return self.drawingLayer().getFrame();
+        return drawingLayer;
     }
 
     /* #Classes */

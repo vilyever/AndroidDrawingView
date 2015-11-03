@@ -2,15 +2,17 @@ package com.vilyever.drawingview;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.DashPathEffect;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import com.vilyever.contextholder.VDContextHolder;
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.unitconversion.VDDimenConversion;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * VDDrawingLayerImageView
@@ -18,17 +20,12 @@ import com.vilyever.unitconversion.VDDimenConversion;
  * Created by vilyever on 2015/9/24.
  * Feature:
  */
-public class VDDrawingLayerImageView extends ImageView {
+public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayerViewProtocol {
     private final VDDrawingLayerImageView self = this;
 
     public final static int DefaultPadding = VDDimenConversion.dpToPixel(16);
 
-    private RectF outlineRect = new RectF();
-    private Path outlinePath = new Path();
-    private Paint outlinePaint = new Paint();
-
-    private DashPathEffect firstDashPathEffect = new DashPathEffect(new float[]{10, 10}, 1);
-    private DashPathEffect secondDashPathEffect = new DashPathEffect(new float[]{0, 10, 10, 0}, 1);
+    private List<VDDrawingStep> drawingSteps = new ArrayList<>();
 
     /* #Constructors */
     public VDDrawingLayerImageView(Context context) {
@@ -38,60 +35,83 @@ public class VDDrawingLayerImageView extends ImageView {
 
     /* #Overrides */
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (changed) {
-            self.outlineRect.left = -1;
-            self.outlineRect.top = -1;
-            self.outlineRect.right = right - left + 1;
-            self.outlineRect.bottom = bottom - top + 1;
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        for (int i = 0; i < self.drawingSteps.size(); i++) {
+            VDDrawingStep step = self.drawingSteps.get(i);
+            step.getBrush().drawPath(canvas, step.getDrawingPath(), VDBrush.DrawingPointerState.ForceFinish);
+        }
+
+        if (self.isSelected()) {
+            VDDrawingLayerViewBorderDrawer.drawImageLayerBorder(self, canvas);
         }
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (self.isSelected()) {
-            int offset = canvas.getClipBounds().bottom - canvas.getHeight();
-            self.outlineRect.offset(0, offset);
-
-            self.outlinePath.reset();
-            self.outlinePath.addRect(self.outlineRect, Path.Direction.CW);
-
-            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerBorder);
-            self.outlinePaint.setColor(colors[0]);
-            self.outlinePaint.setPathEffect(self.firstDashPathEffect);
-            canvas.drawPath(self.outlinePath, self.outlinePaint);
-
-            self.outlinePaint.setColor(colors[1]);
-            self.outlinePaint.setPathEffect(self.secondDashPathEffect);
-            canvas.drawPath(self.outlinePath, self.outlinePaint);
-
-            self.outlineRect.offsetTo(0, 0);
-        }
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) params;
+        layoutParams.leftMargin -= DefaultPadding;
+        layoutParams.topMargin -= DefaultPadding;
+        layoutParams.width += DefaultPadding * 2;
+        layoutParams.height += DefaultPadding * 2;
+        super.setLayoutParams(params);
     }
 
     /* #Accessors */
-     
-    /* #Delegates */     
-     
+
+    /* #Delegates */
+    // VDDrawingLayerViewDelegate
+    @Override
+    public void clearDrawing() {
+    }
+
+    @Override
+    public void updateWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+        self.drawingSteps.add(drawingStep);
+
+        if (self.drawingSteps.size() == 1) { // 图层第一笔确定图层大小
+            RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), VDBrush.DrawingPointerState.CalibrateToOrigin);
+            drawingStep.getDrawingLayer().setFrame(frame);
+        }
+
+        self.setLayoutParams(drawingStep.getDrawingLayer().getLayoutParams());
+        self.setScaleX(drawingStep.getDrawingLayer().getScale());
+        self.setScaleY(drawingStep.getDrawingLayer().getScale());
+        self.setRotation(drawingStep.getDrawingLayer().getRotation());
+
+        self.invalidate();
+    }
+
+    @Override
+    public void updateWithDrawingSteps(@NonNull List<VDDrawingStep> drawingSteps) {
+        for (VDDrawingStep step : drawingSteps) {
+            self.updateWithDrawingStep(step);
+        }
+    }
+
+    @Override
+    public int getLayerHierarchy() {
+        if (self.drawingSteps.size() > 0) {
+            return self.drawingSteps.get(0).getDrawingLayer().getHierarchy();
+        }
+        return 0;
+    }
+
+    @Override
+    public void setHandling(boolean handling) {
+        self.setSelected(handling);
+        self.invalidate();
+    }
+
     /* #Private Methods */
     private void init(Context context) {
+        self.setBackground(null);
         self.setFocusable(true);
-
-        self.outlinePaint.setStyle(Paint.Style.STROKE);
-        self.outlinePaint.setStrokeWidth(2);
+        self.setPadding(DefaultPadding, DefaultPadding, DefaultPadding, DefaultPadding);
     }
     
     /* #Public Methods */
-    public void setLayoutParamsWithDefaultPadding(RelativeLayout.LayoutParams params) {
-        params.leftMargin -= DefaultPadding;
-        params.topMargin -= DefaultPadding;
-        params.width += DefaultPadding * 2;
-        params.height += DefaultPadding * 2;
-        self.setLayoutParams(params);
-        self.setPadding(DefaultPadding, DefaultPadding, DefaultPadding, DefaultPadding);
-    }
 
     /* #Classes */
 

@@ -40,10 +40,10 @@ public class VDPenBrush extends VDDrawingBrush {
     }
 
     @Override
-    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 0) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
-            if (state == DrawingPointerState.FetchFrame) {
+            if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
@@ -79,10 +79,6 @@ public class VDPenBrush extends VDDrawingBrush {
                         }
                     }
                 }
-            }
-
-            if (state == DrawingPointerState.CalibrateToOrigin) {
-                path.offset(-pathFrame.left, -pathFrame.top);
             }
 
             canvas.drawPath(path, paint);

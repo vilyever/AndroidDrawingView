@@ -14,27 +14,27 @@ public class VDDrawingData {
 
     public static final int NextLayerHierarchy = -1;
 
-    private List<VDDrawingStep> drawingSteps = new ArrayList<>();
+    private List<VDDrawingStep> steps = new ArrayList<>();
 
     private int topLayerHierarchy = -1;
 
-    private int showingStep = -1;
+    private int showingStepIndex = -1;
 
     /* #Constructors */    
     
     /* #Overrides */    
     
     /* #Accessors */
-    public List<VDDrawingStep> getDrawingSteps() {
-        return drawingSteps;
+    public List<VDDrawingStep> getSteps() {
+        return steps;
     }
 
     public int getTopLayerHierarchy() {
         return topLayerHierarchy;
     }
 
-    public int getShowingStep() {
-        return showingStep;
+    public int getShowingStepIndex() {
+        return showingStepIndex;
     }
 
     /* #Delegates */
@@ -42,25 +42,29 @@ public class VDDrawingData {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public VDDrawingStep newDrawingStepOnLayer() {
-        return newDrawingStepOnLayer(NextLayerHierarchy);
+    public VDDrawingStep newDrawingStepOnNextLayer(VDDrawingLayer.LayerType layerType) {
+        return newDrawingStepOnLayer(NextLayerHierarchy, layerType);
     }
 
-    public VDDrawingStep newDrawingStepOnLayer(int layerHierarchy) {
+    public VDDrawingStep newDrawingStepOnBaseLayer() {
+        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.Image);
+    }
+
+    public VDDrawingStep newDrawingStepOnLayer(int layerHierarchy, VDDrawingLayer.LayerType layerType) {
         int step = 0;
-        if (self.getDrawingSteps().size() > 0) {
-            step = self.getDrawingSteps().get(self.getDrawingSteps().size() - 1).getStep() + 1;
+        if (self.getSteps().size() > 0) {
+            step = self.getSteps().get(self.getSteps().size() - 1).getStep() + 1;
         }
 
         VDDrawingStep drawingStep = new VDDrawingStep(step);
 
-        if (layerHierarchy >= 0) {
-            drawingStep.newDrawingLayer(layerHierarchy);
-            self.topLayerHierarchy = layerHierarchy > self.topLayerHierarchy ? layerHierarchy : self.topLayerHierarchy;
-        }
-        else if (layerHierarchy == NextLayerHierarchy) {
+        if (layerHierarchy == NextLayerHierarchy) {
             self.topLayerHierarchy++;
-            drawingStep.newDrawingLayer(self.topLayerHierarchy);
+            drawingStep.newDrawingLayer(self.topLayerHierarchy, layerType);
+        }
+        else {
+            drawingStep.newDrawingLayer(layerHierarchy, layerType);
+            self.topLayerHierarchy = layerHierarchy > self.topLayerHierarchy ? layerHierarchy : self.topLayerHierarchy;
         }
 
         self.addDrawingStep(drawingStep);
@@ -69,48 +73,48 @@ public class VDDrawingData {
     }
 
     public void addDrawingStep(VDDrawingStep drawingStep) {
-        if (self.showingStep != self.getDrawingSteps().size() - 1) {
-            self.removeDrawingSteps(self.showingStep + 1, self.getDrawingSteps().size());
+        if (self.showingStepIndex != self.getSteps().size() - 1) {
+            self.removeSteps(self.showingStepIndex + 1, self.getSteps().size());
         }
-        self.showingStep++;
+        self.showingStepIndex++;
 
-        self.getDrawingSteps().add(drawingStep);
+        self.getSteps().add(drawingStep);
         if (drawingStep.isCleared()) {
             self.topLayerHierarchy = 0;
         }
     }
 
     public void cancelDrawingStep() {
-        if (self.drawingStep().isCleared()) {
+        if (self.getDrawingStep().isCleared()) {
             return;
         }
 
-        self.showingStep--;
-        if (self.drawingStep().drawingLayer().getHierarchy() > 0) {
+        self.showingStepIndex--;
+        if (self.getDrawingStep().getDrawingLayer().getHierarchy() > 0) {
             self.topLayerHierarchy--;
         }
-        self.getDrawingSteps().remove(self.getDrawingSteps().size() - 1);
+        self.getSteps().remove(self.getSteps().size() - 1);
     }
 
-    public VDDrawingStep drawingStep() {
-        if (self.getDrawingSteps().size() > self.showingStep
-            && self.showingStep >= 0) {
-            return self.getDrawingSteps().get(self.showingStep);
+    public VDDrawingStep getDrawingStep() {
+        if (self.getSteps().size() > self.showingStepIndex
+            && self.showingStepIndex >= 0) {
+            return self.getSteps().get(self.showingStepIndex);
         }
         return null;
     }
 
-    public List<VDDrawingStep> stepsToDraw( ) {
+    public List<VDDrawingStep> getStepsToDraw() {
         int lastClearedIndex = 0;
-        for (int i = 1; i <= self.showingStep; i++) {
-            if (self.getDrawingSteps().get(i).isCleared()) lastClearedIndex = i;
+        for (int i = 1; i <= self.showingStepIndex; i++) {
+            if (self.getSteps().get(i).isCleared()) lastClearedIndex = i;
         }
 
-        if (lastClearedIndex == self.showingStep) {
+        if (lastClearedIndex == self.showingStepIndex) {
             return new ArrayList<>();
         }
         else {
-            List<VDDrawingStep> stepsToDraw = self.getDrawingSteps().subList(lastClearedIndex + 1, self.showingStep + 1);
+            List<VDDrawingStep> stepsToDraw = self.getSteps().subList(lastClearedIndex + 1, self.showingStepIndex + 1);
             return stepsToDraw;
         }
     }
@@ -120,28 +124,28 @@ public class VDDrawingData {
      * @param from include
      * @param to exclude
      */
-    public void removeDrawingSteps(int from, int to) {
-        self.getDrawingSteps().subList(from, to).clear();
+    public void removeSteps(int from, int to) {
+        self.getSteps().subList(from, to).clear();
     }
 
     public boolean canUndo() {
-        return self.showingStep > 0;
+        return self.showingStepIndex > 0;
     }
 
     public boolean canRedo() {
-        return self.showingStep < self.getDrawingSteps().size() - 1;
+        return self.showingStepIndex < self.getSteps().size() - 1;
     }
 
     public boolean undo() {
         if (self.canUndo()) {
-            self.showingStep--;
+            self.showingStepIndex--;
         }
         return false;
     }
 
     public boolean redo() {
         if (self.canRedo()) {
-            self.showingStep++;
+            self.showingStepIndex++;
         }
         return false;
     }

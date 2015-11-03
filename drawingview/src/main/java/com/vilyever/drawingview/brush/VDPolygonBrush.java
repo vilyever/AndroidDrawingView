@@ -48,7 +48,7 @@ public class VDPolygonBrush extends VDShapeBrush {
     }
 
     @Override
-    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -93,7 +93,7 @@ public class VDPolygonBrush extends VDShapeBrush {
 
             RectF pathFrame = self.attachBrushSpace(drawingRect);;
 
-            if (state == DrawingPointerState.FetchFrame) {
+            if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 

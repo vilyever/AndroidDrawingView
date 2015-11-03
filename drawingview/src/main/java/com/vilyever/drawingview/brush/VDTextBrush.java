@@ -82,7 +82,7 @@ public class VDTextBrush extends VDBrush {
      * @return
      */
     @Override
-    public RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 0) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -111,22 +111,8 @@ public class VDTextBrush extends VDBrush {
             minTextWidth = result.width() * 22;
             minTextHeight = result.height();
 
-            drawingRect.left = Math.max(drawingRect.left, BorderMargin);
-            drawingRect.top = Math.max(drawingRect.top, BorderMargin);
-            drawingRect.right = Math.min(drawingRect.right, canvas.getWidth() - BorderMargin);
-            drawingRect.bottom = Math.min(drawingRect.bottom, canvas.getHeight() - BorderMargin);
-
             drawingRect.right = Math.max(drawingRect.right, drawingRect.left + minTextWidth + BorderMargin);
             drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + minTextHeight + BorderMargin * 4);
-
-            if (drawingRect.right >= canvas.getWidth()) {
-                drawingRect.left = Math.max(BorderMargin, (canvas.getWidth() - BorderMargin) - (drawingRect.right - drawingRect.left));
-                drawingRect.right = canvas.getWidth() - BorderMargin;
-            }
-            if (drawingRect.bottom >= canvas.getHeight()) {
-                drawingRect.top = Math.max(BorderMargin, (canvas.getHeight() - BorderMargin) - (drawingRect.bottom - drawingRect.top));
-                drawingRect.bottom = canvas.getHeight() - BorderMargin;
-            }
 
             RectF pathFrame = new RectF(drawingRect);
             return pathFrame;

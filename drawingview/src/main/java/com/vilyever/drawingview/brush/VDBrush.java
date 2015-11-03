@@ -41,7 +41,7 @@ public abstract class VDBrush extends VDModel {
      * @param state the finger pointer touching event state
      * @return the frame of the path to draw, null means this path has not enough points to finish a single draw with such brush
      */
-    public abstract RectF drawPath(@NonNull Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state);
+    public abstract RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state);
 
     /* #Classes */
 

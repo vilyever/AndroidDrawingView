@@ -22,7 +22,7 @@ public class VDDrawingPoint extends VDModel {
     }
 
     public VDDrawingPoint(float x, float y) {
-        this(0, x, y);
+        this(VDDrawingPoint.CurrentPointerID(), x, y);
     }
 
     public VDDrawingPoint(int pointerID, float x, float y) {

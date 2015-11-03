@@ -2,16 +2,17 @@ package com.vilyever.drawingview;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.DashPathEffect;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.NonNull;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 
-import com.vilyever.contextholder.VDContextHolder;
+import com.vilyever.drawingview.brush.VDBrush;
+import com.vilyever.drawingview.brush.VDTextBrush;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * VDDrawingLayerTextView
@@ -19,15 +20,10 @@ import com.vilyever.contextholder.VDContextHolder;
  * Created by vilyever on 2015/10/28.
  * Feature:
  */
-public class VDDrawingLayerTextView extends EditText {
+public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerViewProtocol {
     final VDDrawingLayerTextView self = this;
 
-    private RectF outlineRect = new RectF();
-    private Path outlinePath = new Path();
-    private Paint outlinePaint = new Paint();
-
-    private DashPathEffect firstDashPathEffect = new DashPathEffect(new float[]{20, 20}, 1);
-    private DashPathEffect secondDashPathEffect = new DashPathEffect(new float[]{0, 20, 20, 0}, 1);
+    private List<VDDrawingStep> drawingSteps = new ArrayList<>();
 
     private boolean editing;
     private boolean firstEditing;
@@ -41,7 +37,6 @@ public class VDDrawingLayerTextView extends EditText {
     }
 
     /* #Overrides */
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (self.isEditing()) {
@@ -53,36 +48,10 @@ public class VDDrawingLayerTextView extends EditText {
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (changed) {
-            self.outlineRect.left = -1;
-            self.outlineRect.top = -1;
-            self.outlineRect.right = right - left + 1;
-            self.outlineRect.bottom = bottom - top + 1;
-        }
-    }
-
-    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (self.isSelected()) {
-            int offset = canvas.getClipBounds().bottom - canvas.getHeight();
-            self.outlineRect.offset(0, offset);
-
-            self.outlinePath.reset();
-            self.outlinePath.addRoundRect(self.outlineRect, 16, 16, Path.Direction.CW);
-
-            int[] colors = VDContextHolder.getContext().getResources().getIntArray(R.array.DrawingLayerBorder);
-            self.outlinePaint.setColor(colors[0]);
-            self.outlinePaint.setPathEffect(self.firstDashPathEffect);
-            canvas.drawPath(self.outlinePath, self.outlinePaint);
-
-            self.outlinePaint.setColor(colors[1]);
-            self.outlinePaint.setPathEffect(self.secondDashPathEffect);
-            canvas.drawPath(self.outlinePath, self.outlinePaint);
-
-            self.outlineRect.offsetTo(0, 0);
+            VDDrawingLayerViewBorderDrawer.drawTextLayerBorder(self, canvas);
         }
     }
     
@@ -100,23 +69,64 @@ public class VDDrawingLayerTextView extends EditText {
     }
 
     /* #Delegates */
-     
+    // VDDrawingLayerViewDelegate
+    @Override
+    public void clearDrawing() {
+    }
+
+    @Override
+    public void updateWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+        self.drawingSteps.add(drawingStep);
+
+        if (self.drawingSteps.size() == 1) { // 图层第一笔确定图层大小，字体属性
+            RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), VDBrush.DrawingPointerState.FetchFrame);
+            drawingStep.getDrawingLayer().setFrame(frame);
+
+            VDTextBrush textBrush = drawingStep.getBrush();
+            self.setTextSize(textBrush.getSize());
+            self.setTextColor(textBrush.getColor());
+            self.setTypeface(null, textBrush.getTypefaceStyle());
+        }
+
+        self.setText(drawingStep.getDrawingLayer().getText());
+        self.setLayoutParams(drawingStep.getDrawingLayer().getLayoutParams());
+        self.setScaleX(drawingStep.getDrawingLayer().getScale());
+        self.setScaleY(drawingStep.getDrawingLayer().getScale());
+        self.setRotation(drawingStep.getDrawingLayer().getRotation());
+
+        self.invalidate();
+    }
+
+    @Override
+    public void updateWithDrawingSteps(@NonNull List<VDDrawingStep> drawingSteps) {
+        for (VDDrawingStep step : drawingSteps) {
+            self.updateWithDrawingStep(step);
+        }
+    }
+
+    @Override
+    public int getLayerHierarchy() {
+        if (self.drawingSteps.size() > 0) {
+            return self.drawingSteps.get(0).getDrawingLayer().getHierarchy();
+        }
+        return 0;
+    }
+
+    @Override
+    public void setHandling(boolean handling) {
+        self.setSelected(handling);
+        self.invalidate();
+    }
+
     /* #Private Methods */
     private void init(Context context) {
-        self.setFocusable(true);
         self.setBackground(null);
+        self.setFocusable(true);
         self.setPadding(8, 8, 8, 8);
 //        self.setGravity(Gravity.LEFT | Gravity.TOP);
-
-        self.outlinePaint.setStyle(Paint.Style.STROKE);
-        self.outlinePaint.setStrokeWidth(2);
     }
     
     /* #Public Methods */
-    public void setLayoutParamsWithDefaultPadding(RelativeLayout.LayoutParams params) {
-        self.setLayoutParams(params);
-    }
-
     public void beginEdit(boolean firstEditing) {
         if (self.isEditing()) {
             return;
