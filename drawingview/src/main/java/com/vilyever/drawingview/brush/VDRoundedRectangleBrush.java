@@ -18,6 +18,7 @@ import com.vilyever.drawingview.VDDrawingPoint;
 public class VDRoundedRectangleBrush extends VDShapeBrush {
     final VDRoundedRectangleBrush self = this;
 
+    protected float roundRadius;
     
     /* #Constructors */
     public VDRoundedRectangleBrush() {
@@ -25,15 +26,20 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
     }
 
     public VDRoundedRectangleBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDRoundedRectangleBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDRoundedRectangleBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, 20.0f);
     }
 
-    public VDRoundedRectangleBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDRoundedRectangleBrush(float size, int color, FillType fillType, float roundRadius) {
+        this(size, color, fillType, false, roundRadius);
+    }
+
+    public VDRoundedRectangleBrush(float size, int color, FillType fillType, boolean edgeRounded, float roundRadius) {
+        super(size, color, fillType, edgeRounded);
+        this.roundRadius = roundRadius;
     }
 
     /* #Overrides */
@@ -47,30 +53,36 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
         if (drawingPath.getPoints().size() > 1) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+                return pathFrame;
+            }
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            RectF rect = new RectF();
-            rect.left = Math.min(beginPoint.x, lastPoint.x);
-            rect.top = Math.min(beginPoint.y, lastPoint.y);
-            rect.right = Math.max(beginPoint.x, lastPoint.x);
-            rect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            RectF drawingRect = new RectF();
+            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
+            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
+            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
+            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
-            float round = Math.min(Math.abs(beginPoint.x - lastPoint.x), Math.abs(beginPoint.y - lastPoint.y)) / 10.0f;
-            round = Math.max(round, self.getSize());
+            if ((drawingRect.right - drawingRect.left) < self.getSize()
+                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+                return null;
+            }
 
+            float round = self.getRoundRadius() + self.getSize() / 2.0f;
             Path path = new Path();
-            path.addRoundRect(rect, round, round, Path.Direction.CW);
+            path.addRoundRect(drawingRect, round, round, Path.Direction.CW);
 
             if (state == DrawingPointerState.CalibrateToOrigin) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            self.drawSolidShapePath(canvas, path);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }
@@ -78,9 +90,17 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
         return null;
     }
     
-    /* #Accessors */     
-     
-    /* #Delegates */     
+    /* #Accessors */
+    public float getRoundRadius() {
+        return roundRadius;
+    }
+
+    public <T extends VDShapeBrush> T setRoundRadius(float roundRadius) {
+        this.roundRadius = roundRadius;
+        return (T) self;
+    }
+
+    /* #Delegates */
      
     /* #Private Methods */    
     

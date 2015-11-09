@@ -39,13 +39,10 @@ public class VDDrawingLayerViewBorderDrawer {
         OutlinePaint.setStyle(Paint.Style.STROKE);
         OutlinePaint.setStrokeWidth(2);
 
-        OutlineRect.left = -1;
-        OutlineRect.top = -1;
-        OutlineRect.right = imageView.getWidth() + 1;
-        OutlineRect.bottom = imageView.getHeight() + 1;
-        
-        int offset = canvas.getClipBounds().bottom - canvas.getHeight();
-        OutlineRect.offset(0, offset);
+        OutlineRect.left = 10;
+        OutlineRect.top = 10;
+        OutlineRect.right = imageView.getWidth() - 10;
+        OutlineRect.bottom = imageView.getHeight() - 10;
 
         OutlinePath.reset();
         OutlinePath.addRect(OutlineRect, Path.Direction.CW);

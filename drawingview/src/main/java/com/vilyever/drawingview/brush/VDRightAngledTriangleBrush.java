@@ -26,15 +26,15 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
     }
 
     public VDRightAngledTriangleBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDRightAngledTriangleBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDRightAngledTriangleBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDRightAngledTriangleBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDRightAngledTriangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
@@ -42,6 +42,8 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
     public Paint getPaint() {
         Paint paint = super.getPaint();
         paint.setStrokeMiter(Integer.MAX_VALUE);
+        paint.setStrokeWidth(0);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
         return paint;
     }
 
@@ -57,62 +59,85 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
             drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
             drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
+            if ((drawingRect.right - drawingRect.left) < self.getSize() * 2.0f
+                    || (drawingRect.bottom - drawingRect.top) < self.getSize() * 2.0f) {
+                return null;
+            }
+
+//            锐角距差计算，改用新算法
+//            pathFrame = new RectF(drawingRect);
+//
+//            // 计算相似三角形比例
+//            double x = pathFrame.right - pathFrame.left; // 底边
+//            double y = pathFrame.bottom - pathFrame.top; // 左侧边
+//            double z = Math.sqrt(x * x + y * y); // 斜边
+//            double cos = y / z; // 左上角cos值
+//            double tan = x / y; // 左上角tan值
+//            double u = (self.getSize() / 2.0f) * (1 + 1 / cos); // 内外三角顶部间辅助相似三角形底边
+//            double q = u / tan; // 内外三角顶部间辅助相似三角形左侧边
+//            double factor = (y + (self.getSize() / 2.0f) + q) / y; // 相似比
+//
+//            pathFrame.top -= y * (factor - 1) - self.getSize() / 2.0f;
+//            pathFrame.right += x * (factor - 1) - self.getSize() / 2.0f;
+//
+//            pathFrame.left -= self.getSize() / 2.0f;
+//            pathFrame.bottom += self.getSize() / 2.0f;
+
+            double w = self.getSize() / 2.0; // 内外间距
+            double x = drawingRect.right - drawingRect.left; // 底边
+            double y = drawingRect.bottom - drawingRect.top; // 左侧边
+            double a = Math.atan(x / y); // 顶角
+            double b = Math.PI / 2.0 - a; // 底角
+            double dy = w / Math.tan(a / 2.0); // y差值
+            double dx = w / Math.tan(b / 2.0); // x差值
+
+            RectF outerRect = new RectF(drawingRect);
+            outerRect.top -= dy;
+            outerRect.right += dx;
+            outerRect.left -= self.getSize() / 2.0f;
+            outerRect.bottom += self.getSize() / 2.0f;
+
+            RectF innerRect = new RectF(drawingRect);
+            innerRect.top += dy;
+            innerRect.right -= dx;
+            innerRect.left += self.getSize() / 2.0f;
+            innerRect.bottom -= self.getSize() / 2.0f;
+
             RectF pathFrame;
             if (!self.isEdgeRounded()) {
-                if ((drawingRect.right - drawingRect.left) < (self.getSize() * 2.0f)) {
-                    if (beginPoint.x <= lastPoint.x) {
-                        drawingRect.right = drawingRect.left + self.getSize() * 2.0f + 1;
-                    }
-                    else {
-                        drawingRect.left = drawingRect.right - self.getSize() * 2.0f - 1;
-                    }
-                }
-                if ((drawingRect.bottom - drawingRect.top) < (self.getSize() * 2.0f)) {
-                    if (beginPoint.y <= lastPoint.y) {
-                        drawingRect.bottom = drawingRect.top + self.getSize() * 2.0f + 1;
-                    }
-                    else {
-                        drawingRect.top = drawingRect.bottom - self.getSize() * 2.0f - 1;
-                    }
-                }
-
-                pathFrame = new RectF(drawingRect);
-
-                // 计算相似三角形比例
-                double x = pathFrame.right - pathFrame.left; // 底边
-                double y = pathFrame.bottom - pathFrame.top; // 左侧边
-                double z = Math.sqrt(x * x + y * y); // 斜边
-                double cos = y / z; // 左上角cos值
-                double tan = x / y; // 左上角tan值
-                double u = (self.getSize() / 2.0f) * (1 + 1 / cos); // 内外三角顶部间辅助相似三角形底边
-                double q = u / tan; // 内外三角顶部间辅助相似三角形左侧边
-                double factor = (y + (self.getSize() / 2.0f) + q) / y; // 相似比
-
-                pathFrame.top -= y * (factor - 1) - self.getSize() / 2.0f;
-                pathFrame.right += x * (factor - 1) - self.getSize() / 2.0f;
-
-                pathFrame.left -= self.getSize() / 2.0f;
-                pathFrame.bottom += self.getSize() / 2.0f;
+                pathFrame = new RectF(outerRect);
             }
             else {
                 pathFrame = super.drawPath(canvas, drawingPath, state);
             }
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+                return pathFrame;
+            }
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
             Path path = new Path();
-            path.moveTo(drawingRect.left, drawingRect.bottom);
-            path.lineTo(drawingRect.right, drawingRect.bottom);
-            path.lineTo(drawingRect.left, drawingRect.top);
-            path.lineTo(drawingRect.left, drawingRect.bottom);
+            path.moveTo(outerRect.left, outerRect.bottom);
+            path.lineTo(outerRect.right, outerRect.bottom);
+            path.lineTo(outerRect.left, outerRect.top);
+            path.lineTo(outerRect.left, outerRect.bottom);
+
+            if (self.getFillType() == FillType.Hollow) {
+                path.lineTo(innerRect.left, innerRect.bottom);
+                path.lineTo(innerRect.left, innerRect.top);
+                path.lineTo(innerRect.right, innerRect.bottom);
+                path.lineTo(innerRect.left, innerRect.bottom);
+
+                path.lineTo(outerRect.left, outerRect.bottom);
+            }
 
             if (state == DrawingPointerState.CalibrateToOrigin) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            self.drawSolidShapePath(canvas, path);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }

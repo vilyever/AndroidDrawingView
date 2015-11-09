@@ -52,8 +52,9 @@ public abstract class VDBrush extends VDModel {
     /* #Enums */
     public enum DrawingPointerState {
         Begin, Drawing, End,
+        FetchFrame, // 不做图，获取当前frame
         ForceFinish, // 强制完成当前作图
-        FetchFrame, // 不做图，以ForceFinish状态获取当前frame
+        ForceFinishFetchFrame, // 不做图，以ForceFinish状态获取当前frame
         CalibrateToOrigin; // 所作的图画应从左上角开始显示，因为作图范围超过画布截取出来的图层就会有缺失, 此时以ForceFinish状态作图
 
         public boolean shouldEnd() {
@@ -62,8 +63,9 @@ public abstract class VDBrush extends VDModel {
                 case Drawing:
                     return false;
                 case End:
-                case ForceFinish:
                 case FetchFrame:
+                case ForceFinish:
+                case ForceFinishFetchFrame:
                 case CalibrateToOrigin:
                     return true;
             }
@@ -76,9 +78,10 @@ public abstract class VDBrush extends VDModel {
                 case Begin:
                 case Drawing:
                 case End:
+                case FetchFrame:
                     return false;
                 case ForceFinish:
-                case FetchFrame:
+                case ForceFinishFetchFrame:
                 case CalibrateToOrigin:
                     return true;
             }

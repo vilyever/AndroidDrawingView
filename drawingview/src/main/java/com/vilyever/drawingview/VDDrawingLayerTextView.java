@@ -9,6 +9,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import com.vilyever.drawingview.brush.VDBrush;
+import com.vilyever.drawingview.brush.VDDrawingBrush;
 import com.vilyever.drawingview.brush.VDTextBrush;
 
 import java.util.ArrayList;
@@ -75,10 +76,17 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     }
 
     @Override
-    public void updateWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
-        self.drawingSteps.add(drawingStep);
+    public RectF updateWithDrawingStep(@NonNull VDDrawingStep drawingStep, VDDrawingBrush.DrawingPointerState state) {
+        if (drawingStep.getStepType() != VDDrawingStep.StepType.Text
+                && drawingStep.getStepType() != VDDrawingStep.StepType.Frame) {
+            return null;
+        }
 
-        if (self.drawingSteps.size() == 1) { // 图层第一笔确定图层大小，字体属性
+        if (!self.drawingSteps.contains(drawingStep)) {
+            self.drawingSteps.add(drawingStep);
+        }
+
+        if (self.drawingSteps.indexOf(drawingStep) == 0) { // 图层第一笔确定图层大小，字体属性
             RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), VDBrush.DrawingPointerState.FetchFrame);
             drawingStep.getDrawingLayer().setFrame(frame);
 
@@ -95,12 +103,21 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         self.setRotation(drawingStep.getDrawingLayer().getRotation());
 
         self.invalidate();
+
+        VDBrush.DrawingPointerState frameState = VDBrush.DrawingPointerState.FetchFrame;
+        if (state.shouldForceFinish()) {
+            frameState = VDBrush.DrawingPointerState.ForceFinishFetchFrame;
+        }
+        RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), frameState);
+        drawingStep.getDrawingLayer().setFrame(frame);
+
+        return frame;
     }
 
     @Override
     public void updateWithDrawingSteps(@NonNull List<VDDrawingStep> drawingSteps) {
         for (VDDrawingStep step : drawingSteps) {
-            self.updateWithDrawingStep(step);
+            self.updateWithDrawingStep(step, VDBrush.DrawingPointerState.ForceFinish);
         }
     }
 
@@ -120,7 +137,6 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
 
     /* #Private Methods */
     private void init(Context context) {
-        self.setBackground(null);
         self.setFocusable(true);
         self.setPadding(8, 8, 8, 8);
 //        self.setGravity(Gravity.LEFT | Gravity.TOP);

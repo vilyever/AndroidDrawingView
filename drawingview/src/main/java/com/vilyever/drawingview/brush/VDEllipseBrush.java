@@ -25,15 +25,15 @@ public class VDEllipseBrush extends VDShapeBrush {
     }
 
     public VDEllipseBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDEllipseBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDEllipseBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDEllipseBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDEllipseBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
@@ -48,27 +48,41 @@ public class VDEllipseBrush extends VDShapeBrush {
         if (drawingPath.getPoints().size() > 1) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+                return pathFrame;
+            }
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            RectF rect = new RectF();
-            rect.left = Math.min(beginPoint.x, lastPoint.x);
-            rect.top = Math.min(beginPoint.y, lastPoint.y);
-            rect.right = Math.max(beginPoint.x, lastPoint.x);
-            rect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            RectF drawingRect = new RectF();
+            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
+            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
+            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
+            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
+
+            if ((drawingRect.right - drawingRect.left) < self.getSize()
+                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+                return null;
+            }
 
             Path path = new Path();
-            path.addOval(rect, Path.Direction.CW);
+            path.addOval(drawingRect, Path.Direction.CW);
+
+            RectF solidRect = new RectF(drawingRect);
+            solidRect.left += self.getSize() / 2.0f;
+            solidRect.top += self.getSize() / 2.0f;
+            solidRect.right -= self.getSize() / 2.0f;
+            solidRect.bottom -= self.getSize() / 2.0f;
 
             if (state == DrawingPointerState.CalibrateToOrigin) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            self.drawSolidShapePath(canvas, path);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }

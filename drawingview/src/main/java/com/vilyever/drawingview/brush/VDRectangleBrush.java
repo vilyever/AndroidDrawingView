@@ -25,15 +25,15 @@ public class VDRectangleBrush extends VDShapeBrush {
     }
 
     public VDRectangleBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDRectangleBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDRectangleBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDRectangleBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDRectangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
@@ -42,7 +42,10 @@ public class VDRectangleBrush extends VDShapeBrush {
         if (drawingPath.getPoints().size() > 1) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+                return pathFrame;
+            }
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
@@ -55,6 +58,11 @@ public class VDRectangleBrush extends VDShapeBrush {
             drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
             drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
+            if ((drawingRect.right - drawingRect.left) < self.getSize()
+                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+                return null;
+            }
+
             Path path = new Path();
             path.addRect(drawingRect, Path.Direction.CW);
 
@@ -62,7 +70,7 @@ public class VDRectangleBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            self.drawSolidShapePath(canvas, path);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }

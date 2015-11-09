@@ -111,6 +111,7 @@ public abstract class VDDrawingBrush extends VDBrush {
         paint.setColor(self.getColor());
 
         if (self.isEraser()) {
+            paint.setAlpha(0xFF);
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
 

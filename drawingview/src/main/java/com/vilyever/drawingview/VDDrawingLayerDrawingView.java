@@ -1,13 +1,13 @@
 package com.vilyever.drawingview;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
-import android.widget.ImageView;
+import android.view.SurfaceView;
 
 import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.drawingview.brush.VDDrawingBrush;
@@ -21,64 +21,94 @@ import java.util.List;
  * Created by vilyever on 2015/9/24.
  * Feature:
  */
-public class VDDrawingLayerDrawingView extends ImageView {
+public class VDDrawingLayerDrawingView extends SurfaceView implements Runnable {
     private final VDDrawingLayerDrawingView self = this;
 
-    private Bitmap drawingBitmap;
-    private Canvas drawingCanvas;
+    private Thread drawingThread;
+    private boolean drawingThreadRunning;
+    private boolean shouldDraw;
+
     private List<VDDrawingStep> drawingSteps = new ArrayList<>();
 
+    private VDDrawingStep currentDrawingStep;
+    private VDBrush.DrawingPointerState currentDrawingState;
 
     /* #Constructors */
     public VDDrawingLayerDrawingView(Context context) {
         super(context);
-        self.setBackground(null);
+        self.init(context);
     }
 
     /* #Overrides */
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+
+        self.drawingThreadRunning = true;
+        if (self.drawingThread == null) {
+            self.drawingThread = new Thread(self);
+            self.drawingThread.start();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        if (self.drawingBitmap != null) {
-            self.drawingBitmap.recycle();
-            self.drawingBitmap = null;
-            self.drawingCanvas = null;
+
+        self.drawingThreadRunning = false;
+        if (self.drawingThread != null) {
+            self.drawingThread.interrupt();
+            self.drawingThread = null;
         }
     }
 
     /* #Accessors */
+    public List<VDDrawingStep> getDrawingSteps() {
+        return drawingSteps;
+    }
 
     /* #Delegates */
+    // Runnable
+    @Override
+    public void run() {
+        while (self.drawingThreadRunning) {
+            if (self.getHolder().getSurface().isValid()) {
+                if (self.shouldDraw) {
+                    Canvas canvas = self.getHolder().lockCanvas();
+                    if (canvas != null) {
+                        self.shouldDraw = false;
 
-    /* #Private Methods */
-    private void createDrawingBitmap() {
-        if (self.drawingBitmap == null) {
-            self.drawingBitmap = Bitmap.createBitmap(self.getWidth(), self.getHeight(), Bitmap.Config.ARGB_8888);
-            self.drawingCanvas = new Canvas(self.drawingBitmap);
-            self.setImageBitmap(drawingBitmap);
+                        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+                        for (int i = 0; i < self.drawingSteps.size() - 1; i++) {
+                            VDDrawingStep step = self.drawingSteps.get(i);
+                            step.getBrush().drawPath(canvas, step.getDrawingPath(), VDBrush.DrawingPointerState.ForceFinish);
+                        }
+
+                        if (self.currentDrawingStep != null) {
+                            self.currentDrawingStep.getBrush().drawPath(canvas, self.currentDrawingStep.getDrawingPath(), self.currentDrawingState);
+                        }
+
+                        self.getHolder().unlockCanvasAndPost(canvas);
+                    }
+                }
+            }
         }
     }
 
-    private void destroyDrawingBitmap() {
-        if (self.drawingBitmap != null) {
-            self.setImageBitmap(null);
-            self.drawingBitmap.recycle();
-            self.drawingBitmap = null;
-            self.drawingCanvas = null;
-        }
+    /* #Private Methods */
+    private void init(Context context) {
+        self.setZOrderOnTop(true);
+        self.getHolder().setFormat(PixelFormat.TRANSPARENT);
     }
 
     /* #Public Methods */
     public void clearDrawing() {
         self.drawingSteps.clear();
-        if (self.drawingCanvas != null) {
-            self.drawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        }
+        self.currentDrawingStep = null;
+        self.currentDrawingState = null;
+
+        self.shouldDraw = true;
     }
 
     /**
@@ -88,48 +118,30 @@ public class VDDrawingLayerDrawingView extends ImageView {
      * @return current step's frame
      */
     public RectF updateWithDrawingStep(@NonNull VDDrawingStep drawingStep, VDDrawingBrush.DrawingPointerState state) {
-        self.drawingSteps.add(drawingStep);
-
-        self.drawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-
-        for (int i = 0; i < self.drawingSteps.size() - 1; i++) {
-            VDDrawingStep step = self.drawingSteps.get(i);
-            step.getBrush().drawPath(self.drawingCanvas, step.getDrawingPath(), VDBrush.DrawingPointerState.ForceFinish);
+        if (!self.drawingSteps.contains(drawingStep)) {
+            self.drawingSteps.add(drawingStep);
         }
 
-        RectF frame = drawingStep.getBrush().drawPath(self.drawingCanvas, drawingStep.getDrawingPath(), state);
+        self.currentDrawingStep = drawingStep;
+        self.currentDrawingState = state;
+
+        self.shouldDraw = true;
+
+        RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), null);
         drawingStep.getDrawingLayer().setFrame(frame);
-        self.invalidate();
 
         return frame;
     }
 
     public void updateWithDrawingSteps(@NonNull List<VDDrawingStep> drawingSteps) {
         self.drawingSteps.addAll(drawingSteps);
-
-        self.drawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-
-        for (int i = 0; i < self.drawingSteps.size(); i++) {
-            VDDrawingStep step = self.drawingSteps.get(i);
-            step.getBrush().drawPath(self.drawingCanvas, step.getDrawingPath(), VDBrush.DrawingPointerState.ForceFinish);
-        }
-    }
-
-    public void prepare() {
-        self.createDrawingBitmap();
-        self.clearDrawing();
-    }
-
-    public void finish() {
-        self.clearDrawing();
-        self.destroyDrawingBitmap();
     }
 
     /* #Classes */
 
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
+    /* #Interfaces */
+
+    /* #Annotations @interface */
+
     /* #Enums */
 }

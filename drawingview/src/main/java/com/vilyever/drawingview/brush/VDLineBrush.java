@@ -2,7 +2,6 @@ package com.vilyever.drawingview.brush;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -26,15 +25,15 @@ public class VDLineBrush extends VDShapeBrush {
     }
 
     public VDLineBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDLineBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDLineBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDLineBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDLineBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
@@ -76,11 +75,12 @@ public class VDLineBrush extends VDShapeBrush {
                 pathFrame = super.drawPath(canvas, drawingPath, state);
             }
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
                 return pathFrame;
             }
-
-            Paint paint = self.getPaint();
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
+                return pathFrame;
+            }
 
             Path path = new Path();
             path.moveTo(beginPoint.x, beginPoint.y);
@@ -90,7 +90,7 @@ public class VDLineBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, paint);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }

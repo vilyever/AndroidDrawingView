@@ -18,7 +18,7 @@ public class VDDrawingStep extends VDModel {
 
     private int step;
 
-    private boolean cleared;
+    private StepType stepType;
 
     @VDJsonKeyIgnore
     private boolean stepOver;
@@ -57,12 +57,12 @@ public class VDDrawingStep extends VDModel {
         return step;
     }
 
-    public boolean isCleared() {
-        return cleared;
+    public StepType getStepType() {
+        return stepType;
     }
 
-    public VDDrawingStep setCleared(boolean cleared) {
-        this.cleared = cleared;
+    public VDDrawingStep setStepType(StepType stepType) {
+        this.stepType = stepType;
         return self;
     }
 
@@ -88,6 +88,10 @@ public class VDDrawingStep extends VDModel {
         return drawingLayer;
     }
 
+    public boolean isCleared() {
+        return self.stepType == StepType.Clear;
+    }
+
     /* #Classes */
 
     /* #Interfaces */     
@@ -95,4 +99,7 @@ public class VDDrawingStep extends VDModel {
     /* #Annotations @interface */    
     
     /* #Enums */
+    public enum StepType {
+        Clear, Draw, Background, Frame, Text;
+    }
 }

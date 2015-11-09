@@ -54,7 +54,7 @@ public class DrawingFragment extends Fragment {
     private Button thicknessButton;
     private Button eraserButton;
     private Button colorButton;
-    private Button solidColorButton;
+    private Button fillTypeButton;
     private Button edgeRoundedButton;
     private Button oneStrokeOneLayerButton;
 
@@ -180,7 +180,9 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Random random = new Random();
-                self.drawingView.setBackgroundColor(Color.argb(255, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256), 0);
+                int color = Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256);
+                ((Button) v).setTextColor(color);
+                self.drawingView.setBackgroundColor(color);
             }
         });
 
@@ -221,16 +223,15 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.solidColorButton = (Button) rootView.findViewById(R.id.solidColorButton);
-        self.solidColorButton.setOnClickListener(new View.OnClickListener() {
+        self.fillTypeButton = (Button) rootView.findViewById(R.id.fillTypeButton);
+        self.fillTypeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Random random = new Random();
-                int color = Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256);
-                ((Button) v).setTextColor(color);
-
+                v.setSelected(!v.isSelected());
+                VDShapeBrush.FillType fillType = v.isSelected() ? VDShapeBrush.FillType.Solid : VDShapeBrush.FillType.Hollow;
+                self.fillTypeButton.setText(fillType.name());
                 for (VDShapeBrush brush : self.shapeBrushes) {
-                    brush.setSolidColor(color);
+                    brush.setFillType(fillType);
                 }
             }
         });

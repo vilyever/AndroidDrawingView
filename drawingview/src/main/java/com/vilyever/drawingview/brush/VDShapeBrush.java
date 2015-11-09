@@ -1,11 +1,7 @@
 package com.vilyever.drawingview.brush;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
@@ -21,7 +17,7 @@ import com.vilyever.drawingview.VDDrawingPoint;
 public abstract class VDShapeBrush extends VDDrawingBrush {
     final VDShapeBrush self = this;
 
-    protected int solidColor;
+    protected FillType fillType;
     protected boolean edgeRounded;
 
     /* #Constructors */
@@ -30,16 +26,16 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     }
 
     public VDShapeBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDShapeBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDShapeBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDShapeBrush(float size, int color, int solidColor, boolean edgeRounded) {
+    public VDShapeBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color);
-        this.solidColor = solidColor;
+        this.fillType = fillType;
         this.edgeRounded = edgeRounded;
     }
 
@@ -47,6 +43,15 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     @Override
     public Paint getPaint() {
         Paint paint = super.getPaint();
+
+        switch (self.getFillType()) {
+            case Hollow:
+                paint.setStyle(Paint.Style.STROKE);
+                break;
+            case Solid:
+                paint.setStyle(Paint.Style.FILL_AND_STROKE);
+                break;
+        }
 
         if (self.isEdgeRounded()) {
             paint.setStrokeCap(Paint.Cap.ROUND);
@@ -81,15 +86,15 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     }
 
     /* #Accessors */
-    public int getSolidColor() {
+    public FillType getFillType() {
         if (self.isEraser()) {
-            return Color.TRANSPARENT;
+            return FillType.Solid;
         }
-        return solidColor;
+        return fillType;
     }
 
-    public <T extends VDShapeBrush> T setSolidColor(int solidColor) {
-        this.solidColor = solidColor;
+    public <T extends VDShapeBrush> T setFillType(FillType fillType) {
+        this.fillType = fillType;
         return (T) self;
     }
 
@@ -107,25 +112,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     /* #Private Methods */
 
     /* #Protected Mothods */
-    protected void drawSolidShapePath(@NonNull Canvas canvas, @NonNull Path path) {
-        Paint paint = self.getPaint();
 
-        // draw solid color
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(self.getSolidColor());
-        canvas.drawPath(path, paint);
-
-        // erase the intersection of solid and border
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(self.getColor());
-        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        canvas.drawPath(path, paint);
-
-        // draw border color
-        paint.setXfermode(null);
-        canvas.drawPath(path, paint);
-    }
-    
     /* #Public Methods */
 
     /* #Classes */
@@ -135,4 +122,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     /* #Annotations @interface */    
     
     /* #Enums */
+    public enum FillType {
+        Hollow, Solid;
+    }
 }

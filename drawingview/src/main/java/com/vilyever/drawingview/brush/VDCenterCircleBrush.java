@@ -24,15 +24,15 @@ public class VDCenterCircleBrush extends VDShapeBrush {
     }
 
     public VDCenterCircleBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDCenterCircleBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, false);
+    public VDCenterCircleBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDCenterCircleBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDCenterCircleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
@@ -52,9 +52,17 @@ public class VDCenterCircleBrush extends VDShapeBrush {
             drawingRect.right = centerX + radius;
             drawingRect.bottom = centerY + radius;
 
+            if ((drawingRect.right - drawingRect.left) < self.getSize()
+                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+                return null;
+            }
+
             RectF pathFrame = self.attachBrushSpace(drawingRect);
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+                return pathFrame;
+            }
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
                 return pathFrame;
             }
 
@@ -65,7 +73,7 @@ public class VDCenterCircleBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            self.drawSolidShapePath(canvas, path);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }

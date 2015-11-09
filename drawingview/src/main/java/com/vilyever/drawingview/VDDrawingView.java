@@ -1,9 +1,8 @@
 package com.vilyever.drawingview;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -39,8 +38,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     private VDBrush brush;
 
+    private VDDrawingBackgroundView backgroundView;
+    private Drawable initBackground;
+
     private VDDrawingLayerBaseView baseLayerImageView;
-    private VDDrawingLayerDrawingView tempLayerDrawingView;
     private List<VDDrawingLayerViewProtocol> layerViews = new ArrayList<>();
     private VDDrawingLayerViewProtocol handlingLayerView;
 
@@ -84,9 +85,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
 
                 if (self.gestureView instanceof VDDrawingLayerImageView) {
-                    self.getDrawingData().
-                            newDrawingStepOnLayer(((VDDrawingLayerImageView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Image).
-                            setBrush(VDBrush.copy(self.getBrush()));
+                    self.getDrawingData()
+                            .newDrawingStepOnLayer(((VDDrawingLayerImageView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Image)
+                            .setStepType(VDDrawingStep.StepType.Frame)
+                            .setBrush(VDBrush.copy(self.getBrush()));
                 }
                 else if (self.gestureView instanceof VDDrawingLayerTextView) { // when text view editing, disable move, scale and rotate
                     if (self.gestureViewOperationState == (GestureViewOperation.None.state() | GestureViewOperation.DoubleTap.state())) {
@@ -98,9 +100,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         }
                     }
 
-                    self.getDrawingData().
-                            newDrawingStepOnLayer(((VDDrawingLayerTextView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Text).
-                            setBrush(VDBrush.copy(self.getBrush()));
+                    self.getDrawingData()
+                            .newDrawingStepOnLayer(((VDDrawingLayerTextView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Text)
+                            .setStepType(VDDrawingStep.StepType.Frame)
+                            .setBrush(VDBrush.copy(self.getBrush()));
                 }
 
                 RelativeLayout.LayoutParams layoutParams = (LayoutParams) self.gestureView.getLayoutParams();
@@ -152,6 +155,16 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             }
         }
         return true;
+    }
+
+    @Override
+    public void setBackground(Drawable background) {
+        if (backgroundView != null) {
+            backgroundView.updateBackground(background);
+        }
+        else {
+            initBackground = background;
+        }
     }
 
     /* #Accessors */
@@ -217,15 +230,17 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.setFocusable(true);
         self.setFocusableInTouchMode(true);
 
+        // setup background view
+        self.backgroundView = new VDDrawingBackgroundView(self.getContext());
+        self.backgroundView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        self.backgroundView.updateBackground(self.initBackground);
+        self.addView(self.backgroundView);
+
         // setup base layer view
         self.baseLayerImageView = new VDDrawingLayerBaseView(self.getContext());
         self.baseLayerImageView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         self.addView(self.baseLayerImageView);
-
-        // setup drawing layer view, which is a temp display view
-        self.tempLayerDrawingView = new VDDrawingLayerDrawingView(self.getContext());
-        self.tempLayerDrawingView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        self.addView(self.tempLayerDrawingView);
+        self.layerViews.add(self.baseLayerImageView);
 
         // setup gesture listener
         self.gestureDetector = new GestureDetector(self.getContext(), new GestureListener());
@@ -236,7 +251,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.nativeClear();
 
         // init first drawing step that clear the view
-        self.getDrawingData().newDrawingStepOnBaseLayer().setCleared(true).setStepOver(true);
+        self.getDrawingData()
+                .newDrawingStepOnBaseLayer()
+                .setStepType(VDDrawingStep.StepType.Clear)
+                .setStepOver(true);
         self.didDrawNewStep();
     }
 
@@ -263,59 +281,55 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     private void beginDraw(float x, float y) {
-        self.endUnfinishedStep();
-
-        self.handleLayer(UnhandleAnyLayer);
+        if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Text) {
+            self.endUnfinishedStep();
+        }
 
         VDDrawingPoint.IncrementPointerID();
 
         if (self.getCurrentDrawingStep().isStepOver()) {
+            self.handleLayer(UnhandleAnyLayer);
+
             if (self.getBrush() instanceof VDDrawingBrush) {
                 VDDrawingBrush drawingBrush = self.getBrush();
 
                 if (drawingBrush.isEraser()) {
-                    self.baseLayerImageView.setVisibility(INVISIBLE);
-                    self.removeView(self.tempLayerDrawingView);
-                    self.addView(self.tempLayerDrawingView, 1);
-                    self.tempLayerDrawingView.setVisibility(VISIBLE);
-
-                    self.tempLayerDrawingView.prepare();
-                    self.tempLayerDrawingView.updateWithDrawingSteps(self.baseLayerImageView.getDrawingSteps());
-
-                    self.getDrawingData().newDrawingStepOnBaseLayer().setBrush(VDBrush.copy(drawingBrush));
+                    self.getDrawingData()
+                            .newDrawingStepOnBaseLayer()
+                            .setStepType(VDDrawingStep.StepType.Draw)
+                            .setBrush(VDBrush.copy(drawingBrush));
+                    self.handlingLayerView = self.baseLayerImageView;
                 }
                 else {
                     if (drawingBrush.isOneStrokeToLayer()) {
-                        self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Image).setBrush(VDBrush.copy(drawingBrush));
-
-                        self.tempLayerDrawingView.setVisibility(VISIBLE);
-                        self.tempLayerDrawingView.bringToFront();
-                        self.tempLayerDrawingView.prepare();
-
+                        self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Image).setStepType(VDDrawingStep.StepType.Draw).setBrush(VDBrush.copy(drawingBrush));
                         self.handlingLayerView = self.addDrawingLayerImageView(self.getCurrentDrawingStep().getDrawingLayer());
+                        self.layerViews.add(self.handlingLayerView);
+                        self.addView((View) self.handlingLayerView);
                     }
                     else {
-                        self.getDrawingData().newDrawingStepOnBaseLayer().setBrush(VDBrush.copy(drawingBrush));
-
-                        self.tempLayerDrawingView.setVisibility(VISIBLE);
-                        self.tempLayerDrawingView.bringToFront();
-                        self.tempLayerDrawingView.prepare();
+                        self.getDrawingData()
+                                .newDrawingStepOnBaseLayer()
+                                .setStepType(VDDrawingStep.StepType.Draw)
+                                .setBrush(VDBrush.copy(drawingBrush));
+                        self.handlingLayerView = self.baseLayerImageView;
                     }
                 }
 
                 self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
-                self.tempLayerDrawingView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.Begin);
+                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.Begin);
             }
             else if (self.getBrush() instanceof VDTextBrush) {
                 VDTextBrush textBrush = self.getBrush();
-                self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Text).setBrush(VDBrush.copy(textBrush));
+                self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Text).setStepType(VDDrawingStep.StepType.Frame).setBrush(VDBrush.copy(textBrush));
+
+                self.handlingLayerView = self.addTextLayerView(self.getCurrentDrawingStep().getDrawingLayer());
 
                 self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
-                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
-
-                VDDrawingLayerTextView textView = self.addTextLayerView(self.getCurrentDrawingStep().getDrawingLayer());
-                self.handlingLayerView = textView;
+                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.Begin);
             }
+
+            self.handleLayer(self.handlingLayerView.getLayerHierarchy());
         }
         else {
             self.drawing(x, y);
@@ -324,20 +338,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     private void drawing(float x, float y) {
         if (self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y))) {
-            self.tempLayerDrawingView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.Drawing);
-            if (self.handlingLayerView != null) {
-                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
-            }
+            self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.Drawing);
         }
     }
 
     private void endDraw(float x, float y) {
         if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Image) {
             self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
-            boolean stepOver = self.tempLayerDrawingView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.End) != VDBrush.UnfinishFrame;
-            if (self.handlingLayerView != null) {
-                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
-            }
+            boolean stepOver = self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.End) != VDBrush.UnfinishFrame;
 
             self.getCurrentDrawingStep().setStepOver(stepOver);
 
@@ -347,7 +355,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
         else if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Text) {
             self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
-            self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
+            self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.End);
 
             self.cleanCurrentDrawing();
         }
@@ -358,6 +366,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private void finishDraw() {
         if (self.getCurrentDrawingStep().getDrawingLayer().getFrame() == null) {
             // noting to draw, e.g. draw line with one point is pointless
+            VDDrawingBrush drawingBrush = self.getCurrentDrawingStep().getBrush();
+            if (!drawingBrush.isEraser()) {
+                if (drawingBrush.isOneStrokeToLayer()) {
+                    self.layerViews.remove(self.handlingLayerView);
+                    self.removeView((View) self.handlingLayerView);
+                    self.handlingLayerView = null;
+                }
+            }
             self.getDrawingData().cancelDrawingStep();
             return;
         }
@@ -367,20 +383,18 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 VDDrawingBrush drawingBrush = self.getCurrentDrawingStep().getBrush();
                 if (!drawingBrush.isEraser()) {
                     if (drawingBrush.isOneStrokeToLayer()) {
-                        self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
+//                        self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep());
+                        if (self.handlingLayerView instanceof VDDrawingLayerImageView) {
+                            VDDrawingLayerImageView imageView = (VDDrawingLayerImageView) self.handlingLayerView;
+                        }
                     }
                     else {
-                        self.baseLayerImageView.updateWithDrawingStep(self.getCurrentDrawingStep());
+//                        self.baseLayerImageView.updateWithDrawingStep(self.getCurrentDrawingStep());
                     }
                 }
                 else {
-                    self.baseLayerImageView.updateWithDrawingStep(self.getCurrentDrawingStep());
+//                    self.baseLayerImageView.updateWithDrawingStep(self.getCurrentDrawingStep());
                 }
-            }
-
-            if (self.handlingLayerView != null) {
-                self.addView((View) self.handlingLayerView);
-                self.layerViews.add(self.handlingLayerView);
             }
 
             self.cleanCurrentDrawing();
@@ -390,16 +404,16 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     private void cleanCurrentDrawing() {
-        self.tempLayerDrawingView.finish();
-        self.tempLayerDrawingView.setVisibility(INVISIBLE);
-        self.baseLayerImageView.setVisibility(VISIBLE);
+        if (self.handlingLayerView == self.baseLayerImageView) {
+            self.handlingLayerView = null;
+        }
     }
 
     private void endUnfinishedStep() {
         if (self.getCurrentDrawingStep() != null
                 && !self.getCurrentDrawingStep().isStepOver()) {
             if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Image) {
-                self.tempLayerDrawingView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.ForceFinish);
+                self.handlingLayerView.updateWithDrawingStep(self.getCurrentDrawingStep(), VDBrush.DrawingPointerState.ForceFinish);
                 self.getCurrentDrawingStep().setStepOver(true);
 
                 self.finishDraw();
@@ -449,10 +463,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             }
         });
 
-        self.handlingLayerView = imageView;
-
-        self.handleLayer(drawingLayer.getHierarchy());
-
         return imageView;
     }
 
@@ -490,15 +500,21 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     private void handleLayer(int layerHierarchy) {
         self.handlingLayerView = null;
+
         for (VDDrawingLayerViewProtocol layerViewProtocol : self.layerViews) {
             layerViewProtocol.setHandling((layerViewProtocol.getLayerHierarchy() == layerHierarchy) || (layerHierarchy == HandleAllLayer));
-            if (layerViewProtocol.getLayerHierarchy() == layerHierarchy) {
+            if (layerViewProtocol.getLayerHierarchy() == layerHierarchy
+                    && layerHierarchy != HandleAllLayer) {
                 self.handlingLayerView = layerViewProtocol;
             }
         }
     }
 
     private VDDrawingLayerViewProtocol findLayerViewByLayerHierarchy(int layerHierarchy) {
+        if (layerHierarchy == 0) {
+            return self.baseLayerImageView;
+        }
+
         for (VDDrawingLayerViewProtocol layerViewProtocol : self.layerViews) {
             if (layerViewProtocol.getLayerHierarchy() == layerHierarchy) {
                 return layerViewProtocol;
@@ -508,48 +524,48 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         return null;
     }
 
-    public void nativeSetBackgroundColor(int color, int layerHierarchy) {
+    public void nativeSetBackgroundColor(int layerHierarchy, int color) {
         if (layerHierarchy < 0) {
             return;
         }
-
-        VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
-        if (layerViewProtocol == null) {
-            return;
+        else if (layerHierarchy == 0) {
+            self.baseLayerImageView.updateBackground(new ColorDrawable(color));
         }
+        else {
+            VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
+            if (layerViewProtocol == null) {
+                return;
+            }
 
-        View layerView = (View) layerViewProtocol;
-        layerView.setBackgroundColor(color);
+            View layerView = (View) layerViewProtocol;
+            layerView.setBackgroundColor(color);
+        }
     }
 
-    public void nativeSetBackgroundDrawable(Drawable drawable, int layerHierarchy) {
+    public void nativeSetBackgroundDrawable(int layerHierarchy, Drawable drawable) {
         if (layerHierarchy < 0) {
             return;
         }
-
-        VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
-        if (layerViewProtocol == null) {
-            return;
+        else if (layerHierarchy == 0) {
+            self.baseLayerImageView.updateBackground(drawable);
         }
-
-        View layerView = (View) layerViewProtocol;
-
-        if (layerView.getBackground() != null
-                && layerView.getBackground() instanceof BitmapDrawable) {
-            Bitmap preBitmap = ((BitmapDrawable) layerView.getBackground()).getBitmap();
-            if (preBitmap != null) {
-                preBitmap.recycle();
+        else {
+            VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
+            if (layerViewProtocol == null) {
+                return;
             }
-        }
 
-        layerView.setBackground(drawable);
+            View layerView = (View) layerViewProtocol;
+            layerView.setBackground(drawable);
+        }
     }
 
     private void nativeClear() {
-        self.baseLayerImageView.clearDrawing();
-
         for (VDDrawingLayerViewProtocol layerViewProtocol : self.layerViews) {
             layerViewProtocol.clearDrawing();
+            if (layerViewProtocol != self.baseLayerImageView) {
+                self.removeView((View) layerViewProtocol);
+            }
         }
 
         if (self.layerViews.size() > 1) {
@@ -561,7 +577,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.getParent().requestDisallowInterceptTouchEvent(true);
 
         self.baseLayerImageView.clearDrawing();
-        self.tempLayerDrawingView.prepare();
 
         List<VDDrawingStep> stepsToDraw = self.getDrawingData().getStepsToDraw();
 
@@ -634,7 +649,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     // TODO: 2015/9/24 call delegate to put the image by identifier
                 }
                 else if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
-                    self.nativeSetBackgroundColor(lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor(), layerHierarchy);
+                    self.nativeSetBackgroundColor(layerHierarchy, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor());
                 }
             }
         }
@@ -656,7 +671,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
         self.endUnfinishedStep();
         self.nativeClear();
-        self.getDrawingData().newDrawingStepOnBaseLayer().setCleared(true).setStepOver(true);
+        self.getDrawingData()
+                .newDrawingStepOnBaseLayer()
+                .setStepType(VDDrawingStep.StepType.Clear)
+                .setStepOver(true);
         self.didDrawNewStep();
     }
 
@@ -683,9 +701,13 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.nativeDrawData();
     }
 
-    public void setBackgroundColor(int color, int layerHierarchy) {
+    public void setBackgroundColor(int layerHierarchy, int color) {
+        if (layerHierarchy < 0) {
+            return;
+        }
+
         self.endUnfinishedStep();
-        self.nativeSetBackgroundColor(color, layerHierarchy);
+        self.nativeSetBackgroundColor(layerHierarchy, color);
 
         VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.Image;
         VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
@@ -696,13 +718,22 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             layerType = VDDrawingLayer.LayerType.Text;
         }
 
-        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy, layerType).setStepOver(true).getDrawingLayer().setBackgroundColor(color);
+        self.getDrawingData()
+                .newDrawingStepOnLayer(layerHierarchy, layerType)
+                .setStepType(VDDrawingStep.StepType.Background)
+                .setStepOver(true)
+                .getDrawingLayer()
+                .setBackgroundColor(color);
         self.didDrawNewStep();
     }
 
-    public void setBackgroundDrawable(Drawable drawable, String identifier, int layerHierarchy) {
+    public void setBackgroundDrawable(int layerHierarchy, Drawable drawable, String identifier) {
+        if (layerHierarchy < 0) {
+            return;
+        }
+
         self.endUnfinishedStep();
-        self.nativeSetBackgroundDrawable(drawable, layerHierarchy);
+        self.nativeSetBackgroundDrawable(layerHierarchy, drawable);
 
         VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.Image;
         VDDrawingLayerViewProtocol layerViewProtocol = self.findLayerViewByLayerHierarchy(layerHierarchy);
@@ -713,7 +744,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             layerType = VDDrawingLayer.LayerType.Text;
         }
 
-        self.getDrawingData().newDrawingStepOnLayer(layerHierarchy, layerType).setStepOver(true).getDrawingLayer().setBackgroundImageIdentifier(identifier);
+        self.getDrawingData()
+                .newDrawingStepOnLayer(layerHierarchy, layerType)
+                .setStepType(VDDrawingStep.StepType.Background)
+                .setStepOver(true)
+                .getDrawingLayer()
+                .setBackgroundImageIdentifier(identifier);
         self.didDrawNewStep();
     }
 
@@ -838,7 +874,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     && self.gestureView instanceof VDDrawingLayerTextView) {
                 self.gestureViewOperationState = self.gestureViewOperationState | GestureViewOperation.DoubleTap.state();
 
-                self.getDrawingData().newDrawingStepOnLayer(((VDDrawingLayerTextView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Text).setBrush(VDBrush.copy(self.getBrush()));
+                self.getDrawingData()
+                        .newDrawingStepOnLayer(((VDDrawingLayerTextView) self.gestureView).getLayerHierarchy(), VDDrawingLayer.LayerType.Text)
+                        .setStepType(VDDrawingStep.StepType.Text)
+                        .setBrush(VDBrush.copy(self.getBrush()));
                 self.getCurrentDrawingStep().getDrawingLayer().setLayerType(VDDrawingLayer.LayerType.Text);
                 VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.gestureView;
                 textView.beginEdit(false);

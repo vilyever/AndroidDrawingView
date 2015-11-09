@@ -110,6 +110,10 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public void setFrame(RectF frame) {
         if (frame == null) {
+            self.left = UnsetValue;
+            self.top = UnsetValue;
+            self.width = UnsetValue;
+            self.height = UnsetValue;
             return;
         }
         self.left = frame.left;

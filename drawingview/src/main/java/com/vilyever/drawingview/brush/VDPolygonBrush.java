@@ -29,18 +29,23 @@ public class VDPolygonBrush extends VDShapeBrush {
     }
 
     public VDPolygonBrush(float size, int color) {
-        this(size, color, Color.TRANSPARENT);
+        this(size, color, FillType.Hollow);
     }
 
-    public VDPolygonBrush(float size, int color, int solidColor) {
-        this(size, color, solidColor, true);
+    public VDPolygonBrush(float size, int color, FillType fillType) {
+        this(size, color, fillType, false);
     }
 
-    public VDPolygonBrush(float size, int color, int solidColor, boolean edgeRounded) {
-        super(size, color, solidColor, edgeRounded);
+    public VDPolygonBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+        super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
+
+    @Override
+    public FillType getFillType() {
+        return FillType.Hollow;
+    }
 
     @Override
     public boolean isEdgeRounded() {
@@ -93,11 +98,12 @@ public class VDPolygonBrush extends VDShapeBrush {
 
             RectF pathFrame = self.attachBrushSpace(drawingRect);;
 
-            if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state == DrawingPointerState.ForceFinishFetchFrame) {
                 return pathFrame;
             }
-
-            Paint paint = self.getPaint();
+            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
+                return drawOver ? pathFrame : UnfinishFrame;
+            }
 
             if (!drawOver) {
                 Path path = new Path();
@@ -106,21 +112,24 @@ public class VDPolygonBrush extends VDShapeBrush {
                     path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
                 }
 
+                Paint paint = self.getPaint();
+                paint.setStyle(Paint.Style.STROKE);
                 canvas.drawPath(path, paint);
             }
             else {
                 Path path = new Path();
-                path.moveTo((beginPoint.x + endPoints.get(0).x) / 2.0f, (beginPoint.y + endPoints.get(0).y) / 2.0f);
+                path.moveTo(beginPoint.x, beginPoint.y);
                 for (int i = 0; i < endPoints.size(); i++) {
                     path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
                 }
-                path.lineTo((beginPoint.x + endPoints.get(0).x) / 2.0f, (beginPoint.y + endPoints.get(0).y) / 2.0f);
 
                 if (state == DrawingPointerState.CalibrateToOrigin) {
                     path.offset(-pathFrame.left, -pathFrame.top);
                 }
 
-                self.drawSolidShapePath(canvas, path);
+                Paint paint = self.getPaint();
+                path.setFillType(Path.FillType.WINDING);
+                canvas.drawPath(path, paint);
             }
 
             return drawOver ? pathFrame : UnfinishFrame;
