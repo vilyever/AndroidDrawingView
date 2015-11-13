@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.util;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

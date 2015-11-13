@@ -1,4 +1,4 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,8 +7,8 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
 
 /**
  * VDPenBrush
@@ -85,7 +85,8 @@ public class VDPenBrush extends VDDrawingBrush {
                 }
             }
 
-            if (state == DrawingPointerState.CalibrateToOrigin) {
+            if (state == DrawingPointerState.CalibrateToOrigin
+                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 

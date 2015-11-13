@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.model;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.util;
 
 import android.view.MotionEvent;
 

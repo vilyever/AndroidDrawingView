@@ -1,12 +1,12 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
 
 /**
  * VDShapeBrush

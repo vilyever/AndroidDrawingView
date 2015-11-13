@@ -1,4 +1,4 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -6,43 +6,37 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
 
 /**
- * VDEllipseBrush
+ * VDRectangleBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
  */
-public class VDEllipseBrush extends VDShapeBrush {
-    final VDEllipseBrush self = this;
+public class VDRectangleBrush extends VDShapeBrush {
+    final VDRectangleBrush self = this;
 
     
     /* #Constructors */
-    public VDEllipseBrush() {
+    public VDRectangleBrush() {
 
     }
 
-    public VDEllipseBrush(float size, int color) {
+    public VDRectangleBrush(float size, int color) {
         this(size, color, FillType.Hollow);
     }
 
-    public VDEllipseBrush(float size, int color, FillType fillType) {
+    public VDRectangleBrush(float size, int color, FillType fillType) {
         this(size, color, fillType, false);
     }
 
-    public VDEllipseBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+    public VDRectangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
     }
 
     /* #Overrides */
-
-    @Override
-    public boolean isEdgeRounded() {
-        return true;
-    }
-
     @Override
     public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
         if (drawingPath.getPoints().size() > 1) {
@@ -70,15 +64,10 @@ public class VDEllipseBrush extends VDShapeBrush {
             }
 
             Path path = new Path();
-            path.addOval(drawingRect, Path.Direction.CW);
+            path.addRect(drawingRect, Path.Direction.CW);
 
-            RectF solidRect = new RectF(drawingRect);
-            solidRect.left += self.getSize() / 2.0f;
-            solidRect.top += self.getSize() / 2.0f;
-            solidRect.right -= self.getSize() / 2.0f;
-            solidRect.bottom -= self.getSize() / 2.0f;
-
-            if (state == DrawingPointerState.CalibrateToOrigin) {
+            if (state == DrawingPointerState.CalibrateToOrigin
+                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
@@ -97,8 +86,8 @@ public class VDEllipseBrush extends VDShapeBrush {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public static VDEllipseBrush defaultBrush() {
-        return new VDEllipseBrush(5, Color.BLACK);
+    public static VDRectangleBrush defaultBrush() {
+        return new VDRectangleBrush(5, Color.BLACK);
     }
 
     /* #Classes */

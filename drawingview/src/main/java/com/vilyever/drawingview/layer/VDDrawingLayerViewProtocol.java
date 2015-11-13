@@ -1,9 +1,10 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.layer;
 
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.brush.VDDrawingBrush;
+import com.vilyever.drawingview.brush.drawing.VDDrawingBrush;
+import com.vilyever.drawingview.model.VDDrawingStep;
 
 import java.util.List;
 

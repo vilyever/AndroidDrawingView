@@ -1,4 +1,4 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.text;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,8 +9,9 @@ import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.text.TextPaint;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.unitconversion.VDDimenConversion;
 
 /**

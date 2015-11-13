@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.layer;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,8 +11,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.vilyever.contextholder.VDContextHolder;
+import com.vilyever.drawingview.R;
 import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.brush.VDDrawingBrush;
+import com.vilyever.drawingview.brush.drawing.VDDrawingBrush;
+import com.vilyever.drawingview.model.VDDrawingStep;
 import com.vilyever.unitconversion.VDDimenConversion;
 
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         if (self.drawingSteps.size() > 0) {
             VDDrawingStep step = self.drawingSteps.get(0);
 
-            VDBrush.DrawingPointerState state = VDBrush.DrawingPointerState.CalibrateToOrigin;
+            VDBrush.DrawingPointerState state = self.currentDrawingState.shouldForceFinish() ? VDBrush.DrawingPointerState.ForceCalibrateToOrigin : VDBrush.DrawingPointerState.CalibrateToOrigin;
             RectF frame = step.getBrush().drawPath(canvas, step.getDrawingPath(), state);
 
             if (self.isSelected() && frame != null) {

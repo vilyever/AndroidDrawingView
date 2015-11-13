@@ -2,6 +2,7 @@ package com.vilyever.androiddrawingview;
 
 import android.app.Fragment;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,20 +12,21 @@ import android.widget.Toast;
 
 import com.vilyever.contextholder.VDContextHolder;
 import com.vilyever.drawingview.VDDrawingView;
-import com.vilyever.drawingview.brush.VDCenterCircleBrush;
-import com.vilyever.drawingview.brush.VDCircleBrush;
-import com.vilyever.drawingview.brush.VDDrawingBrush;
-import com.vilyever.drawingview.brush.VDEllipseBrush;
-import com.vilyever.drawingview.brush.VDIsoscelesTriangleBrush;
-import com.vilyever.drawingview.brush.VDLineBrush;
-import com.vilyever.drawingview.brush.VDPenBrush;
-import com.vilyever.drawingview.brush.VDPolygonBrush;
-import com.vilyever.drawingview.brush.VDRectangleBrush;
-import com.vilyever.drawingview.brush.VDRhombusBrush;
-import com.vilyever.drawingview.brush.VDRightAngledTriangleBrush;
-import com.vilyever.drawingview.brush.VDRoundedRectangleBrush;
-import com.vilyever.drawingview.brush.VDShapeBrush;
-import com.vilyever.drawingview.brush.VDTextBrush;
+import com.vilyever.drawingview.brush.drawing.VDCenterCircleBrush;
+import com.vilyever.drawingview.brush.drawing.VDCircleBrush;
+import com.vilyever.drawingview.brush.drawing.VDDrawingBrush;
+import com.vilyever.drawingview.brush.drawing.VDEllipseBrush;
+import com.vilyever.drawingview.brush.drawing.VDIsoscelesTriangleBrush;
+import com.vilyever.drawingview.brush.layereraser.VDLayerEraserPenBrush;
+import com.vilyever.drawingview.brush.drawing.VDLineBrush;
+import com.vilyever.drawingview.brush.drawing.VDPenBrush;
+import com.vilyever.drawingview.brush.drawing.VDPolygonBrush;
+import com.vilyever.drawingview.brush.drawing.VDRectangleBrush;
+import com.vilyever.drawingview.brush.drawing.VDRhombusBrush;
+import com.vilyever.drawingview.brush.drawing.VDRightAngledTriangleBrush;
+import com.vilyever.drawingview.brush.drawing.VDRoundedRectangleBrush;
+import com.vilyever.drawingview.brush.drawing.VDShapeBrush;
+import com.vilyever.drawingview.brush.text.VDTextBrush;
 import com.vilyever.unitconversion.VDDimenConversion;
 
 import java.util.ArrayList;
@@ -86,9 +88,14 @@ public class DrawingFragment extends Fragment {
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
-            public void undoStateDidChangeFromDrawingView(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+            public void undoStateDidChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
                 self.undoButton.setEnabled(canUndo);
                 self.redoButton.setEnabled(canRedo);
+            }
+
+            @Override
+            public Drawable requireBackground(String identifier) {
+                return null;
             }
         });
 
@@ -182,7 +189,7 @@ public class DrawingFragment extends Fragment {
                 Random random = new Random();
                 int color = Color.argb(Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256, Math.abs(random.nextInt()) % 256);
                 ((Button) v).setTextColor(color);
-                self.drawingView.setBackgroundColor(color);
+                self.drawingView.setBackgroundColor(0, color);
             }
         });
 
@@ -204,6 +211,8 @@ public class DrawingFragment extends Fragment {
                 for (VDDrawingBrush brush : self.shapeBrushes) {
                     brush.setIsEraser(v.isSelected());
                 }
+
+                self.drawingView.setBrush(new VDLayerEraserPenBrush());
             }
         });
 

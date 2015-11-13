@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.layer;
 
 import android.graphics.Canvas;
 import android.graphics.DashPathEffect;
@@ -7,6 +7,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 
 import com.vilyever.contextholder.VDContextHolder;
+import com.vilyever.drawingview.R;
 
 /**
  * VDDrawingLayerViewBorderDrawer

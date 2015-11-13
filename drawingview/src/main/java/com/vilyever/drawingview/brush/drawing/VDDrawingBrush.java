@@ -1,4 +1,4 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -8,8 +8,9 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.brush.VDBrush;
 
 /**
  * VDDrawingBrush
@@ -23,7 +24,6 @@ public abstract class VDDrawingBrush extends VDBrush {
     protected float size;
     protected int color;
     protected boolean isEraser;
-    protected boolean isLayerEraser;
     protected boolean oneStrokeToLayer;
 
     /* #Constructors */
@@ -66,14 +66,6 @@ public abstract class VDDrawingBrush extends VDBrush {
     public <T extends VDDrawingBrush> T setIsEraser(boolean isEraser) {
         this.isEraser = isEraser;
         return (T) self;
-    }
-
-    public boolean isLayerEraser() {
-        return isLayerEraser;
-    }
-
-    public void setIsLayerEraser(boolean isLayerEraser) {
-        this.isLayerEraser = isLayerEraser;
     }
 
     public boolean isOneStrokeToLayer() {

@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.model;
 
 import android.graphics.RectF;
 import android.widget.RelativeLayout;
@@ -23,7 +23,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     private int backgroundColor = UnsetValue;
     private String backgroundImageIdentifier;
 
-    private String imageIdentifer;
     private String text;
 
     private float left = UnsetValue;
@@ -83,14 +82,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     public void setBackgroundImageIdentifier(String backgroundImageIdentifier) {
         this.backgroundImageIdentifier = backgroundImageIdentifier;
-    }
-
-    public String getImageIdentifer() {
-        return imageIdentifer;
-    }
-
-    public void setImageIdentifer(String imageIdentifer) {
-        this.imageIdentifer = imageIdentifer;
     }
 
     public String getText() {

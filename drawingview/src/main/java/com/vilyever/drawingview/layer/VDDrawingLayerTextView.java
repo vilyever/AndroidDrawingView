@@ -1,4 +1,4 @@
-package com.vilyever.drawingview;
+package com.vilyever.drawingview.layer;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -9,8 +9,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.brush.VDDrawingBrush;
-import com.vilyever.drawingview.brush.VDTextBrush;
+import com.vilyever.drawingview.brush.drawing.VDDrawingBrush;
+import com.vilyever.drawingview.brush.text.VDTextBrush;
+import com.vilyever.drawingview.model.VDDrawingStep;
 
 import java.util.ArrayList;
 import java.util.List;

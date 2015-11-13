@@ -1,4 +1,4 @@
-package com.vilyever.drawingview.brush;
+package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,8 +7,8 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
-import com.vilyever.drawingview.VDDrawingPoint;
+import com.vilyever.drawingview.model.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,32 +105,19 @@ public class VDPolygonBrush extends VDShapeBrush {
                 return drawOver ? pathFrame : UnfinishFrame;
             }
 
-            if (!drawOver) {
-                Path path = new Path();
-                path.moveTo(beginPoint.x, beginPoint.y);
-                for (int i = 0; i < endPoints.size(); i++) {
-                    path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
-                }
-
-                Paint paint = self.getPaint();
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawPath(path, paint);
+            Path path = new Path();
+            path.moveTo(beginPoint.x, beginPoint.y);
+            for (int i = 0; i < endPoints.size(); i++) {
+                path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
             }
-            else {
-                Path path = new Path();
-                path.moveTo(beginPoint.x, beginPoint.y);
-                for (int i = 0; i < endPoints.size(); i++) {
-                    path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
-                }
 
-                if (state == DrawingPointerState.CalibrateToOrigin) {
-                    path.offset(-pathFrame.left, -pathFrame.top);
-                }
-
-                Paint paint = self.getPaint();
-                path.setFillType(Path.FillType.WINDING);
-                canvas.drawPath(path, paint);
+            if (state == DrawingPointerState.CalibrateToOrigin
+                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+                path.offset(-pathFrame.left, -pathFrame.top);
             }
+
+            Paint paint = self.getPaint();
+            canvas.drawPath(path, paint);
 
             return drawOver ? pathFrame : UnfinishFrame;
         }

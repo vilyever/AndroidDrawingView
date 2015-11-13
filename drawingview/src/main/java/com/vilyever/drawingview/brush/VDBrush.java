@@ -4,7 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.VDDrawingPath;
+import com.vilyever.drawingview.model.VDDrawingPath;
 import com.vilyever.jsonmodel.VDJson;
 import com.vilyever.jsonmodel.VDModel;
 
@@ -52,21 +52,23 @@ public abstract class VDBrush extends VDModel {
     /* #Enums */
     public enum DrawingPointerState {
         Begin, Drawing, End,
+        CalibrateToOrigin, // 所作的图画应从左上角开始显示
         FetchFrame, // 不做图，获取当前frame
         ForceFinish, // 强制完成当前作图
         ForceFinishFetchFrame, // 不做图，以ForceFinish状态获取当前frame
-        CalibrateToOrigin; // 所作的图画应从左上角开始显示，因为作图范围超过画布截取出来的图层就会有缺失, 此时以ForceFinish状态作图
+        ForceCalibrateToOrigin; // 所作的图画应从左上角开始显示，因为作图范围超过画布截取出来的图层就会有缺失, 此时以ForceFinish状态作图
 
         public boolean shouldEnd() {
             switch (this) {
                 case Begin:
                 case Drawing:
+                case CalibrateToOrigin:
                     return false;
                 case End:
                 case FetchFrame:
                 case ForceFinish:
                 case ForceFinishFetchFrame:
-                case CalibrateToOrigin:
+                case ForceCalibrateToOrigin:
                     return true;
             }
 
@@ -78,11 +80,12 @@ public abstract class VDBrush extends VDModel {
                 case Begin:
                 case Drawing:
                 case End:
+                case CalibrateToOrigin:
                 case FetchFrame:
                     return false;
                 case ForceFinish:
                 case ForceFinishFetchFrame:
-                case CalibrateToOrigin:
+                case ForceCalibrateToOrigin:
                     return true;
             }
 
