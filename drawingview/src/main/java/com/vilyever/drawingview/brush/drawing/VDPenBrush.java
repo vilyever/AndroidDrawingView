@@ -40,14 +40,18 @@ public class VDPenBrush extends VDDrawingBrush {
     }
 
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 0) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
 
-            if (state == DrawingPointerState.ForceFinishFetchFrame) {
-                return pathFrame;
-            }
-            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
+//            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+//                return pathFrame;
+//            }
+//            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
+//                return pathFrame;
+//            }
+
+            if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
             }
 
@@ -85,8 +89,9 @@ public class VDPenBrush extends VDDrawingBrush {
                 }
             }
 
-            if (state == DrawingPointerState.CalibrateToOrigin
-                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+//            if (state == DrawingPointerState.CalibrateToOrigin
+//                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+            if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
@@ -97,8 +102,13 @@ public class VDPenBrush extends VDDrawingBrush {
 
         return null;
     }
-    
-    /* #Accessors */     
+
+    @Override
+    public boolean shouldDrawFromBegin() {
+        return false;
+    }
+
+    /* #Accessors */
      
     /* #Delegates */     
      

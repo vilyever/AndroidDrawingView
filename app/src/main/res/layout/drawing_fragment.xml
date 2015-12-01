@@ -125,6 +125,14 @@
                 android:text="One Stroke One Layer"
                 android:textSize="12dp"
                 android:background="@drawable/button_background"/>
+            <Button
+                android:id="@+id/deleteLayerButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Delete Layer"
+                android:textSize="12dp"
+                android:background="@drawable/button_background"/>
         </LinearLayout>
 
     </LinearLayout>

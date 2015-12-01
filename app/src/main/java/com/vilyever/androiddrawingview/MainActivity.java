@@ -10,13 +10,13 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.vilyever.contextholder.VDContextHolder;
 
 public class MainActivity extends AppCompatActivity {
+    private final MainActivity self = this;
 
     private DrawingFragment drawingFragment;
 
@@ -33,8 +33,14 @@ public class MainActivity extends AppCompatActivity {
 
         this.testLayout = (RelativeLayout) findViewById(R.id.testLayout);
         this.testView = new TestView(this);
-        this.testLayout.addView(this.testView);
-        this.testView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//        this.testLayout.addView(this.testView);
+//        this.testView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+//        this.testLayout.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//            }
+//        });
 
         Runtime rt=Runtime.getRuntime();
         long maxMemory=rt.maxMemory();
@@ -77,8 +83,15 @@ public class MainActivity extends AppCompatActivity {
 
     public static class TestView extends ImageView {
 
+
         public TestView(Context context) {
             super(context);
+        }
+
+        @Override
+        protected void finalize() throws Throwable {
+            super.finalize();
+            System.out.println("finalize");
         }
 
         @Override
@@ -114,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            System.out.println("contain rect " + contain);
+//            System.out.println("contain rect " + contain);
 
             region.setPath(path, region);
 
@@ -128,10 +141,12 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            System.out.println("contain circle " + contain);
+//            System.out.println("contain circle " + contain);
 
 
             canvas.drawPath(path, paint);
+
+            canvas.drawPaint(paint);
         }
     }
 }

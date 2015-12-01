@@ -8,9 +8,9 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.drawingview.model.VDDrawingPath;
 import com.vilyever.drawingview.model.VDDrawingPoint;
-import com.vilyever.drawingview.brush.VDBrush;
 
 /**
  * VDDrawingBrush
@@ -35,8 +35,38 @@ public abstract class VDDrawingBrush extends VDBrush {
         this.color = color;
     }
 
-    /* #Overrides */    
-    
+    /* #Overrides */
+    @Override
+    public boolean shouldDrawFromBegin() {
+        return true;
+    }
+
+    @Override
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+        if (drawingPath.getPoints().size() < 1) {
+            return null;
+        }
+
+        VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
+
+        RectF drawingRect = new RectF();
+
+        drawingRect.left = beginPoint.x;
+        drawingRect.top = beginPoint.y;
+        drawingRect.right = beginPoint.x;
+        drawingRect.bottom = beginPoint.y;
+
+        for (int i = 1; i < drawingPath.getPoints().size(); i++) {
+            VDDrawingPoint point = drawingPath.getPoints().get(i);
+            drawingRect.left = Math.min(point.x, drawingRect.left);
+            drawingRect.top = Math.min(point.y, drawingRect.top);
+            drawingRect.right = Math.max(point.x, drawingRect.right);
+            drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
+        }
+
+        return self.attachBrushSpace(drawingRect);
+    }
+
     /* #Accessors */
     public float getSize() {
         return size;
@@ -103,37 +133,10 @@ public abstract class VDDrawingBrush extends VDBrush {
         paint.setColor(self.getColor());
 
         if (self.isEraser()) {
-            paint.setAlpha(0xFF);
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
         }
 
         return paint;
-    }
-
-    @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
-        if (drawingPath.getPoints().size() < 1) {
-            return null;
-        }
-
-        VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-
-        RectF drawingRect = new RectF();
-
-        drawingRect.left = beginPoint.x;
-        drawingRect.top = beginPoint.y;
-        drawingRect.right = beginPoint.x;
-        drawingRect.bottom = beginPoint.y;
-
-        for (int i = 1; i < drawingPath.getPoints().size(); i++) {
-            VDDrawingPoint point = drawingPath.getPoints().get(i);
-            drawingRect.left = Math.min(point.x, drawingRect.left);
-            drawingRect.top = Math.min(point.y, drawingRect.top);
-            drawingRect.right = Math.max(point.x, drawingRect.right);
-            drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
-        }
-
-        return self.attachBrushSpace(drawingRect);
     }
 
     /* #Classes */

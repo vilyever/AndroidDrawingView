@@ -59,6 +59,7 @@ public class DrawingFragment extends Fragment {
     private Button fillTypeButton;
     private Button edgeRoundedButton;
     private Button oneStrokeOneLayerButton;
+    private Button deleteLayerButton;
 
     private ThicknessAdjustController thicknessAdjustController;
 
@@ -88,13 +89,13 @@ public class DrawingFragment extends Fragment {
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
-            public void undoStateDidChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+            public void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
                 self.undoButton.setEnabled(canUndo);
                 self.redoButton.setEnabled(canRedo);
             }
 
             @Override
-            public Drawable requireBackground(String identifier) {
+            public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
                 return null;
             }
         });
@@ -265,6 +266,14 @@ public class DrawingFragment extends Fragment {
                 for (VDDrawingBrush brush : self.shapeBrushes) {
                     brush.setOneStrokeToLayer(v.isSelected());
                 }
+            }
+        });
+
+        self.deleteLayerButton = (Button) rootView.findViewById(R.id.deleteLayerButton);
+        self.deleteLayerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                self.drawingView.deleteHandlingLayer();
             }
         });
 

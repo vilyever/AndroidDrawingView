@@ -53,7 +53,7 @@ public class VDPolygonBrush extends VDShapeBrush {
     }
 
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -77,7 +77,7 @@ public class VDPolygonBrush extends VDShapeBrush {
                 endPoints.add(beginPoint);
                 drawOver = true;
             }
-            else if (state.shouldForceFinish()) {
+            else if (state.isForceFinish()) {
                 endPoints.add(beginPoint);
                 drawOver = true;
             }
@@ -98,11 +98,8 @@ public class VDPolygonBrush extends VDShapeBrush {
 
             RectF pathFrame = self.attachBrushSpace(drawingRect);;
 
-            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+            if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
-            }
-            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
-                return drawOver ? pathFrame : UnfinishFrame;
             }
 
             Path path = new Path();
@@ -111,8 +108,7 @@ public class VDPolygonBrush extends VDShapeBrush {
                 path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
             }
 
-            if (state == DrawingPointerState.CalibrateToOrigin
-                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+            if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 

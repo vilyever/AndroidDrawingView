@@ -20,8 +20,8 @@ public class VDDrawingData {
 
     private int showingStepIndex = -1;
 
-    /* #Constructors */    
-    
+    /* #Constructors */
+
     /* #Overrides */    
     
     /* #Accessors */
@@ -47,7 +47,7 @@ public class VDDrawingData {
     }
 
     public VDDrawingStep newDrawingStepOnBaseLayer() {
-        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.Image);
+        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.Base);
     }
 
     public VDDrawingStep newDrawingStepOnLayer(int layerHierarchy, VDDrawingLayer.LayerType layerType) {
@@ -105,8 +105,8 @@ public class VDDrawingData {
     }
 
     public List<VDDrawingStep> getStepsToDraw() {
-        int lastClearedIndex = 0;
-        for (int i = 1; i <= self.showingStepIndex; i++) {
+        int lastClearedIndex = -1;
+        for (int i = 0; i <= self.showingStepIndex; i++) {
             if (self.getSteps().get(i).isCleared()) lastClearedIndex = i;
         }
 

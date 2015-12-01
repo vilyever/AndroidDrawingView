@@ -48,7 +48,7 @@ public class VDRhombusBrush extends VDShapeBrush {
     }
 
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -107,13 +107,9 @@ public class VDRhombusBrush extends VDShapeBrush {
                 pathFrame = super.drawPath(canvas, drawingPath, state);
             }
 
-            if (state == DrawingPointerState.ForceFinishFetchFrame) {
+            if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
             }
-            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
-                return pathFrame;
-            }
-
             Path path = new Path();
             path.moveTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
             path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
@@ -131,8 +127,7 @@ public class VDRhombusBrush extends VDShapeBrush {
                 path.lineTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
             }
 
-            if (state == DrawingPointerState.CalibrateToOrigin
-                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+            if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 

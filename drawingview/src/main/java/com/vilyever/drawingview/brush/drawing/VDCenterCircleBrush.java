@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.model.VDDrawingPath;
 import com.vilyever.drawingview.model.VDDrawingPoint;
-import com.vilyever.drawingview.brush.VDBrush;
 
 /**
  * VDCenterCircleBrush
@@ -38,7 +37,7 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, VDBrush.DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -60,18 +59,14 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
             RectF pathFrame = self.attachBrushSpace(drawingRect);
 
-            if (state == VDBrush.DrawingPointerState.ForceFinishFetchFrame) {
-                return pathFrame;
-            }
-            else if (state == VDBrush.DrawingPointerState.FetchFrame || canvas == null) {
+            if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
             }
 
             Path path = new Path();
             path.addCircle(centerX, centerY, radius, Path.Direction.CW);
 
-            if (state == VDBrush.DrawingPointerState.CalibrateToOrigin
-                    || state == VDBrush.DrawingPointerState.ForceCalibrateToOrigin) {
+            if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 

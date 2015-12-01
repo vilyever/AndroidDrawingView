@@ -20,7 +20,8 @@ public class VDDrawingStep extends VDModel {
 
     private StepType stepType;
 
-    @VDJsonKeyIgnore
+    private VDBrush.DrawingState drawingState;
+
     private boolean stepOver;
 
     /* #Constructors */
@@ -66,6 +67,14 @@ public class VDDrawingStep extends VDModel {
         return self;
     }
 
+    public VDBrush.DrawingState getDrawingState() {
+        return drawingState;
+    }
+
+    public void setDrawingState(VDBrush.DrawingState drawingState) {
+        this.drawingState = drawingState;
+    }
+
     public boolean isStepOver() {
         return stepOver;
     }
@@ -100,6 +109,6 @@ public class VDDrawingStep extends VDModel {
     
     /* #Enums */
     public enum StepType {
-        Clear, Draw, Background, Frame, Text;
+        Clear, Draw, Background, CreateLayer, Transform, Text, DeleteLayer;
     }
 }

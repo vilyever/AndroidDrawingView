@@ -49,14 +49,11 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
     }
 
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             RectF pathFrame = super.drawPath(canvas, drawingPath, state);
 
-            if (state == DrawingPointerState.ForceFinishFetchFrame) {
-                return pathFrame;
-            }
-            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
+            if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
             }
 
@@ -78,8 +75,7 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
             Path path = new Path();
             path.addRoundRect(drawingRect, round, round, Path.Direction.CW);
 
-            if (state == DrawingPointerState.CalibrateToOrigin
-                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
+            if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 

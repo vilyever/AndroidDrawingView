@@ -202,6 +202,6 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     
     /* #Enums */
     public enum LayerType {
-        Image, Text;
+        Unkonwn, Base, Image, Text;
     }
 }

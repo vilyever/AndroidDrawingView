@@ -24,7 +24,7 @@ public abstract class VDLayerEraserBrush extends VDBrush {
 
     /* #Overrides */
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         return null;
     }
     
@@ -35,7 +35,7 @@ public abstract class VDLayerEraserBrush extends VDBrush {
     /* #Private Methods */    
     
     /* #Public Methods */
-    public abstract boolean shouldErase(@NonNull View layerView, @NonNull VDDrawingPath drawingPath, DrawingPointerState state);
+    public abstract boolean shouldErase(@NonNull View layerView, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state);
 
     /* #Classes */
 

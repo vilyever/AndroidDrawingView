@@ -66,7 +66,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     }
 
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, DrawingPointerState state) {
+    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() < 2) {
             return null;
         }
