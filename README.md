@@ -17,7 +17,7 @@ Step 2. Add the dependency in the form
 
 ```gradle
 dependencies {
-  compile 'com.github.vilyever:AndroidDrawingView:1.0.1'
+  compile 'com.github.vilyever:AndroidDrawingView:1.0.2'
 }
 ```
 
@@ -32,11 +32,22 @@ dependencies {
 drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
 drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
     @Override
-    public void undoStateDidChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+    public void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
         undoButton.setEnabled(canUndo);
         redoButton.setEnabled(canRedo);
     }
+
+    @Override
+    public void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+
+    }
+
+    @Override
+    public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
+        return null;
+    }
 });
+
 penBrush = VDPenBrush.defaultBrush();
 drawingView.setBrush(penBrush);
 ```
