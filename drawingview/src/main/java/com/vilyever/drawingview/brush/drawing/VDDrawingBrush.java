@@ -26,6 +26,8 @@ public abstract class VDDrawingBrush extends VDBrush {
     protected boolean isEraser;
     protected boolean oneStrokeToLayer;
 
+    protected Paint paint;
+
     /* #Constructors */
     public VDDrawingBrush() {
     }
@@ -41,10 +43,11 @@ public abstract class VDDrawingBrush extends VDBrush {
         return true;
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() < 1) {
-            return null;
+            return Frame.EmptyFrame();
         }
 
         VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
@@ -64,7 +67,7 @@ public abstract class VDDrawingBrush extends VDBrush {
             drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
         }
 
-        return self.attachBrushSpace(drawingRect);
+        return self.makeFrameWithBrushSpace(drawingRect);
     }
 
     /* #Accessors */
@@ -74,6 +77,7 @@ public abstract class VDDrawingBrush extends VDBrush {
 
     public <T extends VDDrawingBrush> T setSize(float size) {
         this.size = size;
+        self.updatePaint();
         return (T) self;
     }
 
@@ -86,6 +90,7 @@ public abstract class VDDrawingBrush extends VDBrush {
 
     public <T extends VDDrawingBrush> T setColor(int color) {
         this.color = color;
+        self.updatePaint();
         return (T) self;
     }
 
@@ -95,6 +100,7 @@ public abstract class VDDrawingBrush extends VDBrush {
 
     public <T extends VDDrawingBrush> T setIsEraser(boolean isEraser) {
         this.isEraser = isEraser;
+        self.updatePaint();
         return (T) self;
     }
 
@@ -110,34 +116,38 @@ public abstract class VDDrawingBrush extends VDBrush {
         return (T) self;
     }
 
+    public Paint getPaint() {
+        if (self.paint == null) {
+            self.paint = new Paint();
+            self.paint.setAntiAlias(true);
+            self.paint.setDither(true);
+            self.updatePaint();
+        }
+
+        return paint;
+    }
+
     /* #Delegates */
      
     /* #Private Methods */
+    protected void updatePaint() {
+        self.getPaint().setStrokeWidth(self.getSize());
+        self.getPaint().setColor(self.getColor());
+
+        if (self.isEraser()) {
+            self.getPaint().setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+        }
+    }
 
     /* #Protected Methods */
-    protected RectF attachBrushSpace(RectF drawingRect) {
-        return new RectF(drawingRect.left - self.getSize() / 2.0f,
+    protected Frame makeFrameWithBrushSpace(RectF drawingRect) {
+        return new Frame(drawingRect.left - self.getSize() / 2.0f,
                             drawingRect.top - self.getSize() / 2.0f,
                             drawingRect.right + self.getSize() / 2.0f,
                             drawingRect.bottom + self.getSize() / 2.0f);
     }
 
     /* #Public Methods */
-    public Paint getPaint() {
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setDither(true);
-        paint.setStyle(Paint.Style.STROKE);
-
-        paint.setStrokeWidth(self.getSize());
-        paint.setColor(self.getColor());
-
-        if (self.isEraser()) {
-            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        }
-
-        return paint;
-    }
 
     /* #Classes */
 

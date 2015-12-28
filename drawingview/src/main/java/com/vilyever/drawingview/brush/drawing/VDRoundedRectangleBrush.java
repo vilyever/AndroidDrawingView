@@ -48,15 +48,10 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
         return true;
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
-            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
-
-            if (state.isFetchFrame() || canvas == null) {
-                return pathFrame;
-            }
-
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
@@ -68,7 +63,13 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
 
             if ((drawingRect.right - drawingRect.left) < self.getSize()
                     || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
-                return null;
+                return Frame.EmptyFrame();
+            }
+
+            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
+
+            if (state.isFetchFrame() || canvas == null) {
+                return pathFrame;
             }
 
             float round = self.getRoundRadius() + self.getSize() / 2.0f;
@@ -84,7 +85,7 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
     
     /* #Accessors */

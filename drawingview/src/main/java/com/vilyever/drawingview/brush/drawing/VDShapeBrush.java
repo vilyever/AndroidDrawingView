@@ -41,47 +41,46 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
 
     /* #Overrides */
     @Override
-    public Paint getPaint() {
-        Paint paint = super.getPaint();
+    protected void updatePaint() {
+        super.updatePaint();
 
         switch (self.getFillType()) {
             case Hollow:
-                paint.setStyle(Paint.Style.STROKE);
+                self.getPaint().setStyle(Paint.Style.STROKE);
                 break;
             case Solid:
-                paint.setStyle(Paint.Style.FILL_AND_STROKE);
+                self.getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
                 break;
         }
 
         if (self.isEdgeRounded()) {
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            paint.setStrokeJoin(Paint.Join.ROUND);
+            self.getPaint().setStrokeCap(Paint.Cap.ROUND);
+            self.getPaint().setStrokeJoin(Paint.Join.ROUND);
         }
         else {
-            paint.setStrokeCap(Paint.Cap.SQUARE);
-            paint.setStrokeJoin(Paint.Join.MITER);
+            self.getPaint().setStrokeCap(Paint.Cap.SQUARE);
+            self.getPaint().setStrokeJoin(Paint.Join.MITER);
         }
-
-        return paint;
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() < 2) {
-            return null;
+            return Frame.EmptyFrame();
         }
         else {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            RectF pathFrame = new RectF();
+            RectF drawingRect = new RectF();
 
-            pathFrame.left = Math.min(beginPoint.x, lastPoint.x);
-            pathFrame.top = Math.min(beginPoint.y, lastPoint.y);
-            pathFrame.right = Math.max(beginPoint.x, lastPoint.x);
-            pathFrame.bottom = Math.max(beginPoint.y, lastPoint.y);
+            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
+            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
+            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
+            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
-            return self.attachBrushSpace(pathFrame);
+            return self.makeFrameWithBrushSpace(drawingRect);
         }
     }
 
@@ -90,11 +89,16 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
         if (self.isEraser()) {
             return FillType.Solid;
         }
+
+        if (self.fillType == null) {
+            return FillType.Hollow;
+        }
         return fillType;
     }
 
     public <T extends VDShapeBrush> T setFillType(FillType fillType) {
         this.fillType = fillType;
+        self.updatePaint();
         return (T) self;
     }
 
@@ -104,6 +108,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
 
     public <T extends VDShapeBrush> T setEdgeRounded(boolean edgeRounded) {
         this.edgeRounded = edgeRounded;
+        self.updatePaint();
         return (T) self;
     }
 

@@ -41,6 +41,8 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
 
     private boolean handling;
 
+    private boolean canHandle;
+
     /* #Constructors */
     public VDDrawingLayerImageView(Context context) {
         super(context);
@@ -92,6 +94,10 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         return drawnSteps;
     }
 
+    public boolean isCanHandle() {
+        return canHandle;
+    }
+
     /* #Delegates */
     // VDDrawingLayerViewDelegate
     @Override
@@ -101,7 +107,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     }
 
     @Override
-    public RectF appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+    public VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
         if (drawingStep.getStepType() != VDDrawingStep.StepType.CreateLayer
                 && drawingStep.getStepType() != VDDrawingStep.StepType.Draw
                 && drawingStep.getStepType() != VDDrawingStep.StepType.Transform) {
@@ -121,7 +127,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
             return null;
         }
 
-        RectF frame = null;
+        VDBrush.Frame frame = null;
         if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer) { // 图层第一笔确定图层大小
             frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), drawingStep.getDrawingState().newStateByJoin(VDBrush.DrawingPointerState.FetchFrame));
             drawingStep.getDrawingLayer().setFrame(frame);
@@ -152,6 +158,16 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     public void setHandling(boolean handling) {
         self.handling = handling;
         self.invalidate();
+    }
+
+    @Override
+    public boolean canHandle() {
+        return self.canHandle;
+    }
+
+    @Override
+    public void setCanHandle(boolean canHandle) {
+        self.canHandle = canHandle;
     }
 
     /* #Private Methods */

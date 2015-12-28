@@ -17,7 +17,6 @@ import com.vilyever.drawingview.brush.drawing.VDCircleBrush;
 import com.vilyever.drawingview.brush.drawing.VDDrawingBrush;
 import com.vilyever.drawingview.brush.drawing.VDEllipseBrush;
 import com.vilyever.drawingview.brush.drawing.VDIsoscelesTriangleBrush;
-import com.vilyever.drawingview.brush.layereraser.VDLayerEraserPenBrush;
 import com.vilyever.drawingview.brush.drawing.VDLineBrush;
 import com.vilyever.drawingview.brush.drawing.VDPenBrush;
 import com.vilyever.drawingview.brush.drawing.VDPolygonBrush;
@@ -92,6 +91,11 @@ public class DrawingFragment extends Fragment {
             public void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
                 self.undoButton.setEnabled(canUndo);
                 self.redoButton.setEnabled(canRedo);
+            }
+
+            @Override
+            public void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+
             }
 
             @Override
@@ -212,8 +216,6 @@ public class DrawingFragment extends Fragment {
                 for (VDDrawingBrush brush : self.shapeBrushes) {
                     brush.setIsEraser(v.isSelected());
                 }
-
-                self.drawingView.setBrush(new VDLayerEraserPenBrush());
             }
         });
 

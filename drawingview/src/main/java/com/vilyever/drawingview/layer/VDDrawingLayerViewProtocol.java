@@ -1,8 +1,8 @@
 package com.vilyever.drawingview.layer;
 
-import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.drawingview.model.VDDrawingStep;
 
 import java.util.List;
@@ -21,10 +21,13 @@ public interface VDDrawingLayerViewProtocol {
      * @param drawingStep
      * @return current step's frame
      */
-    RectF appendWithDrawingStep(@NonNull VDDrawingStep drawingStep);
+    VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep);
 
     void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps);
 
     int getLayerHierarchy();
     void setHandling(boolean handling);
+
+    boolean canHandle();
+    void setCanHandle(boolean canHandle);
 }

@@ -37,8 +37,9 @@ public class VDLineBrush extends VDShapeBrush {
     }
 
     /* #Overrides */
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -49,9 +50,9 @@ public class VDLineBrush extends VDShapeBrush {
             drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
             drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
 
-            RectF pathFrame;
+            Frame pathFrame;
             if (!self.isEdgeRounded()) {
-                pathFrame = new RectF(drawingRect);
+                pathFrame = new Frame(drawingRect);
 
                 // 计算画笔延展宽高
                 double x = drawingRect.right - drawingRect.left;
@@ -92,7 +93,7 @@ public class VDLineBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     /* #Accessors */     

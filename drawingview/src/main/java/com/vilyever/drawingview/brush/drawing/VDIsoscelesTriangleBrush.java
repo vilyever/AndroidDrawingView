@@ -39,16 +39,19 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public Paint getPaint() {
-        Paint paint = super.getPaint();
-        paint.setStrokeMiter(Integer.MAX_VALUE);
-        paint.setStrokeWidth(0);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        return paint;
+    protected void updatePaint() {
+        super.updatePaint();
+
+        if (!self.isEdgeRounded()) {
+            self.paint.setStrokeMiter(Integer.MAX_VALUE);
+            self.paint.setStrokeWidth(0);
+            self.paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        }
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -61,7 +64,7 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
 
             if ((drawingRect.right - drawingRect.left) < self.getSize() * 2.0f
                     || (drawingRect.bottom - drawingRect.top) < self.getSize() * 2.0f) {
-                return null;
+                return Frame.EmptyFrame();
             }
 
 //            锐角距差计算，改用新算法
@@ -80,51 +83,59 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
 //
 //            pathFrame.bottom += self.getSize() / 2.0f;
 
-            double w = self.getSize() / 2.0; // 内外间距
-            double x = drawingRect.right - drawingRect.left; // 底边
-            double h = drawingRect.bottom - drawingRect.top; // 高
-            double a = Math.atan(x / 2.0 / h) * 2.0; // 顶角
-            double b = (Math.PI - a) / 2.0; // 底角
-            double dy = w / Math.sin(a / 2.0); // y差值
-            double dx = w / Math.tan(b / 2.0); // x差值
+            Path path = new Path();
+            Frame pathFrame;
 
-            RectF outerRect = new RectF(drawingRect);
-            outerRect.left -= dx;
-            outerRect.top -= dy;
-            outerRect.right += dx;
-            outerRect.bottom += self.getSize() / 2.0f;
+            if (self.isEdgeRounded()) {
+                pathFrame = super.drawPath(canvas, drawingPath, state);
+                if (state.isFetchFrame() || canvas == null) {
+                    return pathFrame;
+                }
 
-            RectF innerRect = new RectF(drawingRect);
-            innerRect.left += dx;
-            innerRect.top += dy;
-            innerRect.right -= dx;
-            innerRect.bottom -= self.getSize() / 2.0f;
-
-            RectF pathFrame;
-            if (!self.isEdgeRounded()) {
-                pathFrame = new RectF(outerRect);
+                path.moveTo(drawingRect.left, drawingRect.bottom);
+                path.lineTo(drawingRect.right, drawingRect.bottom);
+                path.lineTo((drawingRect.left + drawingRect.right) / 2.0f, drawingRect.top);
+                path.lineTo(drawingRect.left, drawingRect.bottom);
             }
             else {
-                pathFrame = super.drawPath(canvas, drawingPath, state);
-            }
+                double w = self.getSize() / 2.0; // 内外间距
+                double x = drawingRect.right - drawingRect.left; // 底边
+                double h = drawingRect.bottom - drawingRect.top; // 高
+                double a = Math.atan(x / 2.0 / h) * 2.0; // 顶角
+                double b = (Math.PI - a) / 2.0; // 底角
+                double dy = w / Math.sin(a / 2.0); // y差值
+                double dx = w / Math.tan(b / 2.0); // x差值
 
-            if (state.isFetchFrame() || canvas == null) {
-                return pathFrame;
-            }
+                RectF outerRect = new RectF(drawingRect);
+                outerRect.left -= dx;
+                outerRect.top -= dy;
+                outerRect.right += dx;
+                outerRect.bottom += self.getSize() / 2.0f;
 
-            Path path = new Path();
-            path.moveTo(outerRect.left, outerRect.bottom);
-            path.lineTo(outerRect.right, outerRect.bottom);
-            path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
-            path.lineTo(outerRect.left, outerRect.bottom);
+                RectF innerRect = new RectF(drawingRect);
+                innerRect.left += dx;
+                innerRect.top += dy;
+                innerRect.right -= dx;
+                innerRect.bottom -= self.getSize() / 2.0f;
 
-            if (self.getFillType() == FillType.Hollow) {
-                path.lineTo(innerRect.left, innerRect.bottom);
-                path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.top);
-                path.lineTo(innerRect.right, innerRect.bottom);
-                path.lineTo(innerRect.left, innerRect.bottom);
+                pathFrame = new Frame(outerRect);
+                if (state.isFetchFrame() || canvas == null) {
+                    return pathFrame;
+                }
 
+                path.moveTo(outerRect.left, outerRect.bottom);
+                path.lineTo(outerRect.right, outerRect.bottom);
+                path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
                 path.lineTo(outerRect.left, outerRect.bottom);
+
+                if (self.getFillType() == FillType.Hollow) {
+                    path.lineTo(innerRect.left, innerRect.bottom);
+                    path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.top);
+                    path.lineTo(innerRect.right, innerRect.bottom);
+                    path.lineTo(innerRect.left, innerRect.bottom);
+
+                    path.lineTo(outerRect.left, outerRect.bottom);
+                }
             }
 
             if (state.isCalibrateToOrigin()) {
@@ -136,7 +147,7 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     /* #Accessors */

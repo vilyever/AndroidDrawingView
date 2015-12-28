@@ -37,21 +37,15 @@ public class VDEllipseBrush extends VDShapeBrush {
     }
 
     /* #Overrides */
-
     @Override
     public boolean isEdgeRounded() {
         return true;
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
-            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
-
-            if (state.isFetchFrame() || canvas == null) {
-                return pathFrame;
-            }
-
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
@@ -63,7 +57,13 @@ public class VDEllipseBrush extends VDShapeBrush {
 
             if ((drawingRect.right - drawingRect.left) < self.getSize()
                     || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
-                return null;
+                return Frame.EmptyFrame();
+            }
+
+            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
+
+            if (state.isFetchFrame() || canvas == null) {
+                return pathFrame;
             }
 
             Path path = new Path();
@@ -84,7 +84,7 @@ public class VDEllipseBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
     
     /* #Accessors */     

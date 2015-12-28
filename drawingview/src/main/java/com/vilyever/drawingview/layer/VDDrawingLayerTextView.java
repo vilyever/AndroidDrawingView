@@ -46,6 +46,8 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
 
     private boolean handling;
 
+    private boolean canHandle;
+
     /* #Constructors */
     public VDDrawingLayerTextView(Context context) {
         super(context);
@@ -115,7 +117,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     }
 
     @Override
-    public RectF appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+    public VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
         if (drawingStep.getStepType() != VDDrawingStep.StepType.CreateLayer
                 && drawingStep.getStepType() != VDDrawingStep.StepType.Text
                 && drawingStep.getStepType() != VDDrawingStep.StepType.Transform) {
@@ -128,7 +130,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
             }
         }
 
-        RectF frame = null;
+        VDBrush.Frame frame = null;
         if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer) { // 图层第一笔确定图层大小，字体属性
             frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), drawingStep.getDrawingState().newStateByJoin(VDBrush.DrawingPointerState.FetchFrame));
             drawingStep.getDrawingLayer().setFrame(frame);
@@ -159,6 +161,16 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     public void setHandling(boolean handling) {
         self.handling = handling;
         self.invalidate();
+    }
+
+    @Override
+    public boolean canHandle() {
+        return self.canHandle;
+    }
+
+    @Override
+    public void setCanHandle(boolean canHandle) {
+        self.canHandle = canHandle;
     }
 
     /* #Private Methods */

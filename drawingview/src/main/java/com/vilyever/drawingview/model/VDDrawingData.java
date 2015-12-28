@@ -1,5 +1,10 @@
 package com.vilyever.drawingview.model;
 
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -138,7 +143,13 @@ public class VDDrawingData {
 
     public boolean undo() {
         if (self.canUndo()) {
-            self.showingStepIndex--;
+            if (!self.getDrawingStep().isStepOver()) {
+                self.cancelDrawingStep();
+            }
+            else {
+                self.showingStepIndex--;
+            }
+            return true;
         }
         return false;
     }
@@ -146,11 +157,25 @@ public class VDDrawingData {
     public boolean redo() {
         if (self.canRedo()) {
             self.showingStepIndex++;
+            return true;
         }
         return false;
     }
 
     /* #Classes */
+    public class Ttt extends Service {
+
+        @Nullable
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public boolean onUnbind(Intent intent) {
+            return super.onUnbind(intent);
+        }
+    }
 
     /* #Interfaces */     
      

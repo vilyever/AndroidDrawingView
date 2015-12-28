@@ -30,6 +30,11 @@ public class VDDrawingLayerContainer extends RelativeLayout {
     private OnTouchListener layerOnTouchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
+            VDDrawingLayerViewProtocol layerViewProtocol = (VDDrawingLayerViewProtocol) v;
+            if (!layerViewProtocol.canHandle()) {
+                return false;
+            }
+
             if (v instanceof VDDrawingLayerTextView) {
                 VDDrawingLayerTextView textView = (VDDrawingLayerTextView) v;
                 if (textView.isEditing()) {
@@ -74,7 +79,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
 
                 if (self.gestureViewOperationState == GestureViewOperation.None.state()) { // no change for gestureView
                     self.gestureView = null;
-                    return true;
+                    return false;
                 }
 
                 if (self.gestureView instanceof VDDrawingLayerTextView) { // when text view editing, disable move, scale and rotate
@@ -83,7 +88,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                         if (textView.isEditing()) {
                             self.gestureView = null;
                             self.gestureViewOperationState = GestureViewOperation.None.state();
-                            return true;
+                            return false;
                         }
                     }
                 }
@@ -94,6 +99,8 @@ public class VDDrawingLayerContainer extends RelativeLayout {
 
                 self.gestureView = null;
                 self.gestureViewOperationState = GestureViewOperation.None.state();
+
+                return false;
             }
 
             return true;

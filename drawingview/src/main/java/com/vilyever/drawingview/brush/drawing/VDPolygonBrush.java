@@ -2,7 +2,6 @@ package com.vilyever.drawingview.brush.drawing;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
@@ -52,8 +51,9 @@ public class VDPolygonBrush extends VDShapeBrush {
         return true;
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -69,17 +69,17 @@ public class VDPolygonBrush extends VDShapeBrush {
             }
             endPoints.add(lastPoint);
 
-            boolean drawOver = false;
+            boolean requireMoreDetail = true;
             if (beginPoint.pointerID != lastPoint.pointerID
                     && Math.abs(beginPoint.x - lastPoint.x) < (16.0f + self.getSize())
                     && Math.abs(beginPoint.y - lastPoint.y) < (16.0f + self.getSize())) {
                 endPoints.remove(lastPoint);
                 endPoints.add(beginPoint);
-                drawOver = true;
+                requireMoreDetail = false;
             }
             else if (state.isForceFinish()) {
                 endPoints.add(beginPoint);
-                drawOver = true;
+                requireMoreDetail = false;
             }
 
             RectF drawingRect = new RectF();
@@ -96,7 +96,8 @@ public class VDPolygonBrush extends VDShapeBrush {
                 drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
             }
 
-            RectF pathFrame = self.attachBrushSpace(drawingRect);;
+            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
+            pathFrame.requireMoreDetail = requireMoreDetail;
 
             if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
@@ -112,13 +113,12 @@ public class VDPolygonBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            Paint paint = self.getPaint();
-            canvas.drawPath(path, paint);
+            canvas.drawPath(path, self.getPaint());
 
-            return drawOver ? pathFrame : UnfinishFrame;
+            return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     /* #Accessors */

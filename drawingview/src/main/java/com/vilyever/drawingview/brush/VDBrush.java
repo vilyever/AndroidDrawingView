@@ -1,7 +1,10 @@
 package com.vilyever.drawingview.brush;
 
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.model.VDDrawingPath;
@@ -17,9 +20,6 @@ import com.vilyever.jsonmodel.VDModel;
 public abstract class VDBrush extends VDModel {
     final VDBrush self = this;
 
-    // 在判断一笔是否结束时，未能满足结束条件时返回的Frame
-    public static final RectF UnfinishFrame = new RectF(-1, -1, -1, -1);
-    
     /* #Constructors */    
     
     /* #Overrides */    
@@ -40,9 +40,10 @@ public abstract class VDBrush extends VDModel {
      * @param canvas the canvas in drawing
      * @param drawingPath the path will draw
      * @param state drawing state
-     * @return 绘制图形所处的Frame，不同state可能返回不同坐标，若返回null表示path不足以作图，若返回UnfinishFrame表示当前path不能完成作图，需要进一步触摸绘制
+     * @return 绘制图形所处的Frame，不同state可能返回不同坐标，若返回EmptyFrame表示path不足以作图，若返回requireMoreDetail为true表示当前path不能完成作图，需要进一步触摸绘制
      */
-    public abstract RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state);
+    @NonNull
+    public abstract Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state);
 
     /**
      *
@@ -53,6 +54,63 @@ public abstract class VDBrush extends VDModel {
     }
 
     /* #Classes */
+    public static class Frame extends RectF {
+        public boolean requireMoreDetail;
+
+        public Frame() {
+
+        }
+
+        public Frame(float left, float top, float right, float bottom) {
+            super(left, top, right, bottom);
+        }
+
+        public Frame(RectF r) {
+            super(r);
+        }
+
+        public Frame(Rect r) {
+            super(r);
+        }
+
+        public Frame(Frame f) {
+            super(f);
+        }
+
+        public static Frame EmptyFrame() {
+            return new Frame(-1, -1, -1, -1);
+        }
+
+        public int describeContents() {
+            return 0;
+        }
+
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeByte((byte) (requireMoreDetail ? 1 : 0));
+        }
+
+        public static final Parcelable.Creator<Frame> CREATOR = new Parcelable.Creator<Frame>() {
+            public Frame createFromParcel(Parcel in) {
+                Frame f = new Frame();
+                f.readFromParcel(in);
+                return f;
+            }
+
+            /**
+             * Return an array of rectangles of the specified size.
+             */
+            public Frame[] newArray(int size) {
+                return new Frame[size];
+            }
+        };
+
+        public void readFromParcel(Parcel in) {
+            super.readFromParcel(in);
+            requireMoreDetail = in.readByte() != 0;
+        }
+    }
+
 
     /* #Interfaces */     
      

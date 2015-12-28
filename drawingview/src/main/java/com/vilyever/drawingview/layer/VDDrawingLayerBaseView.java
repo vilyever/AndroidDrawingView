@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -135,7 +134,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     }
 
     @Override
-    public RectF appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+    public VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
         if (self.isBusying()) {
             return null;
         }
@@ -162,18 +161,18 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
             return null;
         }
 
+        VDBrush.Frame frame = null;
+
         self.checkDrawingBitmap();
         if (self.drawingCanvas != null) {
             self.drawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             if (self.tempBitmap != null) {
                 self.drawingCanvas.drawBitmap(self.tempBitmap, 0, 0, null);
             }
-            self.currentDrawingStep.getBrush().drawPath(self.drawingCanvas, self.currentDrawingStep.getDrawingPath(), drawingStep.getDrawingState());
+            frame = self.currentDrawingStep.getBrush().drawPath(self.drawingCanvas, self.currentDrawingStep.getDrawingPath(), drawingStep.getDrawingState());
+            drawingStep.getDrawingLayer().setFrame(frame);
             self.invalidate();
         }
-
-        RectF frame = drawingStep.getBrush().drawPath(null, drawingStep.getDrawingPath(), drawingStep.getDrawingState().newStateByJoin(VDBrush.DrawingPointerState.FetchFrame));
-        drawingStep.getDrawingLayer().setFrame(frame);
 
         return frame;
     }
@@ -205,6 +204,16 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
 
     @Override
     public void setHandling(boolean handling) {
+    }
+
+    @Override
+    public boolean canHandle() {
+        return false;
+    }
+
+    @Override
+    public void setCanHandle(boolean canHandle) {
+
     }
 
     /* #Private Methods */

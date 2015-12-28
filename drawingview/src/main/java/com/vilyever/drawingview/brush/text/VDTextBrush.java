@@ -29,6 +29,11 @@ public class VDTextBrush extends VDBrush {
     protected int color;
     protected int typefaceStyle; // Typeface.NORMAL || Typeface.BOLD || Typeface.ITALIC || Typeface.BOLD_ITALIC or any created Typeface
 
+    protected TextPaint textPaint;
+
+    protected float minTextWidth;
+    protected float minTextHeight;
+
     /* #Constructors */
     public VDTextBrush() {
     }
@@ -52,6 +57,7 @@ public class VDTextBrush extends VDBrush {
 
     public <T extends VDTextBrush> T setSize(float size) {
         this.size = size;
+        self.updateTextPaint();
         return (T) self;
     }
 
@@ -61,6 +67,7 @@ public class VDTextBrush extends VDBrush {
 
     public <T extends VDTextBrush> T setColor(int color) {
         this.color = color;
+        self.updateTextPaint();
         return (T) self;
     }
 
@@ -70,20 +77,50 @@ public class VDTextBrush extends VDBrush {
 
     public <T extends VDTextBrush> T setTypefaceStyle(int typefaceStyle) {
         this.typefaceStyle = typefaceStyle;
+        self.updateTextPaint();
         return (T) self;
+    }
+
+    public TextPaint getTextPaint() {
+        if (self.textPaint == null) {
+            self.textPaint = new TextPaint();
+            self.textPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+
+            self.updateTextPaint();
+        }
+        return textPaint;
     }
 
     /* #Delegates */
 
     /* #Private Methods */
+    protected void updateTextPaint() {
+        self.getTextPaint().setTextSize(self.getSize());
+        self.getTextPaint().setColor(self.getColor());
+        self.getTextPaint().setTypeface(Typeface.create((String) null, self.getTypefaceStyle()));
+    }
+
+    protected void updateTextInfo() {
+        Paint.FontMetrics fontMetrics = self.getTextPaint().getFontMetrics();
+
+        Rect result = new Rect();
+        self.getTextPaint().getTextBounds("█", 0, "█".length(), result);
+
+//        self.minTextWidth = self.getTextPaint().measureText("　") * 20.0f;
+//        self.minTextHeight = fontMetrics.ascent + fontMetrics.descent + fontMetrics.leading;
+
+        self.minTextWidth = result.width() * 22;
+        self.minTextHeight = result.height();
+    }
 
     /* #Public Methods */
     /**
      * drawing text layer border
      * @return
      */
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 0) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -97,33 +134,19 @@ public class VDTextBrush extends VDBrush {
             drawingRect.left -= BorderMargin;
             drawingRect.top -= BorderMargin * 3;
 
-            TextPaint textPaint = new TextPaint();
-            textPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
-            textPaint.setTextSize(self.getSize());
-            textPaint.setColor(self.getColor());
-            Paint.FontMetrics fontMetrics = textPaint.getFontMetrics();
+            self.updateTextInfo();
+            drawingRect.right = Math.max(drawingRect.right, drawingRect.left + self.minTextWidth + BorderMargin);
+            drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + self.minTextHeight + BorderMargin * 4);
 
-            Rect result = new Rect();
-            textPaint.getTextBounds("█", 0, "█".length(), result);
-
-            float minTextWidth = textPaint.measureText("　") * 20.0f;
-            float minTextHeight = fontMetrics.ascent + fontMetrics.descent + fontMetrics.leading;
-
-            minTextWidth = result.width() * 22;
-            minTextHeight = result.height();
-
-            drawingRect.right = Math.max(drawingRect.right, drawingRect.left + minTextWidth + BorderMargin);
-            drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + minTextHeight + BorderMargin * 4);
-
-            RectF pathFrame = new RectF(drawingRect);
+            Frame pathFrame = new Frame(drawingRect);
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     public static VDTextBrush defaultBrush() {
-        return new VDTextBrush(20, Color.BLACK);
+        return new VDTextBrush(14, Color.BLACK);
     }
 
     /* #Classes */

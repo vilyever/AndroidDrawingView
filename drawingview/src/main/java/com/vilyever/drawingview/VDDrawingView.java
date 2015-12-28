@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 
 import com.vilyever.drawingview.brush.VDBrush;
@@ -44,7 +45,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     private VDDrawingData drawingData;
 
+    private boolean touching;
+
     private VDBrush brush;
+    private boolean brushChanged;
 
     private VDDrawingLayerBaseView baseLayerImageView;
 
@@ -69,6 +73,25 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /* #Overrides */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                if (self.getDelegate() != null) {
+                    self.getDelegate().didInterceptTouchEvent(self, true);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if (self.getDelegate() != null) {
+                    self.getDelegate().didInterceptTouchEvent(self, false);
+                }
+                break;
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
     private boolean shouldOnTouch; // for limit only first finger can draw.
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -82,6 +105,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         // only handle the first touch finger
         if (action == MotionEvent.ACTION_DOWN) {
             self.shouldOnTouch = true;
+
+            if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Text
+                    && !self.getCurrentDrawingStep().isStepOver()) {
+                self.endUnfinishedStep();
+                self.shouldOnTouch = false;
+            }
         }
 
         if (!shouldOnTouch) {
@@ -96,6 +125,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                self.touching = true;
                 self.getParent().requestDisallowInterceptTouchEvent(true);
                 self.beginDraw(event.getX(), event.getY());
                 break;
@@ -106,6 +136,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case MotionEvent.ACTION_CANCEL:
                 self.endDraw(event.getX(), event.getY());
                 self.getParent().requestDisallowInterceptTouchEvent(false);
+                self.touching = false;
                 break;
         }
 
@@ -147,7 +178,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     public void setBrush(VDBrush brush) {
         this.brush = brush;
 
-        self.endUnfinishedStep();
+        self.brushChanged = true;
     }
 
     /* #Delegates */
@@ -242,7 +273,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     private void beginDraw(float x, float y) {
-        if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Text) {
+        if (self.brushChanged) {
+            self.brushChanged = false;
             self.endUnfinishedStep();
         }
 
@@ -308,8 +340,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case Base:
             case Image:
                 self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.TouchUp));
-                boolean stepOver = self.handlingLayerView.appendWithDrawingStep(self.getCurrentDrawingStep())
-                        != VDBrush.UnfinishFrame;
+                boolean stepOver = !self.handlingLayerView.appendWithDrawingStep(self.getCurrentDrawingStep()).requireMoreDetail;
 
                 if (stepOver) {
                     self.finishDraw();
@@ -403,10 +434,21 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     private void cancelCurrentStep() {
-        self.getDrawingData().cancelDrawingStep();
+        if (!self.getCurrentDrawingStep().isStepOver()) {
+            self.getDrawingData().cancelDrawingStep();
+        }
     }
 
     private void overCurrentStep() {
+        switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
+            case Base:
+                break;
+            case Image:
+            case Text:
+                self.handlingLayerView.setCanHandle(true);
+                break;
+        }
+
         self.getCurrentDrawingStep().setStepOver(true);
         if (self.getDelegate() != null) {
             self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
@@ -476,6 +518,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     private void nativeClear() {
+        InputMethodManager imm = (InputMethodManager) self.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(self.getWindowToken(), 0);
+
         self.layerContainer.clear();
 
         if (self.layerViews.size() > 1) {
@@ -535,6 +580,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         self.layerViews.add(imageView);
 
                         imageView.refreshWithDrawnSteps(layerSteps.get(layerHierarchy));
+                        imageView.setCanHandle(true);
                         break;
                     }
                     case Text: {
@@ -543,6 +589,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         self.layerViews.add(textView);
 
                         textView.refreshWithDrawnSteps(layerSteps.get(layerHierarchy));
+                        textView.setCanHandle(true);
                         break;
                     }
                 }
@@ -570,6 +617,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /* #Public Methods */
     public void clear() {
+        if (self.touching) {
+            return;
+        }
+
         if (self.getCurrentDrawingStep().isCleared()) { // means current state is clear
             return;
         }
@@ -617,7 +668,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     public void refreshWithDrawingData(VDDrawingData data) {
-        self.cancelCurrentStep();
+        if (data == self.drawingData) {
+            return;
+        }
         self.drawingData = data;
         self.nativeClear();
         self.nativeDrawData();
@@ -674,6 +727,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     public boolean deleteHandlingLayer() {
+        if (self.touching) {
+            return false;
+        }
         if (self.handlingLayerView != null
                 && self.handlingLayerView.getLayerHierarchy() > 0
                 && self.getCurrentDrawingStep().isStepOver()) {
@@ -693,7 +749,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     public boolean undo() {
         if (self.canUndo()) {
-            self.endUnfinishedStep();
             self.getDrawingData().undo();
             self.nativeClear();
             self.nativeDrawData();
@@ -701,13 +756,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             if (self.getDelegate() != null) {
                 self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
             }
+
+            return true;
         }
         return false;
     }
 
     public boolean redo() {
         if (self.canRedo()) {
-            self.endUnfinishedStep();
             self.getDrawingData().redo();
             self.nativeClear();
             self.nativeDrawData();
@@ -715,16 +771,18 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             if (self.getDelegate() != null) {
                 self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
             }
+
+            return true;
         }
         return false;
     }
 
     public boolean canUndo() {
-        return self.getDrawingData().canUndo();
+        return !self.touching && self.getDrawingData().canUndo();
     }
 
     public boolean canRedo() {
-        return self.getDrawingData().canRedo();
+        return !self.touching && self.getDrawingData().canRedo();
     }
 
     /* #Classes */
@@ -732,10 +790,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     /* #Interfaces */
     public interface DrawingDelegate {
         void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo);
+        void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept);
         Drawable gainBackground(VDDrawingView drawingView, String identifier);
     }
 
     /* #Annotations @interface */
 
     /* #Enums */
+
 }

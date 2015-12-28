@@ -39,16 +39,19 @@ public class VDRhombusBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public Paint getPaint() {
-        Paint paint = super.getPaint();
-        paint.setStrokeMiter(Integer.MAX_VALUE);
-        paint.setStrokeWidth(0);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        return paint;
+    protected void updatePaint() {
+        super.updatePaint();
+
+        if (!self.isEdgeRounded()) {
+            self.paint.setStrokeMiter(Integer.MAX_VALUE);
+            self.paint.setStrokeWidth(0);
+            self.paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        }
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -61,7 +64,7 @@ public class VDRhombusBrush extends VDShapeBrush {
 
             if ((drawingRect.right - drawingRect.left) < self.getSize() * 2.0f
                     || (drawingRect.bottom - drawingRect.top) < self.getSize() * 2.0f) {
-                return null;
+                return Frame.EmptyFrame();
             }
 
 //            锐角距差计算，改用新算法
@@ -79,52 +82,62 @@ public class VDRhombusBrush extends VDShapeBrush {
 //            pathFrame.right += x * (factor - 1) / 2.0f;
 //            pathFrame.bottom += h * (factor - 1);
 
-            double w = self.getSize() / 2.0; // 内外间距
-            double x = drawingRect.right - drawingRect.left; // 上三角形底边
-            double h = (drawingRect.bottom - drawingRect.top) / 2.0; // 上三角形高
-            double a = Math.atan(x / 2.0 / h) * 2.0; // 顶角
-            double b = Math.PI - a; // 侧角
-            double dy = w / Math.sin(a / 2.0); // y差值
-            double dx = w / Math.sin(b / 2.0); // x差值
+            Path path = new Path();
+            Frame pathFrame;
 
-            RectF outerRect = new RectF(drawingRect);
-            outerRect.left -= dx;
-            outerRect.top -= dy;
-            outerRect.right += dx;
-            outerRect.bottom += dy;
+            if (self.isEdgeRounded()) {
+                pathFrame = super.drawPath(canvas, drawingPath, state);
+                if (state.isFetchFrame() || canvas == null) {
+                    return pathFrame;
+                }
 
-            RectF innerRect = new RectF(drawingRect);
-            innerRect.left += dx;
-            innerRect.top += dy;
-            innerRect.right -= dx;
-            innerRect.bottom -= dy;
-
-            RectF pathFrame;
-            if (!self.isEdgeRounded()) {
-                pathFrame = new RectF(outerRect);
+                path.moveTo(drawingRect.left, (drawingRect.top + drawingRect.bottom) / 2.0f);
+                path.lineTo((drawingRect.left + drawingRect.right) / 2.0f, drawingRect.bottom);
+                path.lineTo(drawingRect.right, (drawingRect.top + drawingRect.bottom) / 2.0f);
+                path.lineTo((drawingRect.left + drawingRect.right) / 2.0f, drawingRect.top);
+                path.lineTo(drawingRect.left, (drawingRect.top + drawingRect.bottom) / 2.0f);
             }
             else {
-                pathFrame = super.drawPath(canvas, drawingPath, state);
-            }
+                double w = self.getSize() / 2.0; // 内外间距
+                double x = drawingRect.right - drawingRect.left; // 上三角形底边
+                double h = (drawingRect.bottom - drawingRect.top) / 2.0; // 上三角形高
+                double a = Math.atan(x / 2.0 / h) * 2.0; // 顶角
+                double b = Math.PI - a; // 侧角
+                double dy = w / Math.sin(a / 2.0); // y差值
+                double dx = w / Math.sin(b / 2.0); // x差值
 
-            if (state.isFetchFrame() || canvas == null) {
-                return pathFrame;
-            }
-            Path path = new Path();
-            path.moveTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
-            path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
-            path.lineTo(outerRect.right, (outerRect.top + outerRect.bottom) / 2.0f);
-            path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.bottom);
-            path.lineTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
+                RectF outerRect = new RectF(drawingRect);
+                outerRect.left -= dx;
+                outerRect.top -= dy;
+                outerRect.right += dx;
+                outerRect.bottom += dy;
 
-            if (self.getFillType() == FillType.Hollow) {
-                path.lineTo(innerRect.left, (innerRect.top + innerRect.bottom) / 2.0f);
-                path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.bottom);
-                path.lineTo(innerRect.right, (innerRect.top + innerRect.bottom) / 2.0f);
-                path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.top);
-                path.lineTo(innerRect.left, (innerRect.top + innerRect.bottom) / 2.0f);
+                RectF innerRect = new RectF(drawingRect);
+                innerRect.left += dx;
+                innerRect.top += dy;
+                innerRect.right -= dx;
+                innerRect.bottom -= dy;
 
+                pathFrame = new Frame(outerRect);
+                if (state.isFetchFrame() || canvas == null) {
+                    return pathFrame;
+                }
+
+                path.moveTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
+                path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
+                path.lineTo(outerRect.right, (outerRect.top + outerRect.bottom) / 2.0f);
+                path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.bottom);
                 path.lineTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
+
+                if (self.getFillType() == FillType.Hollow) {
+                    path.lineTo(innerRect.left, (innerRect.top + innerRect.bottom) / 2.0f);
+                    path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.bottom);
+                    path.lineTo(innerRect.right, (innerRect.top + innerRect.bottom) / 2.0f);
+                    path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.top);
+                    path.lineTo(innerRect.left, (innerRect.top + innerRect.bottom) / 2.0f);
+
+                    path.lineTo(outerRect.left, (outerRect.top + outerRect.bottom) / 2.0f);
+                }
             }
 
             if (state.isCalibrateToOrigin()) {
@@ -136,7 +149,7 @@ public class VDRhombusBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     /* #Accessors */

@@ -4,7 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
 import com.vilyever.drawingview.model.VDDrawingPath;
@@ -31,25 +30,20 @@ public class VDPenBrush extends VDDrawingBrush {
 
     /* #Overrides */
     @Override
-    public Paint getPaint() {
-        Paint paint = super.getPaint();
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStrokeMiter(0);
-        return paint;
+    protected void updatePaint() {
+        super.updatePaint();
+
+        self.getPaint().setStyle(Paint.Style.STROKE);
+        self.getPaint().setStrokeCap(Paint.Cap.ROUND);
+        self.getPaint().setStrokeJoin(Paint.Join.ROUND);
+        self.getPaint().setStrokeMiter(0);
     }
 
+    @NonNull
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 0) {
-            RectF pathFrame = super.drawPath(canvas, drawingPath, state);
-
-//            if (state == DrawingPointerState.ForceFinishFetchFrame) {
-//                return pathFrame;
-//            }
-//            else if (state == DrawingPointerState.FetchFrame || canvas == null) {
-//                return pathFrame;
-//            }
+            Frame pathFrame = super.drawPath(canvas, drawingPath, state);
 
             if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
@@ -58,10 +52,10 @@ public class VDPenBrush extends VDDrawingBrush {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            Paint paint = self.getPaint();
+            self.updatePaint();
             Path path = new Path();
             if (drawingPath.getPoints().size() == 1) {
-                paint.setStyle(Paint.Style.FILL);
+                self.getPaint().setStyle(Paint.Style.FILL);
                 path.addCircle(beginPoint.x, beginPoint.y, self.getSize() / 2.0f, Path.Direction.CW);
             }
             else if (drawingPath.getPoints().size() > 1) {
@@ -89,18 +83,16 @@ public class VDPenBrush extends VDDrawingBrush {
                 }
             }
 
-//            if (state == DrawingPointerState.CalibrateToOrigin
-//                    || state == DrawingPointerState.ForceCalibrateToOrigin) {
             if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, paint);
+            canvas.drawPath(path, self.getPaint());
 
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     @Override

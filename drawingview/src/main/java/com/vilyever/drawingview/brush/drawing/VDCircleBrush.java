@@ -38,7 +38,13 @@ public class VDCircleBrush extends VDShapeBrush {
 
     /* #Overrides */
     @Override
-    public RectF drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public boolean isEdgeRounded() {
+        return true;
+    }
+
+    @NonNull
+    @Override
+    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
@@ -55,10 +61,10 @@ public class VDCircleBrush extends VDShapeBrush {
 
             if ((drawingRect.right - drawingRect.left) < self.getSize()
                     || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
-                return null;
+                return Frame.EmptyFrame();
             }
 
-            RectF pathFrame = self.attachBrushSpace(drawingRect);
+            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
 
             if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
@@ -76,7 +82,7 @@ public class VDCircleBrush extends VDShapeBrush {
             return pathFrame;
         }
 
-        return null;
+        return Frame.EmptyFrame();
     }
 
     /* #Accessors */
@@ -92,9 +98,9 @@ public class VDCircleBrush extends VDShapeBrush {
 
     /* #Classes */
 
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
+    /* #Interfaces */
+
+    /* #Annotations @interface */
     
     /* #Enums */
 }
