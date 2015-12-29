@@ -1,11 +1,12 @@
 package com.vilyever.androiddrawingview;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupWindow;
 import android.widget.SeekBar;
+
+import com.vilyever.unitconversion.VDDimenConversion;
 
 /**
  * ThicknessAdjustController
@@ -13,24 +14,23 @@ import android.widget.SeekBar;
  * Created by vilyever on 2015/9/21.
  * Feature:
  */
-public class ThicknessAdjustController {
+public class ThicknessAdjustController extends BasePopupController {
     private final ThicknessAdjustController self = this;
 
-    private ThicknessDelegate delegate;
+    private ThicknessDelegate thicknessDelegate;
 
-    private ViewGroup rootView;
     private SeekBar seekBar;
 
-    protected PopupWindow popupWindow;
-    protected Size popupSize;
-    
     /* #Constructors */
     public ThicknessAdjustController(Context context) {
-        // Required empty public constructor
+        super(context);
 
-        self.rootView = (ViewGroup) View.inflate(context, R.layout.thickness_adjust_controller, null);
+        self.rootView = View.inflate(context, R.layout.thickness_adjust_controller, null);
+        self.rootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        self.preferWidth = VDDimenConversion.dpToPixel(250);
+        self.preferHeight = VDDimenConversion.dpToPixel(50);
 
-        self.popupSize = new Size(400, 60);
+        self.setPopupBackgroundColor(Color.BLACK);
 
         self.seekBar = (SeekBar) self.rootView.findViewById(R.id.seekBar);
         self.seekBar.setMax(50);
@@ -48,8 +48,8 @@ public class ThicknessAdjustController {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                if (self.getDelegate() != null) {
-                    self.getDelegate().thicknessDidChangeFromThicknessAdjustController(self, seekBar.getProgress() + 1);
+                if (self.getThicknessDelegate() != null) {
+                    self.getThicknessDelegate().thicknessDidChangeFromThicknessAdjustController(self, seekBar.getProgress() + 1);
                 }
             }
         });
@@ -58,21 +58,12 @@ public class ThicknessAdjustController {
     /* #Overrides */    
     
     /* #Accessors */
-    public ThicknessDelegate getDelegate() {
-        return delegate;
+    public ThicknessDelegate getThicknessDelegate() {
+        return thicknessDelegate;
     }
 
-    public void setDelegate(ThicknessDelegate delegate) {
-        this.delegate = delegate;
-    }
-
-    public PopupWindow getPopupWindow() {
-        if (self.popupWindow == null) {
-            self.popupWindow = new PopupWindow(self.rootView);
-            self.popupWindow.setFocusable(true);
-            self.popupWindow.setBackgroundDrawable(new ColorDrawable());
-        }
-        return popupWindow;
+    public void setThicknessDelegate(ThicknessDelegate thicknessDelegate) {
+        this.thicknessDelegate = thicknessDelegate;
     }
 
     /* #Delegates */
@@ -82,16 +73,6 @@ public class ThicknessAdjustController {
     /* #Public Methods */
     public void setThickness(int thickness) {
         self.seekBar.setProgress(thickness - 1);
-    }
-
-    public void popupFromView(View v) {
-        self.getPopupWindow().setWidth(self.popupSize.width);
-        self.getPopupWindow().setHeight(self.popupSize.height);
-        self.getPopupWindow().showAsDropDown(v, (v.getWidth() - self.popupSize.width) / 2, 0);
-    }
-
-    public void dismissPopup() {
-        self.getPopupWindow().dismiss();
     }
 
     /* #Classes */

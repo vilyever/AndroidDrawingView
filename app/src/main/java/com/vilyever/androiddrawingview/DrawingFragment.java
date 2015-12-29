@@ -8,9 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.vilyever.contextholder.VDContextHolder;
 import com.vilyever.drawingview.VDDrawingView;
 import com.vilyever.drawingview.brush.drawing.VDCenterCircleBrush;
 import com.vilyever.drawingview.brush.drawing.VDCircleBrush;
@@ -26,7 +24,6 @@ import com.vilyever.drawingview.brush.drawing.VDRightAngledTriangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDRoundedRectangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDShapeBrush;
 import com.vilyever.drawingview.brush.text.VDTextBrush;
-import com.vilyever.unitconversion.VDDimenConversion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,10 +77,6 @@ public class DrawingFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
-
-        String toast = "1dp = " + VDDimenConversion.dpToPixel(1) + "px";
-        Toast.makeText(VDContextHolder.getContext(), toast, Toast.LENGTH_LONG);
-
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
         self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
@@ -203,7 +196,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 self.getThicknessAdjustController().setThickness((int) self.penBrush.getSize());
-                self.getThicknessAdjustController().popupFromView(v);
+                self.getThicknessAdjustController().popupFromView(v, BasePopupController.PopupDirection.Left, true, 0, 0);
             }
         });
 
@@ -298,7 +291,7 @@ public class DrawingFragment extends Fragment {
     public ThicknessAdjustController getThicknessAdjustController() {
         if (self.thicknessAdjustController == null) {
             self.thicknessAdjustController = new ThicknessAdjustController(self.getActivity());
-            self.thicknessAdjustController.setDelegate(new ThicknessAdjustController.ThicknessDelegate() {
+            self.thicknessAdjustController.setThicknessDelegate(new ThicknessAdjustController.ThicknessDelegate() {
                 @Override
                 public void thicknessDidChangeFromThicknessAdjustController(ThicknessAdjustController controller, int thickness) {
                     self.penBrush.setSize(thickness);
