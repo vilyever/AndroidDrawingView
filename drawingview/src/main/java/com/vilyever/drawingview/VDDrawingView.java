@@ -451,7 +451,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
         self.getCurrentDrawingStep().setStepOver(true);
         if (self.getDelegate() != null) {
-            self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
+            self.getDelegate().didChangeDrawing(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
         }
     }
 
@@ -754,7 +754,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             self.nativeDrawData();
 
             if (self.getDelegate() != null) {
-                self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
+                self.getDelegate().didChangeDrawing(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
             }
 
             return true;
@@ -769,7 +769,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             self.nativeDrawData();
 
             if (self.getDelegate() != null) {
-                self.getDelegate().didChangeDrawing(self, self.canUndo(), self.canRedo());
+                self.getDelegate().didChangeDrawing(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
             }
 
             return true;
