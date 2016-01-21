@@ -7,73 +7,70 @@ import android.view.MotionEvent;
  * AndroidDrawingView <com.vilyever.drawingview>
  * Created by vilyever on 2015/9/22.
  * Feature:
+ * 旋转手势检测
  */
 public class VDRotationGestureDetector {
     private final VDRotationGestureDetector self = this;
 
+    // 触摸ID不可用值
     private static final int INVALID_POINTER_ID = -1;
-    private float fX, fY, sX, sY;
-    private int ptrID1, ptrID2;
-    private float mAngle;
 
-    private OnRotationGestureListener mListener;
-
-    public float getAngle() {
-        return mAngle;
-    }
-    
     /* #Constructors */
     public VDRotationGestureDetector(OnRotationGestureListener listener) {
         mListener = listener;
-        ptrID1 = INVALID_POINTER_ID;
-        ptrID2 = INVALID_POINTER_ID;
+        firstPointerID = INVALID_POINTER_ID;
+        secondPointerID = INVALID_POINTER_ID;
     }
+
+    private OnRotationGestureListener mListener;
+
+    // 两只手指触摸id
+    private int firstPointerID, secondPointerID;
+    private float firstX, firstY, secondX, secondY;
+
+    // 当前旋转角度
+    private float mAngle;
+    public float getAngle() {
+        return mAngle;
+    }
+
     
-    /* #Overrides */    
-    
-    /* #Accessors */     
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                ptrID1 = event.getPointerId(event.getActionIndex());
+                firstPointerID = event.getPointerId(event.getActionIndex());
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
-                ptrID2 = event.getPointerId(event.getActionIndex());
-                sX = event.getX(event.findPointerIndex(ptrID1));
-                sY = event.getY(event.findPointerIndex(ptrID1));
-                fX = event.getX(event.findPointerIndex(ptrID2));
-                fY = event.getY(event.findPointerIndex(ptrID2));
+                secondPointerID = event.getPointerId(event.getActionIndex());
+                secondX = event.getX(event.findPointerIndex(firstPointerID));
+                secondY = event.getY(event.findPointerIndex(firstPointerID));
+                firstX = event.getX(event.findPointerIndex(secondPointerID));
+                firstY = event.getY(event.findPointerIndex(secondPointerID));
                 break;
             case MotionEvent.ACTION_MOVE:
-                if(ptrID1 != INVALID_POINTER_ID && ptrID2 != INVALID_POINTER_ID) {
+                if(firstPointerID != INVALID_POINTER_ID && secondPointerID != INVALID_POINTER_ID) {
                     float nfX, nfY, nsX, nsY;
-                    nsX = event.getX(event.findPointerIndex(ptrID1));
-                    nsY = event.getY(event.findPointerIndex(ptrID1));
-                    nfX = event.getX(event.findPointerIndex(ptrID2));
-                    nfY = event.getY(event.findPointerIndex(ptrID2));
+                    nsX = event.getX(event.findPointerIndex(firstPointerID));
+                    nsY = event.getY(event.findPointerIndex(firstPointerID));
+                    nfX = event.getX(event.findPointerIndex(secondPointerID));
+                    nfY = event.getY(event.findPointerIndex(secondPointerID));
 
-                    mAngle = angleBetweenLines(fX, fY, sX, sY, nfX, nfY, nsX, nsY);
+                    mAngle = angleBetweenLines(firstX, firstY, secondX, secondY, nfX, nfY, nsX, nsY);
 
                     if (mListener != null) {
-                        mListener.OnRotation(this);
+                        mListener.onRotation(this);
                     }
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                ptrID1 = INVALID_POINTER_ID;
+                firstPointerID = INVALID_POINTER_ID;
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                ptrID2 = INVALID_POINTER_ID;
+                secondPointerID = INVALID_POINTER_ID;
                 break;
             case MotionEvent.ACTION_CANCEL:
-                ptrID1 = INVALID_POINTER_ID;
-                ptrID2 = INVALID_POINTER_ID;
+                firstPointerID = INVALID_POINTER_ID;
+                secondPointerID = INVALID_POINTER_ID;
                 break;
         }
         return true;
@@ -89,14 +86,7 @@ public class VDRotationGestureDetector {
         return angle;
     }
 
-    /* #Classes */
     public interface OnRotationGestureListener {
-        void OnRotation(VDRotationGestureDetector rotationDetector);
+        void onRotation(VDRotationGestureDetector rotationDetector);
     }
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

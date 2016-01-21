@@ -45,10 +45,10 @@ public class VDLineBrush extends VDShapeBrush {
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
-            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
-            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
-            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
-            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
+            drawingRect.top = Math.min(beginPoint.getY(), lastPoint.getY());
+            drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
+            drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
             Frame pathFrame;
             if (!self.isEdgeRounded()) {
@@ -81,8 +81,8 @@ public class VDLineBrush extends VDShapeBrush {
             }
 
             Path path = new Path();
-            path.moveTo(beginPoint.x, beginPoint.y);
-            path.lineTo(lastPoint.x, lastPoint.y);
+            path.moveTo(beginPoint.getX(), beginPoint.getY());
+            path.lineTo(lastPoint.getX(), lastPoint.getY());
 
             if (state.isCalibrateToOrigin()) {
                 path.offset(-pathFrame.left, -pathFrame.top);

@@ -49,9 +49,9 @@ public class VDCircleBrush extends VDShapeBrush {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            float centerX = (beginPoint.x + lastPoint.x) / 2.0f;
-            float centerY = (beginPoint.y + lastPoint.y) / 2.0f;
-            float radius = Math.min(Math.abs(beginPoint.x - lastPoint.x), Math.abs(beginPoint.y - lastPoint.y)) / 2.0f;
+            float centerX = (beginPoint.getX() + lastPoint.getX()) / 2.0f;
+            float centerY = (beginPoint.getY() + lastPoint.getY()) / 2.0f;
+            float radius = Math.min(Math.abs(beginPoint.getX() - lastPoint.getX()), Math.abs(beginPoint.getY() - lastPoint.getY())) / 2.0f;
 
             RectF drawingRect = new RectF();
             drawingRect.left = centerX - radius;

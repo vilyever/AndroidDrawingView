@@ -54,17 +54,17 @@ public abstract class VDDrawingBrush extends VDBrush {
 
         RectF drawingRect = new RectF();
 
-        drawingRect.left = beginPoint.x;
-        drawingRect.top = beginPoint.y;
-        drawingRect.right = beginPoint.x;
-        drawingRect.bottom = beginPoint.y;
+        drawingRect.left = beginPoint.getX();
+        drawingRect.top = beginPoint.getY();
+        drawingRect.right = beginPoint.getX();
+        drawingRect.bottom = beginPoint.getY();
 
         for (int i = 1; i < drawingPath.getPoints().size(); i++) {
             VDDrawingPoint point = drawingPath.getPoints().get(i);
-            drawingRect.left = Math.min(point.x, drawingRect.left);
-            drawingRect.top = Math.min(point.y, drawingRect.top);
-            drawingRect.right = Math.max(point.x, drawingRect.right);
-            drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
+            drawingRect.left = Math.min(point.getX(), drawingRect.left);
+            drawingRect.top = Math.min(point.getY(), drawingRect.top);
+            drawingRect.right = Math.max(point.getX(), drawingRect.right);
+            drawingRect.bottom = Math.max(point.getY(), drawingRect.bottom);
         }
 
         return self.makeFrameWithBrushSpace(drawingRect);
@@ -72,7 +72,7 @@ public abstract class VDDrawingBrush extends VDBrush {
 
     /* #Accessors */
     public float getSize() {
-        return size;
+        return size * self.getDrawingRatio();
     }
 
     public <T extends VDDrawingBrush> T setSize(float size) {

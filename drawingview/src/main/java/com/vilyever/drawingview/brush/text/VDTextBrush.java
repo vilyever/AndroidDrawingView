@@ -9,9 +9,9 @@ import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.text.TextPaint;
 
+import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.drawingview.model.VDDrawingPath;
 import com.vilyever.drawingview.model.VDDrawingPoint;
-import com.vilyever.drawingview.brush.VDBrush;
 import com.vilyever.unitconversion.VDDimenConversion;
 
 /**
@@ -23,11 +23,11 @@ import com.vilyever.unitconversion.VDDimenConversion;
 public class VDTextBrush extends VDBrush {
     final VDTextBrush self = this;
 
-    private static final int BorderMargin = VDDimenConversion.dpToPixel(8);;
+    public static final int BorderMargin = VDDimenConversion.dpToPixel(8);;
 
     protected float size;
     protected int color;
-    protected int typefaceStyle; // Typeface.NORMAL || Typeface.BOLD || Typeface.ITALIC || Typeface.BOLD_ITALIC or any created Typeface
+    protected int typefaceStyle; /** {@link Typeface#NORMAL} {@link Typeface#BOLD} {@link Typeface#ITALIC} {@link Typeface#BOLD_ITALIC} or any created Typeface */
 
     protected TextPaint textPaint;
 
@@ -52,7 +52,7 @@ public class VDTextBrush extends VDBrush {
 
     /* #Accessors */
     public float getSize() {
-        return size;
+        return size;// * self.getDrawingRatio();
     }
 
     public <T extends VDTextBrush> T setSize(float size) {
@@ -103,14 +103,13 @@ public class VDTextBrush extends VDBrush {
     protected void updateTextInfo() {
         Paint.FontMetrics fontMetrics = self.getTextPaint().getFontMetrics();
 
-        Rect result = new Rect();
-        self.getTextPaint().getTextBounds("█", 0, "█".length(), result);
-
 //        self.minTextWidth = self.getTextPaint().measureText("　") * 20.0f;
 //        self.minTextHeight = fontMetrics.ascent + fontMetrics.descent + fontMetrics.leading;
 
+        Rect result = new Rect();
+        self.getTextPaint().getTextBounds("字", 0, 1, result);
         self.minTextWidth = result.width() * 22;
-        self.minTextHeight = result.height();
+        self.minTextHeight = result.height() * 3.5f;
     }
 
     /* #Public Methods */
@@ -126,17 +125,17 @@ public class VDTextBrush extends VDBrush {
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
-            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
-            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
-            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
-            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
+            drawingRect.top = Math.min(beginPoint.getY(), lastPoint.getY());
+            drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
+            drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
             drawingRect.left -= BorderMargin;
-            drawingRect.top -= BorderMargin * 3;
+            drawingRect.top -= BorderMargin;
 
             self.updateTextInfo();
             drawingRect.right = Math.max(drawingRect.right, drawingRect.left + self.minTextWidth + BorderMargin);
-            drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + self.minTextHeight + BorderMargin * 4);
+            drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + self.minTextHeight + BorderMargin);
 
             Frame pathFrame = new Frame(drawingRect);
             return pathFrame;
@@ -148,12 +147,4 @@ public class VDTextBrush extends VDBrush {
     public static VDTextBrush defaultBrush() {
         return new VDTextBrush(14, Color.BLACK);
     }
-
-    /* #Classes */
-
-    /* #Interfaces */
-
-    /* #Annotations @interface */
-
-    /* #Enums */
 }

@@ -1,6 +1,7 @@
 package com.vilyever.androiddrawingview;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.vilyever.drawingview.VDDrawingView;
 import com.vilyever.drawingview.brush.drawing.VDCenterCircleBrush;
@@ -24,6 +26,8 @@ import com.vilyever.drawingview.brush.drawing.VDRightAngledTriangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDRoundedRectangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDShapeBrush;
 import com.vilyever.drawingview.brush.text.VDTextBrush;
+import com.vilyever.drawingview.model.VDDrawingData;
+import com.vilyever.drawingview.model.VDDrawingStep;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +43,7 @@ public class DrawingFragment extends Fragment {
     private final DrawingFragment self = this;
 
     private VDDrawingView drawingView;
+    private VDDrawingView drawingView2;
 
     private Button undoButton;
     private Button redoButton;
@@ -79,9 +84,19 @@ public class DrawingFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-        self.drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
+        self.drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
-            public void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+            public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
+                self.drawingView2.drawNextStep(step);
+            }
+
+            @Override
+            public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
+                self.drawingView2.drawNextStep(drawingView.getCurrentDrawingStep());
+            }
+
+            @Override
+            public void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
                 self.undoButton.setEnabled(canUndo);
                 self.redoButton.setEnabled(canRedo);
             }
@@ -97,12 +112,16 @@ public class DrawingFragment extends Fragment {
             }
         });
 
+        self.drawingView2 = (VDDrawingView) rootView.findViewById(R.id.drawingView2);
+        self.drawingView2.setDisableTouchDraw(true);
+
         self.undoButton = (Button) rootView.findViewById(R.id.undoButton);
         self.undoButton.setEnabled(false);
         self.undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 self.drawingView.undo();
+                self.drawingView2.undo();
             }
         });
 
@@ -112,6 +131,7 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 self.drawingView.redo();
+                self.drawingView2.redo();
             }
         });
 
@@ -268,7 +288,17 @@ public class DrawingFragment extends Fragment {
         self.deleteLayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                self.drawingView.deleteHandlingLayer();
+//                self.drawingView.deleteHandlingLayer();
+
+                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) self.drawingView.getLayoutParams();
+                if (!small) {
+                    layoutParams.setMargins(0, 0, self.drawingView.getWidth() / 2, self.drawingView.getHeight() / 2);
+                }
+                else {
+                    layoutParams.setMargins(0, 0, 0, 0);
+                }
+                self.drawingView.setLayoutParams(layoutParams);
+                small = !small;
             }
         });
 
@@ -280,12 +310,23 @@ public class DrawingFragment extends Fragment {
         return rootView;
     }
 
+    boolean small = false;
+
     @Override
     public void onDestroy() {
         super.onDestroy();
     }
 
-    
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
     /* #Accessors */
 
     public ThicknessAdjustController getThicknessAdjustController() {

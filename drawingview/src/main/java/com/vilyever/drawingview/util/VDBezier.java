@@ -7,6 +7,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.util>
  * Created by vilyever on 2015/11/13.
  * Feature:
+ * 贝塞尔曲线计算
  */
 public class VDBezier {
     final VDBezier self = this;
@@ -22,15 +23,6 @@ public class VDBezier {
         this.endPoint = endPoint;
     }
 
-    /* #Overrides */
-
-    /* #Accessors */
-
-    /* #Delegates */
-
-    /* #Private Methods */
-
-    /* #Public Methods */
     // Bezier曲线长度
     public float length() {
         int steps = 10, length = 0;
@@ -40,8 +32,8 @@ public class VDBezier {
 
         for (i = 0; i <= steps; i++) {
             t = i / steps;
-            cx = VDBezier.point(t, this.startPoint.x, this.secondPoint.x, this.endPoint.x);
-            cy = VDBezier.point(t, this.startPoint.y, this.secondPoint.y, this.endPoint.y);
+            cx = VDBezier.point(t, this.startPoint.getX(), this.secondPoint.getX(), this.endPoint.getX());
+            cy = VDBezier.point(t, this.startPoint.getY(), this.secondPoint.getY(), this.endPoint.getY());
             if (i > 0) {
                 xdiff = cx - px;
                 ydiff = cy - py;
@@ -65,18 +57,10 @@ public class VDBezier {
 //    // 三次方贝塞尔曲线
 //    // 计算t比例（0<=t<=1)时，曲线由起始点向终点运动的坐标
 //    // 分别传入x,y求解
-//    public double point(float t, float start, float second, float third, float end) {
+//    public double points(float t, float start, float second, float third, float end) {
 //        return start * (1.0 - t) * (1.0 - t)  * (1.0 - t)
 //                + 3.0 *  second   * (1.0 - t)  * (1.0 - t)  * t
 //                + 3.0 *  third    * (1.0 - t)  * t          * t
 //                +        end      * t          * t          * t;
 //    }
-
-    /* #Classes */
-
-    /* #Interfaces */
-
-    /* #Annotations @interface */
-
-    /* #Enums */
 }

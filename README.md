@@ -32,7 +32,7 @@ dependencies {
 drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
 drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
     @Override
-    public void didChangeDrawing(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+    public void didUpdateDrawingData(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
         undoButton.setEnabled(canUndo);
         redoButton.setEnabled(canRedo);
     }

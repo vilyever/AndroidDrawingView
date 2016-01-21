@@ -10,22 +10,11 @@ import android.graphics.drawable.Drawable;
  * AndroidDrawingView <com.vilyever.drawingview>
  * Created by vilyever on 2015/9/22.
  * Feature:
+ * drawable转换bitmap
  */
 public class VDBitmapConvertor {
     private final VDBitmapConvertor self = this;
 
-    
-    /* #Constructors */    
-    
-    /* #Overrides */    
-    
-    /* #Accessors */     
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
     public static Bitmap drawableToBitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable)drawable).getBitmap();
@@ -43,12 +32,4 @@ public class VDBitmapConvertor {
 
         return bitmap;
     }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

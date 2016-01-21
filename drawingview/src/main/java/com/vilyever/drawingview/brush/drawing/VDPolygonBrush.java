@@ -71,8 +71,8 @@ public class VDPolygonBrush extends VDShapeBrush {
 
             boolean requireMoreDetail = true;
             if (beginPoint.pointerID != lastPoint.pointerID
-                    && Math.abs(beginPoint.x - lastPoint.x) < (16.0f + self.getSize())
-                    && Math.abs(beginPoint.y - lastPoint.y) < (16.0f + self.getSize())) {
+                    && Math.abs(beginPoint.getX() - lastPoint.getX()) < (16.0f + self.getSize())
+                    && Math.abs(beginPoint.getY() - lastPoint.getY()) < (16.0f + self.getSize())) {
                 endPoints.remove(lastPoint);
                 endPoints.add(beginPoint);
                 requireMoreDetail = false;
@@ -83,17 +83,17 @@ public class VDPolygonBrush extends VDShapeBrush {
             }
 
             RectF drawingRect = new RectF();
-            drawingRect.left = beginPoint.x;
-            drawingRect.top = beginPoint.y;
-            drawingRect.right = beginPoint.x;
-            drawingRect.bottom = beginPoint.y;
+            drawingRect.left = beginPoint.getX();
+            drawingRect.top = beginPoint.getY();
+            drawingRect.right = beginPoint.getX();
+            drawingRect.bottom = beginPoint.getY();
 
             for (int i = 0; i < endPoints.size(); i++) {
                 VDDrawingPoint point = endPoints.get(i);
-                drawingRect.left = Math.min(point.x, drawingRect.left);
-                drawingRect.top = Math.min(point.y, drawingRect.top);
-                drawingRect.right = Math.max(point.x, drawingRect.right);
-                drawingRect.bottom = Math.max(point.y, drawingRect.bottom);
+                drawingRect.left = Math.min(point.getX(), drawingRect.left);
+                drawingRect.top = Math.min(point.getY(), drawingRect.top);
+                drawingRect.right = Math.max(point.getX(), drawingRect.right);
+                drawingRect.bottom = Math.max(point.getY(), drawingRect.bottom);
             }
 
             Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
@@ -104,9 +104,9 @@ public class VDPolygonBrush extends VDShapeBrush {
             }
 
             Path path = new Path();
-            path.moveTo(beginPoint.x, beginPoint.y);
+            path.moveTo(beginPoint.getX(), beginPoint.getY());
             for (int i = 0; i < endPoints.size(); i++) {
-                path.lineTo(endPoints.get(i).x, endPoints.get(i).y);
+                path.lineTo(endPoints.get(i).getX(), endPoints.get(i).getY());
             }
 
             if (state.isCalibrateToOrigin()) {

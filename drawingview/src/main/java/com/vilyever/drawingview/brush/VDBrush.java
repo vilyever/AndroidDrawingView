@@ -20,17 +20,6 @@ import com.vilyever.jsonmodel.VDModel;
 public abstract class VDBrush extends VDModel {
     final VDBrush self = this;
 
-    /* #Constructors */    
-    
-    /* #Overrides */    
-    
-    /* #Accessors */     
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
     public static <T extends VDBrush> T copy(@NonNull VDBrush brush) {
         return (T) new VDJson<>(brush.getClass()).modelFromJson(brush.toJson());
     }
@@ -51,6 +40,23 @@ public abstract class VDBrush extends VDModel {
      */
     public boolean shouldDrawFromBegin() {
         return true;
+    }
+
+    /**
+     * 当前绘制比例
+     * 在记录数据时drawingView的宽高和当前重绘时的宽高比
+     * 用于在不同分辨率下重绘相似的图形全貌
+     *
+     * 在brush中此比例不分xy轴，取xy轴中变化最大的一轴
+     */
+    @VDJsonKeyIgnore
+    private float drawingRatio = 1.0f;
+    public VDBrush setDrawingRatio(float drawingRatio) {
+        this.drawingRatio = drawingRatio;
+        return this;
+    }
+    public float getDrawingRatio() {
+        return drawingRatio;
     }
 
     /* #Classes */
@@ -111,12 +117,6 @@ public abstract class VDBrush extends VDModel {
         }
     }
 
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
     public enum DrawingPointerState {
         TouchDown, TouchMoving, TouchUp, // 手指状态，用于作图，因支持多次触摸完成一笔，down和up可能出现多次
         FetchFrame, // 忽略一笔完成所需条件，由笔刷自行补完未完成部分

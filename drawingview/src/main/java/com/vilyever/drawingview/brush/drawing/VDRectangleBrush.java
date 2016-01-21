@@ -45,10 +45,10 @@ public class VDRectangleBrush extends VDShapeBrush {
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
-            drawingRect.left = Math.min(beginPoint.x, lastPoint.x);
-            drawingRect.top = Math.min(beginPoint.y, lastPoint.y);
-            drawingRect.right = Math.max(beginPoint.x, lastPoint.x);
-            drawingRect.bottom = Math.max(beginPoint.y, lastPoint.y);
+            drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
+            drawingRect.top = Math.min(beginPoint.getY(), lastPoint.getY());
+            drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
+            drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
             if ((drawingRect.right - drawingRect.left) < self.getSize()
                     || (drawingRect.bottom - drawingRect.top) < self.getSize()) {

@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/AndroidDrawingView.iml" filepath="$PROJECT_DIR$/AndroidDrawingView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/drawingview/drawingview.iml" filepath="$PROJECT_DIR$/drawingview/drawingview.iml" />
+      <module fileurl="file://$PROJECT_DIR$/drawingview/drawingview.iml" filepath="$PROJECT_DIR$/drawingview/drawingview.iml" />
     </modules>
   </component>
 </project>
