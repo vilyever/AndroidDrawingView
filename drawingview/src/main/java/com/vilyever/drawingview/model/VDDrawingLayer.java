@@ -39,7 +39,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
 
     // left，top，right，bottom快捷设置
     public void setFrame(RectF frame) {
-        if (frame == null || frame.isEmpty()) {
+        if (frame == null) {
             self.left = UnsetValue;
             self.top = UnsetValue;
             self.right = UnsetValue;

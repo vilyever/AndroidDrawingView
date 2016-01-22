@@ -3,7 +3,6 @@ package com.vilyever.drawingview.brush.text;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
@@ -23,16 +22,13 @@ import com.vilyever.unitconversion.VDDimenConversion;
 public class VDTextBrush extends VDBrush {
     final VDTextBrush self = this;
 
-    public static final int BorderMargin = VDDimenConversion.dpToPixel(8);;
+    public static final int DefaultTextLayerPadding = VDDimenConversion.dpToPixel(8);
 
     protected float size;
     protected int color;
     protected int typefaceStyle; /** {@link Typeface#NORMAL} {@link Typeface#BOLD} {@link Typeface#ITALIC} {@link Typeface#BOLD_ITALIC} or any created Typeface */
 
     protected TextPaint textPaint;
-
-    protected float minTextWidth;
-    protected float minTextHeight;
 
     /* #Constructors */
     public VDTextBrush() {
@@ -52,7 +48,7 @@ public class VDTextBrush extends VDBrush {
 
     /* #Accessors */
     public float getSize() {
-        return size;// * self.getDrawingRatio();
+        return size * self.getDrawingRatio();
     }
 
     public <T extends VDTextBrush> T setSize(float size) {
@@ -100,18 +96,6 @@ public class VDTextBrush extends VDBrush {
         self.getTextPaint().setTypeface(Typeface.create((String) null, self.getTypefaceStyle()));
     }
 
-    protected void updateTextInfo() {
-        Paint.FontMetrics fontMetrics = self.getTextPaint().getFontMetrics();
-
-//        self.minTextWidth = self.getTextPaint().measureText("　") * 20.0f;
-//        self.minTextHeight = fontMetrics.ascent + fontMetrics.descent + fontMetrics.leading;
-
-        Rect result = new Rect();
-        self.getTextPaint().getTextBounds("字", 0, 1, result);
-        self.minTextWidth = result.width() * 22;
-        self.minTextHeight = result.height() * 3.5f;
-    }
-
     /* #Public Methods */
     /**
      * drawing text layer border
@@ -125,17 +109,12 @@ public class VDTextBrush extends VDBrush {
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
-            drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
-            drawingRect.top = Math.min(beginPoint.getY(), lastPoint.getY());
-            drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
-            drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
-            drawingRect.left -= BorderMargin;
-            drawingRect.top -= BorderMargin;
+            drawingRect.left = Math.max(lastPoint.getX(), 0);
+            drawingRect.top = Math.max(lastPoint.getY(), 0);
 
-            self.updateTextInfo();
-            drawingRect.right = Math.max(drawingRect.right, drawingRect.left + self.minTextWidth + BorderMargin);
-            drawingRect.bottom = Math.max(drawingRect.bottom, drawingRect.top + self.minTextHeight + BorderMargin);
+            drawingRect.right = drawingRect.left;
+            drawingRect.bottom = drawingRect.top;
 
             Frame pathFrame = new Frame(drawingRect);
             return pathFrame;

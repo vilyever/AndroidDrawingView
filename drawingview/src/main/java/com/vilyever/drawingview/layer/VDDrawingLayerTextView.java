@@ -349,8 +349,10 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
      * 初始化
      */
     private void init() {
-        // 默认设置内边距，优化显示效果
-        self.setPadding(VDTextBrush.BorderMargin, VDTextBrush.BorderMargin, VDTextBrush.BorderMargin, VDTextBrush.BorderMargin);
+        self.setPadding(VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding);
+
+        // 内容为空时用于显示cursor光标
+        self.setMinWidth(self.getPaddingLeft() + self.getPaddingRight() + VDDimenConversion.dpToPixel(1));
 
         // 默认清空背景
         self.setBackground(null);
@@ -378,8 +380,9 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         if (drawingStep.getDrawingLayer().getFrame() != null) {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) self.getLayoutParams();
 
-            layoutParams.width = (int) Math.floor(drawingStep.getDrawingLayer().getWidth());
-            layoutParams.height = (int) Math.floor(drawingStep.getDrawingLayer().getHeight());
+            // wrapcontent动态变化
+            layoutParams.width = RelativeLayout.LayoutParams.WRAP_CONTENT;
+            layoutParams.height = RelativeLayout.LayoutParams.WRAP_CONTENT;
             layoutParams.leftMargin = (int) Math.floor(drawingStep.getDrawingLayer().getLeft());
             layoutParams.topMargin = (int) Math.floor(drawingStep.getDrawingLayer().getTop());
             layoutParams.rightMargin = -Integer.MAX_VALUE;
