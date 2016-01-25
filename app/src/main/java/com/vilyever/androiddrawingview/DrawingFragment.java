@@ -278,6 +278,17 @@ public class DrawingFragment extends Fragment {
         self.deleteLayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) self.drawingView.getLayoutParams();
+//                if (small) {
+//                    layoutParams.rightMargin = 0;
+//                    layoutParams.bottomMargin = 0;
+//                }
+//                else {
+//                    layoutParams.rightMargin = self.drawingView.getWidth() / 2;
+//                    layoutParams.bottomMargin = self.drawingView.getHeight() / 2;
+//                }
+//                self.drawingView.setLayoutParams(layoutParams);
+//                small = !small;
                 self.drawingView.deleteHandlingLayer();
             }
         });
@@ -289,6 +300,7 @@ public class DrawingFragment extends Fragment {
 
         return rootView;
     }
+    boolean small = false;
 
     @Override
     public void onDestroy() {

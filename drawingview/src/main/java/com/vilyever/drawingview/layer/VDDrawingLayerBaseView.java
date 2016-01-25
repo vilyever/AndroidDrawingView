@@ -279,7 +279,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
                 self.getTempBitmap().recycle();
             }
             self.setTempBitmap(null);
-//            System.gc();
+            System.gc();
             return null;
         }
 
@@ -380,6 +380,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
                 else if (self.getDrawingBitmap().getWidth() != self.getWidth()
                         || self.getDrawingBitmap().getHeight() != self.getHeight()) {
                     self.getDrawingBitmap().recycle();
+                    System.gc();
                     self.setDrawingBitmap(Bitmap.createBitmap(self.getWidth(), self.getHeight(), Bitmap.Config.ARGB_8888));
                     self.setDrawingCanvas(new Canvas(self.getDrawingBitmap()));
                 }
