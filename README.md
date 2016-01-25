@@ -30,9 +30,17 @@ dependencies {
         android:layout_height="match_parent" />
 
 drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-drawingView.setDelegate(new VDDrawingView.DrawingDelegate() {
+drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
     @Override
-    public void didUpdateDrawingData(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+    public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
+    }
+
+    @Override
+    public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
+    }
+
+    @Override
+    public void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
         undoButton.setEnabled(canUndo);
         redoButton.setEnabled(canRedo);
     }
