@@ -14,6 +14,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 中心圆绘制，即以起点为圆心，终点到起点距离为半径
  */
 public class VDCenterCircleBrush extends VDShapeBrush {
     final VDCenterCircleBrush self = this;
@@ -33,6 +34,11 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
     public VDCenterCircleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
+    }
+
+    /* Public Methods */
+    public static VDCenterCircleBrush defaultBrush() {
+        return new VDCenterCircleBrush(5, Color.BLACK);
     }
 
     /* #Overrides */
@@ -83,23 +89,4 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
         return Frame.EmptyFrame();
     }
-
-    /* #Accessors */
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDCenterCircleBrush defaultBrush() {
-        return new VDCenterCircleBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

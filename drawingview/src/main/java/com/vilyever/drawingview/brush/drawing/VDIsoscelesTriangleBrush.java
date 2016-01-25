@@ -15,6 +15,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 等腰三角形绘制
  */
 public class VDIsoscelesTriangleBrush extends VDShapeBrush {
     final VDIsoscelesTriangleBrush self = this;
@@ -35,6 +36,11 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
 
     public VDIsoscelesTriangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
+    }
+
+    /* Public Methods */
+    public static VDIsoscelesTriangleBrush defaultBrush() {
+        return new VDIsoscelesTriangleBrush(5, Color.BLACK);
     }
 
     /* #Overrides */
@@ -150,22 +156,4 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
         return Frame.EmptyFrame();
     }
 
-    /* #Accessors */
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDIsoscelesTriangleBrush defaultBrush() {
-        return new VDIsoscelesTriangleBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

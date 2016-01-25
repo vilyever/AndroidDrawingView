@@ -20,6 +20,7 @@ public class VDDrawingPath extends VDModel {
     public VDDrawingPath() {
     }
 
+    /* Public Methods */
     /**
      * 添加point
      * @param point 点
@@ -39,6 +40,7 @@ public class VDDrawingPath extends VDModel {
         }
     }
 
+    /* Properties */
     private List<VDDrawingPoint> points;
     public List<VDDrawingPoint> getPoints() {
         if (points == null) {

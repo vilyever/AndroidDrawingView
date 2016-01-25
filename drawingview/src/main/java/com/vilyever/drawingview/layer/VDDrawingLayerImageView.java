@@ -49,6 +49,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         self.init();
     }
 
+    /* Properties */
     /**
      * 当前绘制的所有step
      */
@@ -117,6 +118,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         return borderPath;
     }
 
+    /* Overrides */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -156,6 +158,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         }
     }
 
+    /* Delegates */
     /** {@link VDDrawingLayerViewProtocol} */
     @Override
     public void clearDrawing() {
@@ -242,6 +245,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     }
     /** {@link VDDrawingLayerViewProtocol} */
 
+    /* Private Methods */
     /**
      * 初始化
      */

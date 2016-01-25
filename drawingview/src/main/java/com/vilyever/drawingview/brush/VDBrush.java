@@ -16,10 +16,24 @@ import com.vilyever.jsonmodel.VDModel;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/27.
  * Feature:
+ * 画笔brush
+ * 定义基本绘制方法
+ * 具体实现由子类完成
+ * Known Direct Subclasses:
+ * {@link com.vilyever.drawingview.brush.drawing.VDDrawingBrush}
+ * {@link com.vilyever.drawingview.brush.text.VDTextBrush}
  */
 public abstract class VDBrush extends VDModel {
     final VDBrush self = this;
 
+    /* Public Methods */
+    /**
+     * 复制画笔
+     * 每次存储绘制数据时都应用复制的brush存储
+     * @param brush 原brush
+     * @param <T> 类型
+     * @return 复制的brush
+     */
     public static <T extends VDBrush> T copy(@NonNull VDBrush brush) {
         return (T) new VDJson<>(brush.getClass()).modelFromJson(brush.toJson());
     }
@@ -35,11 +49,24 @@ public abstract class VDBrush extends VDModel {
     public abstract Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state);
 
     /**
-     *
+     * 当前版本暂时未使用到
      * @return 同一笔绘图时是否在path变更时消除先前作图
      */
     public boolean shouldDrawFromBegin() {
         return true;
+    }
+
+    /* Properties */
+    /**
+     * 此画笔是否绘制一个新的图层
+     */
+    protected boolean oneStrokeToLayer;
+    public boolean isOneStrokeToLayer() {
+        return oneStrokeToLayer;
+    }
+    public <T extends VDBrush> T setOneStrokeToLayer(boolean oneStrokeToLayer) {
+        this.oneStrokeToLayer = oneStrokeToLayer;
+        return (T) self;
     }
 
     /**
@@ -59,8 +86,16 @@ public abstract class VDBrush extends VDModel {
         return drawingRatio;
     }
 
-    /* #Classes */
+
+    /* Inner Classes */
+    /**
+     * 画笔绘制所需尺寸类
+     *
+     */
     public static class Frame extends RectF {
+        /**
+         * 当前提供的point是否足够完成此次绘制，某些图形可能由多笔连接完成
+         */
         public boolean requireMoreDetail;
 
         public Frame() {
@@ -117,36 +152,9 @@ public abstract class VDBrush extends VDModel {
         }
     }
 
-    public enum DrawingPointerState {
-        TouchDown, TouchMoving, TouchUp, // 手指状态，用于作图，因支持多次触摸完成一笔，down和up可能出现多次
-        FetchFrame, // 忽略一笔完成所需条件，由笔刷自行补完未完成部分
-        CalibrateToOrigin, // 所作的图画应从画布左上角开始绘制
-        ForceFinish, // 不做图，获取当前frame
-        VeryBegin, VeryEnd; // 一笔起始/结束，通常用于标记
-
-        public int state() {
-            switch (this) {
-                case TouchDown:
-                    return 0x00000001;
-                case TouchMoving:
-                    return 0x00000010;
-                case TouchUp:
-                    return 0x00000100;
-                case FetchFrame:
-                    return 0x00001000;
-                case CalibrateToOrigin:
-                    return 0x00010000;
-                case ForceFinish:
-                    return 0x00100000;
-                case VeryBegin:
-                    return 0x01000000;
-                case VeryEnd:
-                    return 0x10000000;
-            }
-            return 0;
-        }
-    }
-
+    /**
+     * 绘制状态快捷判断
+     */
     public static final class DrawingState extends VDModel {
         private int pointerState;
         public DrawingState(DrawingPointerState ... states) {
@@ -159,22 +167,26 @@ public abstract class VDBrush extends VDModel {
             this.pointerState = pointerState;
         }
 
+        // 添加状态
         public DrawingState join(DrawingPointerState state) {
             this.pointerState |= state.state();
             return this;
         }
 
+        // 合并状态生成新的实例
         public DrawingState newStateByJoin(DrawingPointerState state) {
             DrawingState drawingState = new DrawingState(this.pointerState);
             drawingState.pointerState |= state.state();
             return drawingState;
         }
 
+        // 移除状态
         public DrawingState separate(DrawingPointerState state) {
             this.pointerState &= ~state.state();
             return this;
         }
 
+        // 移除状态生成新的实例
         public DrawingState newStateBySeparate(DrawingPointerState state) {
             DrawingState drawingState = new DrawingState(this.pointerState);
             drawingState.pointerState &= ~state.state();
@@ -213,6 +225,40 @@ public abstract class VDBrush extends VDModel {
         @Override
         public String toString() {
             return Integer.toHexString(this.pointerState);
+        }
+    }
+
+    /* Enums */
+    /**
+     * 当前绘制状态
+     */
+    public enum DrawingPointerState {
+        TouchDown, TouchMoving, TouchUp, // 手指状态，用于作图，因支持多次触摸完成一笔，down和up可能出现多次
+        FetchFrame, // 忽略一笔完成所需条件，由笔刷自行补完未完成部分
+        CalibrateToOrigin, // 所作的图画应从画布左上角开始绘制
+        ForceFinish, // 不做图，获取当前frame
+        VeryBegin, VeryEnd; // 一笔起始/结束，通常用于标记
+
+        public int state() {
+            switch (this) {
+                case TouchDown:
+                    return 0x00000001;
+                case TouchMoving:
+                    return 0x00000010;
+                case TouchUp:
+                    return 0x00000100;
+                case FetchFrame:
+                    return 0x00001000;
+                case CalibrateToOrigin:
+                    return 0x00010000;
+                case ForceFinish:
+                    return 0x00100000;
+                case VeryBegin:
+                    return 0x01000000;
+                case VeryEnd:
+                    return 0x10000000;
+            }
+            return 0;
         }
     }
 }

@@ -13,6 +13,43 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class VDDrawingPoint extends VDModel {
     private final VDDrawingPoint self = this;
+
+
+    /* #Constructors */
+    public VDDrawingPoint() {
+    }
+
+    public VDDrawingPoint(float x, float y) {
+        this(VDDrawingPoint.CurrentPointerID(), x, y);
+    }
+
+    public VDDrawingPoint(int pointerID, float x, float y) {
+        this.pointerID = pointerID;
+        this.x = x;
+        this.y = y;
+        this.moment = System.currentTimeMillis();
+    }
+
+    /* Public Methods */
+    /**
+     * 是否是相同的point
+     * @param point 比较的point
+     * @return 是否相同
+     */
+    public boolean isSamePoint(VDDrawingPoint point) {
+        return this.pointerID == point.pointerID && this.x == point.x && this.y == point.y;
+    }
+
+    /**
+     * 复制point
+     * @param point 复制的原point
+     * @return 复制的point
+     */
+    public static VDDrawingPoint copy(VDDrawingPoint point) {
+        return new VDDrawingPoint(point.pointerID, point.x, point.y);
+    }
+
+    /* Properties */
     /**
      * 当前point的ID
      * 每一轮touch事件（即从开始触摸Action_Down到结束触摸Action_Up、Action_Cancel）与其他轮的ID不同
@@ -32,30 +69,6 @@ public class VDDrawingPoint extends VDModel {
 
     // 触摸事件发生的时间
     public long moment;
-
-    /* #Constructors */
-    public VDDrawingPoint() {
-    }
-
-    public VDDrawingPoint(float x, float y) {
-        this(VDDrawingPoint.CurrentPointerID(), x, y);
-    }
-
-    public VDDrawingPoint(int pointerID, float x, float y) {
-        this.pointerID = pointerID;
-        this.x = x;
-        this.y = y;
-        this.moment = System.currentTimeMillis();
-    }
-
-    /**
-     * 是否是相同的point
-     * @param point 比较的point
-     * @return 是否相同
-     */
-    public boolean isSamePoint(VDDrawingPoint point) {
-        return this.pointerID == point.pointerID && this.x == point.x && this.y == point.y;
-    }
 
     /**
      * 当前X轴绘制比例
@@ -85,15 +98,6 @@ public class VDDrawingPoint extends VDModel {
     }
     public float getDrawingRatioY() {
         return drawingRatioY;
-    }
-
-    /**
-     * 复制point
-     * @param point 复制的原point
-     * @return
-     */
-    public static VDDrawingPoint copy(VDDrawingPoint point) {
-        return new VDDrawingPoint(point.pointerID, point.x, point.y);
     }
 
     // ID产生，每次开始触摸时自增

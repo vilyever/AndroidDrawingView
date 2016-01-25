@@ -34,6 +34,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         self.initial(context);
     }
 
+    /* Public Methods */
     /**
      * 添加图层
      * @param layerView 添加的图层
@@ -62,6 +63,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         self.setGestureView(null);
     }
 
+    /* Properties */
     public interface Delegate {
         /**
          * 图层被触摸ACTION_DOWN时的反馈，此时理应准备开始下一step，接收者应在此时结束先前未完成的step
@@ -369,6 +371,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         return layerOnTouchListener;
     }
 
+    /* Overrides */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         /** 若先前调用的{@link #layerOnTouchListener} 检测此时无法进行操作（gestureView为空），则不进行手势判断 */
@@ -412,6 +415,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         return super.onTouchEvent(event);
     }
 
+    /* Private Methods */
     private void initial(Context context) {
         // layer view can draw border outside
         // 图层可以在其frame外显示内容
@@ -420,6 +424,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         self.setGestureViewOperationState(GestureViewOperation.None.state());
     }
 
+    /* Enums */
     /**
      * 对图层进行的手势操作类别
      * Sacling 和 Rotation 可以同时进行

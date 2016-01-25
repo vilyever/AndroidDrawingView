@@ -23,6 +23,7 @@ public class VDDrawingStep extends VDModel {
         setDrawingViewHeight(drawingViewHeight);
     }
 
+    /* Public Methods */
     /**
      * 在重绘前调用此方法设置绘制比例
      * 在不同尺寸的view上绘制时将尽量呈现出类似的图形
@@ -53,6 +54,7 @@ public class VDDrawingStep extends VDModel {
         return self.getStepType() == StepType.Clear;
     }
 
+    /* Properties */
     /**
      * 当前step的序号
      * drawingView在重绘时会按此序号顺序绘制
@@ -187,6 +189,7 @@ public class VDDrawingStep extends VDModel {
         return drawingViewHeight;
     }
 
+    /* Private Methods */
     /**
      * 设置当前step是在哪一层级，哪种图层类型绘制
      * 默认在初始化后如果该step是与图层有关的应当调用此方法一次且仅一次

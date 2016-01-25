@@ -37,6 +37,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         setFrame(frame);
     }
 
+    /* Public Methods */
     // left，top，right，bottom快捷设置
     public void setFrame(RectF frame) {
         if (frame == null) {
@@ -90,6 +91,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         return layoutParams;
     }
 
+    /* Properties */
     /**
      * 层级
      */
@@ -258,6 +260,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         return drawingRatioY;
     }
 
+    /* Delegates */
     /** {@link Comparable<VDDrawingLayer>} */
     @Override
     public int compareTo(VDDrawingLayer another) {
@@ -265,6 +268,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     }
     /** {@link Comparable<VDDrawingLayer>} */
 
+    /* Private Methods */
     /**
      * 初始化
      */

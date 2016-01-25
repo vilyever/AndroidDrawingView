@@ -33,6 +33,7 @@ import java.util.List;
  * AndroidDrawingBoard <com.vilyever.drawingboard>
  * Created by vilyever on 2015/9/18.
  * Feature:
+ * 绘画板视图
  */
 public class VDDrawingView extends RelativeLayout implements View.OnLayoutChangeListener, VDDrawingLayerTextView.Delegate {
     private final VDDrawingView self = this;
@@ -40,7 +41,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private static final int UnhandleAnyLayer = -1;
     private static final int HandleAllLayer = -2;
 
-    /* #Constructors */
+    /* Constructors */
     public VDDrawingView(Context context) {
         this(context, null);
     }
@@ -54,6 +55,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.initial();
     }
 
+    /* Public Methods */
     /**
      * 清空当前所有绘制内容
      */
@@ -273,6 +275,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         return !self.isTouching() && self.getDrawingData().canRedo();
     }
 
+    /* Properties */
     /**
      * 绘制代理，通知状态变更和获取数据
      */
@@ -569,7 +572,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     /**
      * 是否应该处理触摸事件，用于禁用多指触摸绘制，多指触摸可能导致多种意外
      */
-    private boolean shouldHandleOnTouch;// for limit only first finger can draw.
+    private boolean shouldHandleOnTouch; // for limit only first finger can draw.
     private VDDrawingView setShouldHandleOnTouch(boolean shouldHandleOnTouch) {
         this.shouldHandleOnTouch = shouldHandleOnTouch;
         return this; 
@@ -578,7 +581,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         return shouldHandleOnTouch;
     }
 
-    /* #Overrides */
+    /* Overrides */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (self.isDisableTouchDraw()) {
@@ -671,7 +674,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         return true;
     }
 
-
+    /* Delegates */
     /** {@link android.view.View.OnLayoutChangeListener} */
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -702,6 +705,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
     /** {@link com.vilyever.drawingview.layer.VDDrawingLayerTextView.Delegate} */
 
+    /* Private Methods */
     /**
      * 初始化内部控件
      */
@@ -977,6 +981,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case Base:
                 break;
             case Image:
+                self.getHandlingLayerView().setCanHandle(true);
+                break;
             case Text:
                 self.getHandlingLayerView().setCanHandle(true);
                 break;

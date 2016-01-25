@@ -12,10 +12,6 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
 public class VDBezier {
     final VDBezier self = this;
 
-    public VDDrawingPoint startPoint;
-    public VDDrawingPoint secondPoint;
-    public VDDrawingPoint endPoint;
-
     /* #Constructors */
     public VDBezier(VDDrawingPoint startPoint, VDDrawingPoint secondPoint, VDDrawingPoint endPoint) {
         this.startPoint = startPoint;
@@ -23,6 +19,7 @@ public class VDBezier {
         this.endPoint = endPoint;
     }
 
+    /* Public Methods */
     // Bezier曲线长度
     public float length() {
         int steps = 10, length = 0;
@@ -63,4 +60,9 @@ public class VDBezier {
 //                + 3.0 *  third    * (1.0 - t)  * t          * t
 //                +        end      * t          * t          * t;
 //    }
+
+    /* Properties */
+    public VDDrawingPoint startPoint;
+    public VDDrawingPoint secondPoint;
+    public VDDrawingPoint endPoint;
 }

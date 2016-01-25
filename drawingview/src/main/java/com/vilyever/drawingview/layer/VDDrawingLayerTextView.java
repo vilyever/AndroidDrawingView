@@ -55,6 +55,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         self.init();
     }
 
+    /* Public Methods */
     /**
      * 进入编辑状态
      * @param firstEditing 是否第一次编辑，即图层刚刚被创建完成时
@@ -97,6 +98,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         return !self.getText().toString().equals(self.getUnchangedText());
     }
 
+    /* Properties */
     public interface Delegate {
         /**
          * 实时监测text变化
@@ -225,6 +227,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         return borderPath;
     }
 
+    /* Overrides */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         /**
@@ -268,6 +271,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         }
     }
 
+    /* Delegates */
     /** {@link VDDrawingLayerViewProtocol} */
     @Override
     public void clearDrawing() {
@@ -345,6 +349,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     }
     /** {@link VDDrawingLayerViewProtocol} */
 
+    /* Private Methods */
     /**
      * 初始化
      */

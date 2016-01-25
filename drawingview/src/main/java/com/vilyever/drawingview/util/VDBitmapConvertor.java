@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 public class VDBitmapConvertor {
     private final VDBitmapConvertor self = this;
 
+    /* Public Methods */
     public static Bitmap drawableToBitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable)drawable).getBitmap();

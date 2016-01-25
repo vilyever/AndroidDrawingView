@@ -13,12 +13,22 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 形状绘制brush
+ *
+ * Known Direct Subclasses:
+ * {@link VDLineBrush}
+ * {@link VDRectangleBrush}
+ * {@link VDRoundedRectangleBrush}
+ * {@link VDEllipseBrush}
+ * {@link VDCircleBrush}
+ * {@link VDCenterCircleBrush}
+ * {@link VDRightAngledTriangleBrush}
+ * {@link VDIsoscelesTriangleBrush}
+ * {@link VDRhombusBrush}
+ * {@link VDPolygonBrush}
  */
 public abstract class VDShapeBrush extends VDDrawingBrush {
     final VDShapeBrush self = this;
-
-    protected FillType fillType;
-    protected boolean edgeRounded;
 
     /* #Constructors */
     public VDShapeBrush() {
@@ -37,6 +47,44 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
         super(size, color);
         this.fillType = fillType;
         this.edgeRounded = edgeRounded;
+    }
+
+    /* Properties */
+    /**
+     * 填充样式
+     * 镂空，铺满
+     */
+    public enum FillType {
+        Hollow, Solid;
+    }
+    protected FillType fillType;
+    public FillType getFillType() {
+        if (self.isEraser()) {
+            return FillType.Solid;
+        }
+
+        if (self.fillType == null) {
+            return FillType.Hollow;
+        }
+        return fillType;
+    }
+    public <T extends VDShapeBrush> T setFillType(FillType fillType) {
+        this.fillType = fillType;
+        self.updatePaint();
+        return (T) self;
+    }
+
+    /**
+     * 边缘交点是否圆角
+     */
+    protected boolean edgeRounded;
+    public boolean isEdgeRounded() {
+        return edgeRounded;
+    }
+    public <T extends VDShapeBrush> T setEdgeRounded(boolean edgeRounded) {
+        this.edgeRounded = edgeRounded;
+        self.updatePaint();
+        return (T) self;
     }
 
     /* #Overrides */
@@ -84,50 +132,4 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
         }
     }
 
-    /* #Accessors */
-    public FillType getFillType() {
-        if (self.isEraser()) {
-            return FillType.Solid;
-        }
-
-        if (self.fillType == null) {
-            return FillType.Hollow;
-        }
-        return fillType;
-    }
-
-    public <T extends VDShapeBrush> T setFillType(FillType fillType) {
-        this.fillType = fillType;
-        self.updatePaint();
-        return (T) self;
-    }
-
-    public boolean isEdgeRounded() {
-        return edgeRounded;
-    }
-
-    public <T extends VDShapeBrush> T setEdgeRounded(boolean edgeRounded) {
-        this.edgeRounded = edgeRounded;
-        self.updatePaint();
-        return (T) self;
-    }
-
-    /* #Delegates */
-     
-    /* #Private Methods */
-
-    /* #Protected Mothods */
-
-    /* #Public Methods */
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
-    public enum FillType {
-        Hollow, Solid;
-    }
 }

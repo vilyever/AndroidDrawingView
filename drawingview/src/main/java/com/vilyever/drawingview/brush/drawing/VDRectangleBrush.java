@@ -14,6 +14,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 矩形绘制
  */
 public class VDRectangleBrush extends VDShapeBrush {
     final VDRectangleBrush self = this;
@@ -34,6 +35,11 @@ public class VDRectangleBrush extends VDShapeBrush {
 
     public VDRectangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
+    }
+
+    /* Public Methods */
+    public static VDRectangleBrush defaultBrush() {
+        return new VDRectangleBrush(5, Color.BLACK);
     }
 
     /* #Overrides */
@@ -75,23 +81,5 @@ public class VDRectangleBrush extends VDShapeBrush {
 
         return Frame.EmptyFrame();
     }
-    
-    /* #Accessors */     
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDRectangleBrush defaultBrush() {
-        return new VDRectangleBrush(5, Color.BLACK);
-    }
 
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

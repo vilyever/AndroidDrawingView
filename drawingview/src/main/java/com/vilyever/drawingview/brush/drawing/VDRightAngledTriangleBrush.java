@@ -15,6 +15,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 直角三角形绘制，直角位于左下角
  */
 public class VDRightAngledTriangleBrush extends VDShapeBrush {
     final VDRightAngledTriangleBrush self = this;
@@ -35,6 +36,11 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
 
     public VDRightAngledTriangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
+    }
+
+    /* Public Methods */
+    public static VDRightAngledTriangleBrush defaultBrush() {
+        return new VDRightAngledTriangleBrush(5, Color.BLACK);
     }
 
     /* #Overrides */
@@ -153,22 +159,4 @@ public class VDRightAngledTriangleBrush extends VDShapeBrush {
         return Frame.EmptyFrame();
     }
 
-    /* #Accessors */
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDRightAngledTriangleBrush defaultBrush() {
-        return new VDRightAngledTriangleBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

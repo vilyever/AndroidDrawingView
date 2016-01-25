@@ -32,6 +32,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         self.init();
     }
 
+    /* Properties */
     public interface Delegate {
         /**
          * 当前图层busy状态变更时回调
@@ -183,6 +184,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         canvas.drawBitmap(self.getDrawingBitmap(), 0, 0, null);
     }
 
+    /* Delegates */
     /** {@link Runnable} */
     /**
      * {@link #drawingThread}执行的runnable
@@ -355,6 +357,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     }
     /** {@link VDDrawingLayerViewProtocol} */
 
+    /* Private Methods */
     /**
      * 初始化
      */

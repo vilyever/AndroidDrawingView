@@ -14,12 +14,13 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/20.
  * Feature:
+ * 任意点绘制，手指跟随
+ * 贝塞尔平滑
  */
 public class VDPenBrush extends VDDrawingBrush {
     final VDPenBrush self = this;
 
-    
-    /* #Constructors */
+    /* Constructors */
     public VDPenBrush() {
 
     }
@@ -28,7 +29,12 @@ public class VDPenBrush extends VDDrawingBrush {
         super(size, color);
     }
 
-    /* #Overrides */
+    /* Public Methods */
+    public static VDPenBrush defaultBrush() {
+        return new VDPenBrush(5, Color.BLACK);
+    }
+
+    /* Overrides */
     @Override
     protected void updatePaint() {
         super.updatePaint();
@@ -99,23 +105,4 @@ public class VDPenBrush extends VDDrawingBrush {
     public boolean shouldDrawFromBegin() {
         return false;
     }
-
-    /* #Accessors */
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDPenBrush defaultBrush() {
-        return new VDPenBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

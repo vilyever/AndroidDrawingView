@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 
 import com.vilyever.drawingview.VDDrawingView;
 import com.vilyever.drawingview.brush.drawing.VDCenterCircleBrush;
@@ -42,7 +41,6 @@ public class DrawingFragment extends Fragment {
     private final DrawingFragment self = this;
 
     private VDDrawingView drawingView;
-    private VDDrawingView drawingView2;
 
     private Button undoButton;
     private Button redoButton;
@@ -86,12 +84,10 @@ public class DrawingFragment extends Fragment {
         self.drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
             public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
-                self.drawingView2.drawNextStep(step);
             }
 
             @Override
             public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
-                self.drawingView2.drawNextStep(drawingView.getCurrentDrawingStep());
             }
 
             @Override
@@ -111,16 +107,12 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.drawingView2 = (VDDrawingView) rootView.findViewById(R.id.drawingView2);
-        self.drawingView2.setDisableTouchDraw(true);
-
         self.undoButton = (Button) rootView.findViewById(R.id.undoButton);
         self.undoButton.setEnabled(false);
         self.undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 self.drawingView.undo();
-                self.drawingView2.undo();
             }
         });
 
@@ -130,7 +122,6 @@ public class DrawingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 self.drawingView.redo();
-                self.drawingView2.redo();
             }
         });
 
@@ -161,7 +152,7 @@ public class DrawingFragment extends Fragment {
         self.shapeBrushes.add(VDCircleBrush.defaultBrush());
         self.shapeBrushes.add(VDEllipseBrush.defaultBrush());
         self.shapeBrushes.add(VDRightAngledTriangleBrush.defaultBrush());
-        self.shapeBrushes.add((VDShapeBrush) VDIsoscelesTriangleBrush.defaultBrush());
+        self.shapeBrushes.add(VDIsoscelesTriangleBrush.defaultBrush());
         self.shapeBrushes.add(VDRhombusBrush.defaultBrush());
         self.shapeBrushes.add(VDCenterCircleBrush.defaultBrush());
         self.shapeButton = (Button) rootView.findViewById(R.id.shapeButton);
@@ -287,17 +278,7 @@ public class DrawingFragment extends Fragment {
         self.deleteLayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                self.drawingView.deleteHandlingLayer();
-
-                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) self.drawingView.getLayoutParams();
-                if (!small) {
-                    layoutParams.setMargins(0, 0, self.drawingView.getWidth() / 2, self.drawingView.getHeight() / 2);
-                }
-                else {
-                    layoutParams.setMargins(0, 0, 0, 0);
-                }
-                self.drawingView.setLayoutParams(layoutParams);
-                small = !small;
+                self.drawingView.deleteHandlingLayer();
             }
         });
 
@@ -309,15 +290,12 @@ public class DrawingFragment extends Fragment {
         return rootView;
     }
 
-    boolean small = false;
-
     @Override
     public void onDestroy() {
         super.onDestroy();
     }
 
     /* #Accessors */
-
     public ThicknessAdjustController getThicknessAdjustController() {
         if (self.thicknessAdjustController == null) {
             self.thicknessAdjustController = new ThicknessAdjustController(self.getActivity());
@@ -334,24 +312,11 @@ public class DrawingFragment extends Fragment {
         }
         return thicknessAdjustController;
     }
-    /* #UI Actions */
-    
-    /* #Delegates */     
-     
+
     /* #Private Methods */
     private void selectButton(List<Button> buttons, Button button) {
         for (Button b : buttons) {
             b.setSelected(b == button);
         }
     }
-    
-    /* #Public Methods */
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

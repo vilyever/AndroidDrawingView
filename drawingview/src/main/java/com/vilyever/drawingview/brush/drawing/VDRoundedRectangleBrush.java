@@ -14,13 +14,14 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 圆角矩形绘制
  */
 public class VDRoundedRectangleBrush extends VDShapeBrush {
     final VDRoundedRectangleBrush self = this;
 
     protected float roundRadius;
-    
-    /* #Constructors */
+
+    /* Constructors */
     public VDRoundedRectangleBrush() {
 
     }
@@ -42,7 +43,22 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
         this.roundRadius = roundRadius;
     }
 
-    /* #Overrides */
+    /* Public Methods */
+    public static VDRoundedRectangleBrush defaultBrush() {
+        return new VDRoundedRectangleBrush(5, Color.BLACK);
+    }
+
+    /* Properties */
+    public float getRoundRadius() {
+        return roundRadius;
+    }
+
+    public <T extends VDShapeBrush> T setRoundRadius(float roundRadius) {
+        this.roundRadius = roundRadius;
+        return (T) self;
+    }
+
+    /* Overrides */
     @Override
     public boolean isEdgeRounded() {
         return true;
@@ -88,30 +104,4 @@ public class VDRoundedRectangleBrush extends VDShapeBrush {
         return Frame.EmptyFrame();
     }
     
-    /* #Accessors */
-    public float getRoundRadius() {
-        return roundRadius;
-    }
-
-    public <T extends VDShapeBrush> T setRoundRadius(float roundRadius) {
-        this.roundRadius = roundRadius;
-        return (T) self;
-    }
-
-    /* #Delegates */
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDRoundedRectangleBrush defaultBrush() {
-        return new VDRoundedRectangleBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

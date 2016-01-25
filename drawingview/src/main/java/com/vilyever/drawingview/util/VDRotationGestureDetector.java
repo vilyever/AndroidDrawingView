@@ -22,19 +22,7 @@ public class VDRotationGestureDetector {
         secondPointerID = INVALID_POINTER_ID;
     }
 
-    private OnRotationGestureListener mListener;
-
-    // 两只手指触摸id
-    private int firstPointerID, secondPointerID;
-    private float firstX, firstY, secondX, secondY;
-
-    // 当前旋转角度
-    private float mAngle;
-    public float getAngle() {
-        return mAngle;
-    }
-
-    
+    /* Public Methods */
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -76,6 +64,20 @@ public class VDRotationGestureDetector {
         return true;
     }
 
+    /* Properties */
+    private OnRotationGestureListener mListener;
+
+    // 两只手指触摸id
+    private int firstPointerID, secondPointerID;
+    private float firstX, firstY, secondX, secondY;
+
+    // 当前旋转角度
+    private float mAngle;
+    public float getAngle() {
+        return mAngle;
+    }
+
+    /* Private Methods */
     private float angleBetweenLines (float fX, float fY, float sX, float sY, float nfX, float nfY, float nsX, float nsY) {
         float angle1 = (float) Math.atan2( (fY - sY), (fX - sX) );
         float angle2 = (float) Math.atan2( (nfY - nsY), (nfX - nsX) );
@@ -86,6 +88,7 @@ public class VDRotationGestureDetector {
         return angle;
     }
 
+    /* Interfaces */
     public interface OnRotationGestureListener {
         void onRotation(VDRotationGestureDetector rotationDetector);
     }

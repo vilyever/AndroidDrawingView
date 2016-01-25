@@ -13,6 +13,11 @@ import java.util.List;
  * Created by vilyever on 2015/10/30.
  * Feature:
  * 图层基础接口
+ *
+ * Known Direct implement classes：
+ * {@link VDDrawingLayerBaseView}
+ * {@link VDDrawingLayerImageView}
+ * {@link VDDrawingLayerTextView}
  */
 public interface VDDrawingLayerViewProtocol {
 

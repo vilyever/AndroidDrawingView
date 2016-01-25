@@ -17,16 +17,14 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/20.
  * Feature:
+ * 绘制图形类brush
+ *
+ * Known Direct Subclasses:
+ * {@link VDPenBrush}
+ * {@link VDShapeBrush}
  */
 public abstract class VDDrawingBrush extends VDBrush {
     final VDDrawingBrush self = this;
-
-    protected float size;
-    protected int color;
-    protected boolean isEraser;
-    protected boolean oneStrokeToLayer;
-
-    protected Paint paint;
 
     /* #Constructors */
     public VDDrawingBrush() {
@@ -37,7 +35,75 @@ public abstract class VDDrawingBrush extends VDBrush {
         this.color = color;
     }
 
+    /* Properties */
+    /**
+     * 笔刷大小
+     */
+    protected float size;
+    public float getSize() {
+        return size * self.getDrawingRatio();
+    }
+    public <T extends VDDrawingBrush> T setSize(float size) {
+        this.size = size;
+        self.updatePaint();
+        return (T) self;
+    }
+
+    /**
+     * 笔刷颜色
+     */
+    protected int color;
+    public int getColor() {
+        if (isEraser) {
+            return Color.TRANSPARENT;
+        }
+        return color;
+    }
+    public <T extends VDDrawingBrush> T setColor(int color) {
+        this.color = color;
+        self.updatePaint();
+        return (T) self;
+    }
+
+    /**
+     * 是否是橡皮擦
+     */
+    protected boolean isEraser;
+    public boolean isEraser() {
+        return isEraser;
+    }
+    public <T extends VDDrawingBrush> T setIsEraser(boolean isEraser) {
+        this.isEraser = isEraser;
+        self.updatePaint();
+        return (T) self;
+    }
+
+    /**
+     * paint
+     * 临时存储以免每次绘制都生成
+     */
+    @VDJsonKeyIgnore
+    protected Paint paint;
+    public Paint getPaint() {
+        if (self.paint == null) {
+            self.paint = new Paint();
+            self.paint.setAntiAlias(true);
+            self.paint.setDither(true);
+            self.updatePaint();
+        }
+
+        return paint;
+    }
+
     /* #Overrides */
+    @Override
+    public boolean isOneStrokeToLayer() {
+        if (self.isEraser()) {
+            return false;
+        }
+        return super.isOneStrokeToLayer();
+    }
+
     @Override
     public boolean shouldDrawFromBegin() {
         return true;
@@ -70,66 +136,10 @@ public abstract class VDDrawingBrush extends VDBrush {
         return self.makeFrameWithBrushSpace(drawingRect);
     }
 
-    /* #Accessors */
-    public float getSize() {
-        return size * self.getDrawingRatio();
-    }
-
-    public <T extends VDDrawingBrush> T setSize(float size) {
-        this.size = size;
-        self.updatePaint();
-        return (T) self;
-    }
-
-    public int getColor() {
-        if (isEraser) {
-            return Color.TRANSPARENT;
-        }
-        return color;
-    }
-
-    public <T extends VDDrawingBrush> T setColor(int color) {
-        this.color = color;
-        self.updatePaint();
-        return (T) self;
-    }
-
-    public boolean isEraser() {
-        return isEraser;
-    }
-
-    public <T extends VDDrawingBrush> T setIsEraser(boolean isEraser) {
-        this.isEraser = isEraser;
-        self.updatePaint();
-        return (T) self;
-    }
-
-    public boolean isOneStrokeToLayer() {
-        if (self.isEraser()) {
-            return false;
-        }
-        return oneStrokeToLayer;
-    }
-
-    public <T extends VDDrawingBrush> T setOneStrokeToLayer(boolean oneStrokeToLayer) {
-        this.oneStrokeToLayer = oneStrokeToLayer;
-        return (T) self;
-    }
-
-    public Paint getPaint() {
-        if (self.paint == null) {
-            self.paint = new Paint();
-            self.paint.setAntiAlias(true);
-            self.paint.setDither(true);
-            self.updatePaint();
-        }
-
-        return paint;
-    }
-
-    /* #Delegates */
-     
-    /* #Private Methods */
+    /* Protected Methods */
+    /**
+     * 更新paint
+     */
     protected void updatePaint() {
         self.getPaint().setStrokeWidth(self.getSize());
         self.getPaint().setColor(self.getColor());
@@ -139,21 +149,15 @@ public abstract class VDDrawingBrush extends VDBrush {
         }
     }
 
-    /* #Protected Methods */
+    /**
+     * 修正绘制边界
+     * @param drawingRect 原绘制边界
+     * @return 包含笔刷尺寸的边界
+     */
     protected Frame makeFrameWithBrushSpace(RectF drawingRect) {
         return new Frame(drawingRect.left - self.getSize() / 2.0f,
                             drawingRect.top - self.getSize() / 2.0f,
                             drawingRect.right + self.getSize() / 2.0f,
                             drawingRect.bottom + self.getSize() / 2.0f);
     }
-
-    /* #Public Methods */
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

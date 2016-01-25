@@ -14,6 +14,7 @@ import com.vilyever.drawingview.model.VDDrawingPoint;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 直线绘制
  */
 public class VDLineBrush extends VDShapeBrush {
     final VDLineBrush self = this;
@@ -34,6 +35,11 @@ public class VDLineBrush extends VDShapeBrush {
 
     public VDLineBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
+    }
+
+    /* Public Methods */
+    public static VDLineBrush defaultBrush() {
+        return new VDLineBrush(5, Color.BLACK);
     }
 
     /* #Overrides */
@@ -96,22 +102,4 @@ public class VDLineBrush extends VDShapeBrush {
         return Frame.EmptyFrame();
     }
 
-    /* #Accessors */     
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDLineBrush defaultBrush() {
-        return new VDLineBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

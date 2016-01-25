@@ -36,8 +36,7 @@ public class VDDrawingAnimationView extends View {
         self.initial();
     }
 
-
-//    private boolean animated;
+    /* Properties */
     private boolean animated;
     public VDDrawingAnimationView setAnimated(boolean animated) {
         this.animated = animated;
@@ -88,6 +87,7 @@ public class VDDrawingAnimationView extends View {
     float[] points = new float[2];
     private float pointPercent = 0;
 
+    /* Overrides */
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
@@ -126,6 +126,7 @@ public class VDDrawingAnimationView extends View {
         return true;
     }
 
+    /* Private Methods */
     /**
      * 初始化
      */

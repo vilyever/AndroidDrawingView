@@ -17,6 +17,8 @@ import java.util.List;
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
+ * 多边形绘制，由多笔构成
+ * 此brush展示如何使用多笔绘制图形
  */
 public class VDPolygonBrush extends VDShapeBrush {
     final VDPolygonBrush self = this;
@@ -39,8 +41,12 @@ public class VDPolygonBrush extends VDShapeBrush {
         super(size, color, fillType, edgeRounded);
     }
 
-    /* #Overrides */
+    /* Public Methods */
+    public static VDPolygonBrush defaultBrush() {
+        return new VDPolygonBrush(5, Color.BLACK);
+    }
 
+    /* #Overrides */
     @Override
     public FillType getFillType() {
         return FillType.Hollow;
@@ -121,22 +127,4 @@ public class VDPolygonBrush extends VDShapeBrush {
         return Frame.EmptyFrame();
     }
 
-    /* #Accessors */
-     
-    /* #Delegates */     
-     
-    /* #Private Methods */    
-    
-    /* #Public Methods */
-    public static VDPolygonBrush defaultBrush() {
-        return new VDPolygonBrush(5, Color.BLACK);
-    }
-
-    /* #Classes */
-
-    /* #Interfaces */     
-     
-    /* #Annotations @interface */    
-    
-    /* #Enums */
 }

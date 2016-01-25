@@ -17,6 +17,7 @@ public class VDDrawingData {
      */
     public static final int NextLayerHierarchy = -1;
 
+    /* Public Methods */
     /**
      * 生成作用在下一图层的下一step
      * @param layerType 图层type
@@ -182,6 +183,7 @@ public class VDDrawingData {
         return false;
     }
 
+    /* Properties */
     /**
      * 存储所有step
      */
