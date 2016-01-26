@@ -176,6 +176,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         return uiHandler;
     }
 
+    /* Overrides */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

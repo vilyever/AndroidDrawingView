@@ -591,11 +591,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         int action = event.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                // 禁止父容器拦截touch事件，解决在recyclerView中无法绘画问题
+                self.getParent().requestDisallowInterceptTouchEvent(true);
                 self.getDrawingDelegate().didInterceptTouchEvent(self, true);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 self.getDrawingDelegate().didInterceptTouchEvent(self, false);
+                self.getParent().requestDisallowInterceptTouchEvent(false);
                 break;
         }
         return super.dispatchTouchEvent(event);
@@ -657,7 +660,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 self.setTouching(true);
-                self.getParent().requestDisallowInterceptTouchEvent(true);
                 self.drawBeginTouch(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -666,7 +668,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 self.drawTouchEnd(event.getX(), event.getY());
-                self.getParent().requestDisallowInterceptTouchEvent(false);
                 self.setTouching(false);
                 break;
         }
