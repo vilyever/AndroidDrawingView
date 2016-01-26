@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.vilyever.drawingview.VDDrawingView;
 import com.vilyever.drawingview.brush.drawing.VDCenterCircleBrush;
@@ -278,18 +279,18 @@ public class DrawingFragment extends Fragment {
         self.deleteLayerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) self.drawingView.getLayoutParams();
-//                if (small) {
-//                    layoutParams.rightMargin = 0;
-//                    layoutParams.bottomMargin = 0;
-//                }
-//                else {
-//                    layoutParams.rightMargin = self.drawingView.getWidth() / 2;
-//                    layoutParams.bottomMargin = self.drawingView.getHeight() / 2;
-//                }
-//                self.drawingView.setLayoutParams(layoutParams);
-//                small = !small;
-                self.drawingView.deleteHandlingLayer();
+                LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) self.drawingView.getLayoutParams();
+                if (small) {
+                    layoutParams.rightMargin = 0;
+                    layoutParams.bottomMargin = 0;
+                }
+                else {
+                    layoutParams.rightMargin = self.drawingView.getWidth() / 2;
+                    layoutParams.bottomMargin = self.drawingView.getHeight() / 2;
+                }
+                self.drawingView.setLayoutParams(layoutParams);
+                small = !small;
+//                self.drawingView.deleteHandlingLayer();
             }
         });
 

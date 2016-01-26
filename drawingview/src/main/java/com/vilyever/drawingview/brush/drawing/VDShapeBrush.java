@@ -114,6 +114,7 @@ public abstract class VDShapeBrush extends VDDrawingBrush {
     @NonNull
     @Override
     public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+        self.updatePaint();
         if (drawingPath.getPoints().size() < 2) {
             return Frame.EmptyFrame();
         }

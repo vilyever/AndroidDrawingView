@@ -48,6 +48,7 @@ public class VDPenBrush extends VDDrawingBrush {
     @NonNull
     @Override
     public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+        self.updatePaint();
         if (drawingPath.getPoints().size() > 0) {
             Frame pathFrame = super.drawPath(canvas, drawingPath, state);
 
@@ -58,7 +59,6 @@ public class VDPenBrush extends VDDrawingBrush {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
-            self.updatePaint();
             Path path = new Path();
             if (drawingPath.getPoints().size() == 1) {
                 self.getPaint().setStyle(Paint.Style.FILL);

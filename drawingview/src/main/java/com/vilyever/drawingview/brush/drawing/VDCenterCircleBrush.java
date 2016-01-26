@@ -50,6 +50,7 @@ public class VDCenterCircleBrush extends VDShapeBrush {
     @NonNull
     @Override
     public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+        self.updatePaint();
         if (drawingPath.getPoints().size() > 1) {
             VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
             VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
