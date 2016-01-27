@@ -33,7 +33,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
         self.init();
 
         this.hierarchy = hierarchy;
-        this.layerType = LayerType.Image;
+        this.layerType = LayerType.LayerDrawing;
         setFrame(frame);
     }
 
@@ -108,7 +108,7 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
      * 图层类别
      */
     public enum LayerType {
-        Unkonwn, Base, Image, Text;
+        Unkonwn, BaseDrawing, BaseText, LayerDrawing, LayerText;
     }
     private LayerType layerType;
     public VDDrawingLayer setLayerType(LayerType layerType) {

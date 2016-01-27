@@ -30,13 +30,23 @@ public class VDDrawingData {
     }
 
     /**
-     * 生成作用在BASE图层的下一step
+     * 生成作用在BASE图层的下一绘图step
      * @param drawingViewWidth 当前drawingView宽
      * @param drawingViewHeight 当前drawingView高
      * @return 生成的step
      */
     public VDDrawingStep newDrawingStepOnBaseLayer(int drawingViewWidth, int drawingViewHeight) {
-        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.Base, drawingViewWidth, drawingViewHeight);
+        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.BaseDrawing, drawingViewWidth, drawingViewHeight);
+    }
+
+    /**
+     * 生成作用在BASE图层的下一文本step
+     * @param drawingViewWidth 当前drawingView宽
+     * @param drawingViewHeight 当前drawingView高
+     * @return 生成的step
+     */
+    public VDDrawingStep newTextStepOnBaseLayer(int drawingViewWidth, int drawingViewHeight) {
+        return newDrawingStepOnLayer(0, VDDrawingLayer.LayerType.BaseText, drawingViewWidth, drawingViewHeight);
     }
 
     /**

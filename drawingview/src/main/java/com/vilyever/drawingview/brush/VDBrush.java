@@ -234,9 +234,9 @@ public abstract class VDBrush extends VDModel {
      */
     public enum DrawingPointerState {
         TouchDown, TouchMoving, TouchUp, // 手指状态，用于作图，因支持多次触摸完成一笔，down和up可能出现多次
-        FetchFrame, // 忽略一笔完成所需条件，由笔刷自行补完未完成部分
+        FetchFrame, // 不做图，获取当前frame
         CalibrateToOrigin, // 所作的图画应从画布左上角开始绘制
-        ForceFinish, // 不做图，获取当前frame
+        ForceFinish, // 忽略一笔完成所需条件，由笔刷自行补完未完成部分
         VeryBegin, VeryEnd; // 一笔起始/结束，通常用于标记
 
         public int state() {

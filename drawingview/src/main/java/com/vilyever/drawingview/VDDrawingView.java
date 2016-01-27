@@ -139,12 +139,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         /**
          * 记录此step，获取图层的type
          */
-        VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.Base;
+        VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.BaseDrawing;
         if (layerViewProtocol instanceof VDDrawingLayerImageView) {
-            layerType = VDDrawingLayer.LayerType.Image;
+            layerType = VDDrawingLayer.LayerType.LayerDrawing;
         }
         else if (layerViewProtocol instanceof VDDrawingLayerTextView) {
-            layerType = VDDrawingLayer.LayerType.Text;
+            layerType = VDDrawingLayer.LayerType.LayerText;
         }
 
         self.getDrawingData()
@@ -175,12 +175,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         /**
          * 记录此step，获取图层的type
          */
-        VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.Base;
+        VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.BaseDrawing;
         if (layerViewProtocol instanceof VDDrawingLayerImageView) {
-            layerType = VDDrawingLayer.LayerType.Image;
+            layerType = VDDrawingLayer.LayerType.LayerDrawing;
         }
         else if (layerViewProtocol instanceof VDDrawingLayerTextView) {
-            layerType = VDDrawingLayer.LayerType.Text;
+            layerType = VDDrawingLayer.LayerType.LayerText;
         }
 
         self.getDrawingData()
@@ -469,7 +469,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                      * 记录此step开始
                      */
                     self.getDrawingData()
-                            .newDrawingStepOnLayer(textView.getLayerHierarchy(), VDDrawingLayer.LayerType.Text, self.getWidth(), self.getHeight())
+                            .newDrawingStepOnLayer(textView.getLayerHierarchy(), VDDrawingLayer.LayerType.LayerText, self.getWidth(), self.getHeight())
                             .setStepType(VDDrawingStep.StepType.TextChange);
                     self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
                 }
@@ -488,9 +488,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                      * 图层可能开始平移/缩放/旋转
                      * 预先记录此次操作step，若后续操作并非进行图层变换，则cancel此step
                      */
-                    VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.Image;
+                    VDDrawingLayer.LayerType layerType = VDDrawingLayer.LayerType.LayerDrawing;
                     if (layerView instanceof VDDrawingLayerTextView) {
-                        layerType = VDDrawingLayer.LayerType.Text;
+                        layerType = VDDrawingLayer.LayerType.LayerText;
                     }
 
                     self.getDrawingData()
@@ -631,7 +631,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
              * 即text图层无法主动判断step是否完成，用户可能无限时等待键盘输入，此时点击text图层意外的任意一点，即可表示完成此次text图层的step
              * 若进行此操作，显然不应继续使用此次触摸开始进行下一step的绘制
              */
-            if (self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.Text
+            if (self.getCurrentDrawingStep().getBrush() instanceof VDTextBrush
                     && !self.getCurrentDrawingStep().isStepOver()) {
                 self.endUnfinishedStep();
                 self.setShouldHandleOnTouch(false);
@@ -757,7 +757,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     /**
                      * 若绘制新图层，生成step，并生成对应的图层view
                      */
-                    self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Image, self.getWidth(), self.getHeight()).setStepType(VDDrawingStep.StepType.CreateLayer).setBrush(VDBrush.copy(drawingBrush));
+                    self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.LayerDrawing, self.getWidth(), self.getHeight()).setStepType(VDDrawingStep.StepType.CreateLayer).setBrush(VDBrush.copy(drawingBrush));
                     self.setHandlingLayerView(new VDDrawingLayerImageView(self.getContext()));
                     self.getLayerViews().add(self.getHandlingLayerView());
                     self.getLayerContainer().addLayerView(self.getHandlingLayerView());
@@ -774,15 +774,32 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 }
             }
             else if (self.getBrush() instanceof VDTextBrush) {
-                /**
-                 * text图层类似于 新绘画图层，生成step，生成图层view，记录操作图层
-                 */
                 VDTextBrush textBrush = self.getBrush();
-                self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.Text, self.getWidth(), self.getHeight()).setStepType(VDDrawingStep.StepType.CreateLayer).setBrush(VDBrush.copy(textBrush));
 
-                self.setHandlingLayerView(new VDDrawingLayerTextView(self.getContext()));
-                self.getLayerViews().add(self.getHandlingLayerView());
-                self.getLayerContainer().addLayerView(self.getHandlingLayerView());
+                if (textBrush.isOneStrokeToLayer()) {
+                    /**
+                     * text图层类似于 新绘画图层，生成step，生成图层view，记录操作图层
+                     */
+                    self.getDrawingData().newDrawingStepOnNextLayer(VDDrawingLayer.LayerType.LayerText, self.getWidth(), self.getHeight()).setStepType(VDDrawingStep.StepType.CreateLayer).setBrush(VDBrush.copy(textBrush));
+
+                    self.setHandlingLayerView(new VDDrawingLayerTextView(self.getContext()));
+                    self.getLayerViews().add(self.getHandlingLayerView());
+                    self.getLayerContainer().addLayerView(self.getHandlingLayerView());
+                }
+                else {
+                    /**
+                     * 若绘制在base底层，生成step，同绘制图层相同生成临时输入text图层，step结束后消除图层
+                     */
+                    self.getDrawingData()
+                            .newTextStepOnBaseLayer(self.getWidth(), self.getHeight())
+                            .setStepType(VDDrawingStep.StepType.DrawTextOnBase)
+                            .setBrush(VDBrush.copy(textBrush));
+
+                    self.setHandlingLayerView(new VDDrawingLayerTextView(self.getContext()));
+//                    self.getHandlingLayerView().setCanHandle(false); // 不显示图层效果
+                    self.getLayerViews().add(self.getHandlingLayerView());
+                    self.getLayerContainer().addLayerView(self.getHandlingLayerView());
+                }
             }
 
             self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
@@ -825,9 +842,13 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private void drawTouchEnd(float x, float y) {
         self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
 
+        if (self.getHandlingLayerView() == null) {
+            self.cancelCurrentStep();
+        }
+
         switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
-            case Base:
-            case Image:
+            case BaseDrawing:
+            case LayerDrawing:
                 /**
                  * base底层和image图层判断当前step是否完成，若完成则进行 finish 步骤
                  */
@@ -840,7 +861,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     self.finishDraw();
                 }
                 break;
-            case Text:
+            case BaseText:
+            case LayerText:
                 /**
                  * 通过touch事件流不可能直接完成text图层的绘制
                  * 此时仅是显示一个高亮文本框提供用户进行输入
@@ -857,7 +879,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /**
-     * 强制结束当前step
+     * 结束当前step
      * 无论当前step是否标记stepOver，都会强制结束
      * step是否应当调用此方法结束由调用处判断
      */
@@ -871,10 +893,11 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         if (self.getCurrentDrawingStep().getDrawingLayer().getFrame() == null) {
             // noting to draw, e.g. draw line with one point is pointless
             switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
-                case Base:
+                case BaseDrawing:
+                case BaseText:
                     break;
-                case Image:
-                case Text:
+                case LayerDrawing:
+                case LayerText:
                     /**
                      * 取消当前step前移除当前图层view
                      */
@@ -892,6 +915,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /**
+     * 强制结束当前step
      * 完成当前未完成的step
      */
     private void endUnfinishedStep() {
@@ -900,7 +924,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 && !self.getCurrentDrawingStep().isStepOver()) {
 
             switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
-                case Base:
+                case BaseDrawing: {
                     // 对base底层，向step发送当前需要强制结束的指示后结束step
                     self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.ForceFinish));
                     self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
@@ -909,7 +933,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
                     self.finishDraw();
                     break;
-                case Image:
+                }
+                case LayerDrawing: {
                     // 对image图层，因暂时不提供二次编辑功能，故仅在创建图层时存在未完成状态，处理类似base底层
                     VDDrawingLayerImageView imageView = (VDDrawingLayerImageView) self.getHandlingLayerView();
                     switch (self.getCurrentDrawingStep().getStepType()) {
@@ -923,7 +948,33 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                             break;
                     }
                     break;
-                case Text:
+                }
+                case BaseText: {
+                    VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getHandlingLayerView();
+                    textView.endEdit();
+                    if (textView.isChangedSinceLastStep()) {
+                        // 记录文本，删除临时图层，在base图层绘制
+                        self.getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
+
+                        self.getHandlingLayerView().setHandling(false);
+                        self.getBaseLayerImageView().drawView((View) self.getHandlingLayerView());
+
+                        self.getLayerContainer().removeLayerView(textView);
+                        self.getLayerViews().remove(textView);
+                        self.setHandlingLayerView(self.getBaseLayerImageView());
+
+                        self.finishDraw();
+                    }
+                    else {
+                        // 若未开始编辑，撤销此step
+                        self.getLayerContainer().removeLayerView(textView);
+                        self.getLayerViews().remove(textView);
+                        self.setHandlingLayerView(null);
+                        self.cancelCurrentStep();
+                    }
+                    break;
+                }
+                case LayerText: {
                     VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getHandlingLayerView();
                     switch (self.getCurrentDrawingStep().getStepType()) {
                         case CreateLayer:
@@ -932,8 +983,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                                 // 对text图层，若此时是第一次创建完图层，若已输入内容，结束此step
                                 self.getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
                                 self.overCurrentStep();
-                            }
-                            else {
+                            } else {
                                 // 若未开始编辑，撤销此step
                                 self.getLayerContainer().removeLayerView(textView);
                                 self.getLayerViews().remove(textView);
@@ -947,13 +997,13 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                             if (textView.isChangedSinceLastStep()) {
                                 self.getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
                                 self.overCurrentStep();
-                            }
-                            else {
+                            } else {
                                 self.cancelCurrentStep();
                             }
                             break;
                     }
                     break;
+                }
             }
         }
     }
@@ -979,12 +1029,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      */
     private void overCurrentStep() {
         switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
-            case Base:
+            case BaseDrawing:
                 break;
-            case Image:
+            case LayerDrawing:
                 self.getHandlingLayerView().setCanHandle(true);
                 break;
-            case Text:
+            case LayerText:
                 self.getHandlingLayerView().setCanHandle(true);
                 break;
         }
@@ -1054,12 +1104,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case CreateLayer:
                 if (layerViewProtocol == null) {
                     switch (layerType) {
-                        case Image:
+                        case LayerDrawing:
                             self.setHandlingLayerView(new VDDrawingLayerImageView(self.getContext()));
                             self.getLayerViews().add(self.getHandlingLayerView());
                             self.getLayerContainer().addLayerView(self.getHandlingLayerView());
                             break;
-                        case Text:
+                        case LayerText:
                             self.setHandlingLayerView(new VDDrawingLayerTextView(self.getContext()));
                             self.getLayerViews().add(self.getHandlingLayerView());
                             self.getLayerContainer().addLayerView(self.getHandlingLayerView());
@@ -1260,7 +1310,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     continue;
                 }
                 switch (firstDrawingStep.getDrawingLayer().getLayerType()) {
-                    case Image: {
+                    case LayerDrawing: {
                         VDDrawingLayerImageView imageView = new VDDrawingLayerImageView(self.getContext());
                         /**
                          * 绘制背景，背景使用系统的background
@@ -1281,7 +1331,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         imageView.setCanHandle(true);
                         break;
                     }
-                    case Text: {
+                    case LayerText: {
                         VDDrawingLayerTextView textView = new VDDrawingLayerTextView(self.getContext());
                         /**
                          * 绘制背景，背景使用系统的background

@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.vilyever.drawingview.brush.VDBrush;
@@ -30,6 +31,20 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     public VDDrawingLayerBaseView(Context context) {
         super(context);
         self.init();
+    }
+
+    /* Public Methods */
+    public void drawView(View view) {
+        self.checkDrawingBitmap();
+        if (self.getDrawingCanvas() != null) {
+            self.getDrawingCanvas().save();
+            self.getDrawingCanvas().translate(view.getLeft(), view.getTop());
+
+            view.draw(self.getDrawingCanvas());
+            self.getDrawingCanvas().restore();
+
+            self.invalidate();
+        }
     }
 
     /* Properties */
@@ -210,6 +225,22 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
                     if (step.getStepType() == VDDrawingStep.StepType.DrawOnBase) {
                         step.getBrush().drawPath(self.getDrawingCanvas(), step.getDrawingPath(), new VDBrush.DrawingState(VDBrush.DrawingPointerState.ForceFinish));
                     }
+                    else if (step.getStepType() == VDDrawingStep.StepType.DrawTextOnBase) {
+                        // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
+                        VDDrawingLayerTextView textView = new VDDrawingLayerTextView(self.getContext());
+                        textView.appendWithDrawingStep(step);
+
+                        textView.measure(MeasureSpec.makeMeasureSpec(self.getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(self.getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
+                        int left = (int) Math.floor(step.getDrawingLayer().getLeft());
+                        int top = (int) Math.floor(step.getDrawingLayer().getTop());
+                        textView.layout(left, top, left + textView.getMeasuredWidth(), top + textView.getMeasuredHeight());
+
+                        self.getDrawingCanvas().save();
+                        self.getDrawingCanvas().translate(step.getDrawingLayer().getLeft(), step.getDrawingLayer().getTop());
+
+                        textView.draw(self.getDrawingCanvas());
+                        self.getDrawingCanvas().restore();
+                    }
                 }
             }
         }
@@ -300,8 +331,12 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
             if (self.getTempBitmap() != null) {
                 self.getDrawingCanvas().drawBitmap(self.getTempBitmap(), 0, 0, null);
             }
-            frame = self.getCurrentDrawingStep().getBrush().drawPath(self.getDrawingCanvas(), self.getCurrentDrawingStep().getDrawingPath(), drawingStep.getDrawingState());
-            drawingStep.getDrawingLayer().setFrame(frame);
+
+            if (drawingStep.getStepType() == VDDrawingStep.StepType.DrawOnBase) {
+                frame = self.getCurrentDrawingStep().getBrush().drawPath(self.getDrawingCanvas(), self.getCurrentDrawingStep().getDrawingPath(), drawingStep.getDrawingState());
+                drawingStep.getDrawingLayer().setFrame(frame);
+            }
+
             self.invalidate();
         }
 

@@ -281,6 +281,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     public VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
         // 此类图层仅处理 创建图层，文本改动，图层变换 三种操作
         if (drawingStep.getStepType() != VDDrawingStep.StepType.CreateLayer
+                && drawingStep.getStepType() != VDDrawingStep.StepType.DrawTextOnBase
                 && drawingStep.getStepType() != VDDrawingStep.StepType.TextChange
                 && drawingStep.getStepType() != VDDrawingStep.StepType.Transform) {
             return null;
@@ -289,7 +290,8 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         // 图层尺寸
         VDBrush.Frame frame = null;
 
-        if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer) {
+        if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer
+                || drawingStep.getStepType() == VDDrawingStep.StepType.DrawTextOnBase) {
             if (drawingStep.getDrawingState().isVeryBegin()) {
                 if (!self.getDrawnSteps().contains(drawingStep)) {
                     self.getDrawnSteps().add(drawingStep);
@@ -327,17 +329,23 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
 
     @Override
     public boolean isHandling() {
+        if (!self.canHandle()) {
+            return false;
+        }
         return handling;
     }
 
     @Override
     public void setHandling(boolean handling) {
+        if (!self.canHandle()) {
+            return;
+        }
         self.handling = handling;
         self.invalidate();
     }
 
     /** {@link VDDrawingLayerViewProtocol#setCanHandle(boolean)} {@link VDDrawingLayerViewProtocol#canHandle()} */
-    private boolean canHandle;
+    private boolean canHandle = true;
     @Override
     public boolean canHandle() {
         return self.canHandle;
@@ -385,15 +393,17 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         if (drawingStep.getDrawingLayer().getFrame() != null) {
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) self.getLayoutParams();
 
-            // wrapcontent动态变化
-            layoutParams.width = RelativeLayout.LayoutParams.WRAP_CONTENT;
-            layoutParams.height = RelativeLayout.LayoutParams.WRAP_CONTENT;
-            layoutParams.leftMargin = (int) Math.floor(drawingStep.getDrawingLayer().getLeft());
-            layoutParams.topMargin = (int) Math.floor(drawingStep.getDrawingLayer().getTop());
-            layoutParams.rightMargin = -Integer.MAX_VALUE;
-            layoutParams.bottomMargin = -Integer.MAX_VALUE;
+            if (layoutParams != null) {
+                // wrap_content动态变化
+                layoutParams.width = RelativeLayout.LayoutParams.WRAP_CONTENT;
+                layoutParams.height = RelativeLayout.LayoutParams.WRAP_CONTENT;
+                layoutParams.leftMargin = (int) Math.floor(drawingStep.getDrawingLayer().getLeft());
+                layoutParams.topMargin = (int) Math.floor(drawingStep.getDrawingLayer().getTop());
+                layoutParams.rightMargin = -Integer.MAX_VALUE;
+                layoutParams.bottomMargin = -Integer.MAX_VALUE;
 
-            self.setLayoutParams(layoutParams);
+                self.setLayoutParams(layoutParams);
+            }
         }
 
         // 更新字体

@@ -222,17 +222,23 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
 
     @Override
     public boolean isHandling() {
+        if (!self.canHandle()) {
+            return false;
+        }
         return handling;
     }
 
     @Override
     public void setHandling(boolean handling) {
+        if (!self.canHandle()) {
+            return;
+        }
         self.handling = handling;
         self.invalidate();
     }
 
     /** {@link VDDrawingLayerViewProtocol#setCanHandle(boolean)} {@link VDDrawingLayerViewProtocol#canHandle()} */
-    private boolean canHandle;
+    private boolean canHandle = true;
 
     @Override
     public boolean canHandle() {

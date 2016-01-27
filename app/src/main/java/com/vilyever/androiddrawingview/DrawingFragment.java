@@ -180,7 +180,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.textBrush = VDTextBrush.defaultBrush();
+        self.textBrush = VDTextBrush.defaultBrush().setOneStrokeToLayer(false);
         self.textButton = (Button) rootView.findViewById(R.id.textButton);
         self.textButton.setOnClickListener(new View.OnClickListener() {
             @Override

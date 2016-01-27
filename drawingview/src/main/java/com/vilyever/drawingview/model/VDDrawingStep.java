@@ -72,7 +72,7 @@ public class VDDrawingStep extends VDModel {
      * step的类型
      */
     public enum StepType {
-        Clear, DrawOnBase, Background, CreateLayer, Transform, TextChange, DeleteLayer;
+        Clear, DrawOnBase, DrawTextOnBase, Background, CreateLayer, Transform, TextChange, DeleteLayer;
     }
     private StepType stepType;
     public VDDrawingStep setStepType(StepType stepType) {
