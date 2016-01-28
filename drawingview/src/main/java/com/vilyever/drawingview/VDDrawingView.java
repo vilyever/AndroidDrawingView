@@ -1100,6 +1100,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 self.nativeClear();
                 break;
             case DrawOnBase:
+            case DrawTextOnBase:
                 self.getBaseLayerImageView().appendWithDrawingStep(step);
                 break;
             case Background:
@@ -1169,6 +1170,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 self.getBaseLayerImageView().appendWithDrawingStep(step);
                 break;
             case CreateLayer:
+            case DrawTextOnBase:
                 if (layerViewProtocol != null) {
                     self.getLayerContainer().removeLayerView(layerViewProtocol);
                     self.getLayerViews().remove(layerViewProtocol);
