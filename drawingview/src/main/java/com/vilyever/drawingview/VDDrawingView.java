@@ -122,6 +122,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /**
+     * 当外界判断此时当前drawingView失去绘制焦点时调用
+     * i.e. 当前drawingView生成了一个空的文本layer，另一个drawingView此时获取touch事件也生成了一个空的文本layer，此时，重新回到当前drawingView后的首次touch事件必然将先前的空文本图层销毁
+     */
+    public void loseDrawingFocus() {
+        self.endUnfinishedStep();
+    }
+
+    /**
      * 为图层设置背景色，这个设置将会记录在绘制数据中
      * @param layerHierarchy 图层层次
      * @param color 背景色
