@@ -2,15 +2,15 @@ package com.vilyever.drawingview.util;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PathMeasure;
-import android.graphics.drawable.Drawable;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.vilyever.contextholder.VDContextHolder;
-import com.vilyever.drawingview.R;
+import com.vilyever.unitconversion.VDDimenConversion;
 
 /**
  * VDDrawingAnimationView
@@ -21,6 +21,8 @@ import com.vilyever.drawingview.R;
  */
 public class VDDrawingAnimationView extends View {
     final VDDrawingAnimationView self = this;
+
+    private static final float AnimationRadius = VDDimenConversion.dpToPixel(25);
 
     /* #Constructors */
     public VDDrawingAnimationView(Context context) {
@@ -40,7 +42,7 @@ public class VDDrawingAnimationView extends View {
     private boolean animated;
     public VDDrawingAnimationView setAnimated(boolean animated) {
         this.animated = animated;
-        self.pointPercent = 0;
+        self.setAnimationStartPointPercent(0);
         self.invalidate();
         return this;
     }
@@ -48,73 +50,109 @@ public class VDDrawingAnimationView extends View {
         return animated;
     }
 
-    private Drawable animitionDrawable;
-    private Drawable getAnimitionDrawable() {
-        if (animitionDrawable == null) {
-            animitionDrawable = VDContextHolder.getContext().getResources().getDrawable(R.drawable.animation_drawing_brush);
+    /**
+     * 动画绘制矩形
+     * 因onDraw调用频繁，不宜在onDraw内new新对象
+     */
+    private RectF animationRect;
+    private RectF getAnimationRect() {
+        if (animationRect == null) {
+            animationRect = new RectF();
         }
-        return animitionDrawable;
+        return animationRect;
     }
 
-    private PathMeasure pathMeasure;
-    private VDDrawingAnimationView setPathMeasure(PathMeasure pathMeasure) {
-        this.pathMeasure = pathMeasure;
+    private Path animationPath;
+    private Path getAnimationPath() {
+        if (animationPath == null) {
+            animationPath = new Path();
+        }
+        return animationPath;
+    }
+
+    private Paint animationPaint;
+    private Paint getAnimationPaint() {
+        if (animationPaint == null) {
+            animationPaint = new Paint();
+            animationPaint.setAntiAlias(true);
+            animationPaint.setDither(true);
+            animationPaint.setStyle(Paint.Style.STROKE);
+            animationPaint.setStrokeJoin(Paint.Join.ROUND);
+            animationPaint.setStrokeCap(Paint.Cap.ROUND);
+            animationPaint.setStrokeWidth(VDDimenConversion.dpToPixel(5));
+            animationPaint.setColor(Color.parseColor("#43B8F7"));
+        }
+        return animationPaint;
+    }
+
+    private int animationStartPointPercent;
+    private VDDrawingAnimationView setAnimationStartPointPercent(int animationStartPointPercent) {
+        this.animationStartPointPercent = animationStartPointPercent % 101;
         return this;
     }
-    private PathMeasure getPathMeasure() {
-        if (pathMeasure == null) {
-            int width = self.getWidth() / 12;
-            int height = self.getHeight() / 12;
-
-            int left = (self.getWidth() - width) / 2;
-            int top = (self.getHeight() - height) / 2;
-
-            Path path = new Path();
-
-            int x = left;
-            int y = top + height / 2;
-
-            path.moveTo(x, y);
-            path.lineTo(left + width / 2, top);
-            path.lineTo(left + width / 6, top + height);
-            path.lineTo(left + width, top + height / 6);
-
-            pathMeasure = new PathMeasure(path, false);
-        }
-        return pathMeasure;
+    private int getAnimationStartPointPercent() {
+        return animationStartPointPercent;
     }
 
-    float[] points = new float[2];
-    private float pointPercent = 0;
+    private int animationSweepPercent;
+    private VDDrawingAnimationView setAnimationSweepPercent(int animationSweepPercent) {
+        this.animationSweepPercent = animationSweepPercent;
+        if (this.animationSweepPercent == 120) {
+            self.setSweepReverse(true);
+        }
+        else if (this.animationSweepPercent == -30) {
+            self.setSweepReverse(false);
+        }
+        return this;
+    }
+    private int getAnimationSweepPercent() {
+        int percent = Math.min(100, animationSweepPercent);
+        percent = Math.max(0, animationSweepPercent);
+        return percent;
+    }
+
+    private boolean sweepReverse;
+    private VDDrawingAnimationView setSweepReverse(boolean sweepReverse) {
+        this.sweepReverse = sweepReverse;
+        return this;
+    }
+    private boolean isSweepReverse() {
+        return sweepReverse;
+    }
 
     /* Overrides */
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (changed) {
-            // 视图尺寸变更时重置动画路径，置空后在下次getter时懒加载
-            self.setPathMeasure(null);
-        }
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // 绘制动画，即一张移动的笔状图片
+        // 绘制动画
         if (self.isAnimated()) {
-            self.getPathMeasure().getPosTan(self.getPathMeasure().getLength() * (self.pointPercent / 100.0f), self.points, null);
+            self.getAnimationRect().set(self.getWidth() / 2.0f - AnimationRadius,
+                    self.getHeight() / 2.0f - AnimationRadius,
+                    self.getWidth() / 2.0f + AnimationRadius,
+                    self.getHeight() / 2.0f + AnimationRadius);
 
-            int centerX = (int) self.points[0];
-            int centerY = (int) self.points[1];
+            float startAngle = 360.0f * self.getAnimationStartPointPercent() / 100.0f;
+            float sweepAngle = -(360.0f * 0.65f * self.getAnimationSweepPercent() / 100.0f + 5.0f);
 
-            self.getAnimitionDrawable().setBounds(centerX - self.getAnimitionDrawable().getIntrinsicWidth() / 2,
-                    centerY - self.getAnimitionDrawable().getIntrinsicHeight() / 2,
-                    centerX + self.getAnimitionDrawable().getIntrinsicWidth() / 2,
-                    centerY + self.getAnimitionDrawable().getIntrinsicHeight() / 2);
-            self.getAnimitionDrawable().draw(canvas);
+            self.getAnimationPath().reset();
+            self.getAnimationPath().addArc(animationRect, startAngle, sweepAngle);
 
-            self.pointPercent = (self.pointPercent + 2) % 100;
+            canvas.drawPath(self.getAnimationPath(), self.getAnimationPaint());
+
+            if (self.getAnimationSweepPercent() == 0) {
+                self.setAnimationStartPointPercent(self.getAnimationStartPointPercent() + 1);
+            }
+            else {
+                self.setAnimationStartPointPercent(self.getAnimationStartPointPercent() + 3);
+            }
+
+            if (!self.isSweepReverse()) {
+                self.setAnimationSweepPercent(self.animationSweepPercent + 3);
+            }
+            else {
+                self.setAnimationSweepPercent(self.animationSweepPercent - 3);
+            }
 
             self.invalidate();
         }
@@ -127,13 +165,11 @@ public class VDDrawingAnimationView extends View {
     }
 
     /* Private Methods */
+
     /**
      * 初始化
      */
     private void initial() {
         self.setBackground(null);
-
-        self.points = new float[2];
-        self.pointPercent = 0;
     }
 }

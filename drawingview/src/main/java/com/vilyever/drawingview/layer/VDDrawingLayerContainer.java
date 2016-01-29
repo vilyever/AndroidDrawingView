@@ -59,7 +59,9 @@ public class VDDrawingLayerContainer extends RelativeLayout {
      * 清空图层
      */
     public void clear() {
-        self.removeAllViews();
+        if (self.getChildCount() > 0) {
+            self.removeAllViews();
+        }
         self.setGestureView(null);
     }
 
