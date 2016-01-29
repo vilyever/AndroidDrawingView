@@ -126,7 +126,13 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * i.e. 当前drawingView生成了一个空的文本layer，另一个drawingView此时获取touch事件也生成了一个空的文本layer，此时，重新回到当前drawingView后的首次touch事件必然将先前的空文本图层销毁
      */
     public void loseDrawingFocus() {
-        self.endUnfinishedStep();
+        if (self.isTouching()) {
+            self.setWillLoseFocusAfterTouching(true);
+        }
+        else {
+            self.endUnfinishedStep();
+            self.setWillLoseFocusAfterTouching(false);
+        }
     }
 
     /**
@@ -396,10 +402,22 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private boolean touching;
     private VDDrawingView setTouching(boolean touching) {
         this.touching = touching;
+        if (!touching && self.willLoseFocusAfterTouching()) {
+            self.loseDrawingFocus();
+        }
         return this;
     }
     public boolean isTouching() {
         return touching;
+    }
+
+    private boolean willLoseFocusAfterTouching;
+    private VDDrawingView setWillLoseFocusAfterTouching(boolean willLoseFocusAfterTouching) {
+        this.willLoseFocusAfterTouching = willLoseFocusAfterTouching;
+        return this;
+    }
+    private boolean willLoseFocusAfterTouching() {
+        return willLoseFocusAfterTouching;
     }
 
     /**
@@ -1038,6 +1056,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private void overCurrentStep() {
         switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
             case BaseDrawing:
+            case BaseText:
                 break;
             case LayerDrawing:
                 self.getHandlingLayerView().setCanHandle(true);

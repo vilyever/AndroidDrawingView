@@ -327,8 +327,8 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
          */
         self.checkDrawingBitmap();
         if (self.getDrawingCanvas() != null) {
-            self.getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             if (self.getTempBitmap() != null) {
+                self.getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 self.getDrawingCanvas().drawBitmap(self.getTempBitmap(), 0, 0, null);
             }
 
