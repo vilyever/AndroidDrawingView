@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -364,6 +365,9 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     private void init() {
         self.setPadding(VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding, VDTextBrush.DefaultTextLayerPadding);
 
+        self.setTypeface(Typeface.MONOSPACE); // 支持中文斜体
+        self.setShadowLayer(5, 0, 0, Color.TRANSPARENT); // 修复显示斜体字符右上角被clip的部分
+
         // 内容为空时用于显示cursor光标
         self.setMinWidth(self.getPaddingLeft() + self.getPaddingRight() + VDDimenConversion.dpToPixel(1));
 
@@ -411,7 +415,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
             VDTextBrush textBrush = drawingStep.getBrush();
             self.setTextSize(textBrush.getSize());
             self.setTextColor(textBrush.getColor());
-            self.setTypeface(null, textBrush.getTypefaceStyle());
+            self.setTypeface(self.getTypeface(), textBrush.getTypefaceStyle());
         }
 
         // 更新文本

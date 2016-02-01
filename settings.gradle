@@ -1,1 +1,1 @@
-include ':app', ':drawingview'
+include ':drawingview', ':app'

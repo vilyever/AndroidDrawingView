@@ -2,6 +2,7 @@ package com.vilyever.androiddrawingview;
 
 import android.app.Fragment;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -180,7 +181,7 @@ public class DrawingFragment extends Fragment {
             }
         });
 
-        self.textBrush = VDTextBrush.defaultBrush().setOneStrokeToLayer(false);
+        self.textBrush = VDTextBrush.defaultBrush().setTypefaceStyle(Typeface.ITALIC);
         self.textButton = (Button) rootView.findViewById(R.id.textButton);
         self.textButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -268,6 +269,7 @@ public class DrawingFragment extends Fragment {
             public void onClick(View v) {
                 v.setSelected(!v.isSelected());
                 self.penBrush.setOneStrokeToLayer(v.isSelected());
+                self.textBrush.setOneStrokeToLayer(v.isSelected());
                 for (VDDrawingBrush brush : self.shapeBrushes) {
                     brush.setOneStrokeToLayer(v.isSelected());
                 }
