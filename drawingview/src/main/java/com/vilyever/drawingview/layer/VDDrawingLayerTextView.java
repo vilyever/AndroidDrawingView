@@ -73,7 +73,7 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
         // 弹出键盘
         self.requestFocus();
         InputMethodManager imm = (InputMethodManager) self.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(self, InputMethodManager.SHOW_IMPLICIT);
+        imm.showSoftInput(self, InputMethodManager.SHOW_FORCED);
     }
 
     /**

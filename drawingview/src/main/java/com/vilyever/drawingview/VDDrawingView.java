@@ -657,7 +657,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
              * 即text图层无法主动判断step是否完成，用户可能无限时等待键盘输入，此时点击text图层意外的任意一点，即可表示完成此次text图层的step
              * 若进行此操作，显然不应继续使用此次触摸开始进行下一step的绘制
              */
-            if (self.getCurrentDrawingStep().getBrush() instanceof VDTextBrush
+            if ((self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.BaseText
+                    || self.getCurrentDrawingStep().getDrawingLayer().getLayerType() == VDDrawingLayer.LayerType.LayerText)
                     && !self.getCurrentDrawingStep().isStepOver()) {
                 self.endUnfinishedStep();
                 self.setShouldHandleOnTouch(false);
@@ -830,9 +831,11 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
             self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
             self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.VeryBegin, VDBrush.DrawingPointerState.TouchDown));
-            self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
 
-            self.getHandlingLayerView().setHandling(true);
+            if (self.getHandlingLayerView() != null) {
+                self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
+                self.getHandlingLayerView().setHandling(true);
+            }
         }
         else {
             /**
@@ -840,10 +843,19 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
              */
             self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
             self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.TouchDown));
-            self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
+
+            if (self.getHandlingLayerView() != null) {
+                self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
+            }
         }
 
-        self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+        if (self.getHandlingLayerView() == null) {
+            self.cancelCurrentStep();
+            self.setShouldHandleOnTouch(false);
+        }
+        else {
+            self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+        }
     }
 
     /**
@@ -852,6 +864,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * @param y 触摸y坐标
      */
     private void drawTouchMoving(float x, float y) {
+        if (self.getHandlingLayerView() == null) {
+            return;
+        }
         if (self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y))) {
             self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.TouchMoving));
             self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
@@ -866,11 +881,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * @param y 触摸y坐标
      */
     private void drawTouchEnd(float x, float y) {
-        self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
-
         if (self.getHandlingLayerView() == null) {
-            self.cancelCurrentStep();
+            return;
         }
+        self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y));
 
         switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
             case BaseDrawing:
@@ -910,6 +924,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * step是否应当调用此方法结束由调用处判断
      */
     private void finishDraw() {
+        if (self.getHandlingLayerView() == null) {
+            return;
+        }
         self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.VeryEnd));
         self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
 
@@ -947,7 +964,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private void endUnfinishedStep() {
         // 仅处理未完成的step
         if (self.getCurrentDrawingStep() != null
-                && !self.getCurrentDrawingStep().isStepOver()) {
+                && !self.getCurrentDrawingStep().isStepOver()
+                && self.getHandlingLayerView() != null) {
 
             switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
                 case BaseDrawing: {
