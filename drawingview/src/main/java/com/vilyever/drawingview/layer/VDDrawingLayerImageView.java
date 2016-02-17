@@ -43,10 +43,11 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     private static DashPathEffect FirstDashPathEffect = new DashPathEffect(new float[]{10, 10}, 1);
     private static DashPathEffect SecondDashPathEffect = new DashPathEffect(new float[]{0, 10, 10, 0}, 1);
 
-    /* #Constructors */
-    public VDDrawingLayerImageView(Context context) {
+    /* Constructors */
+    public VDDrawingLayerImageView(Context context, int hierarchy) {
         super(context);
         self.init();
+        self.setLayerHierarchy(hierarchy);
     }
 
     /* Properties */
@@ -63,18 +64,6 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
             drawnSteps = new ArrayList<>();
         }
         return drawnSteps;
-    }
-
-    /**
-     * 当前正在绘制的step
-     */
-    private VDDrawingStep currentDrawingStep;
-    private VDDrawingLayerImageView setCurrentDrawingStep(VDDrawingStep currentDrawingStep) {
-        this.currentDrawingStep = currentDrawingStep;
-        return this;
-    }
-    public VDDrawingStep getCurrentDrawingStep() {
-        return currentDrawingStep;
     }
 
     /**
@@ -131,6 +120,10 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
             // 之后的步骤都只是对图层进行变换
             VDDrawingStep step = self.getDrawnSteps().get(0);
 
+            if (step.getStepType() != VDDrawingStep.StepType.CreateLayer) {
+                return;
+            }
+
             // 绘制图形，平移图形到图层左上角
             step.getBrush().drawPath(canvas, step.getDrawingPath(), step.getDrawingState().newStateByJoin(VDBrush.DrawingPointerState.CalibrateToOrigin));
 
@@ -163,7 +156,7 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     @Override
     public void clearDrawing() {
         self.getDrawnSteps().clear();
-        self.setCurrentDrawingStep(null);
+        self.invalidate();
     }
 
     @Override
@@ -178,16 +171,17 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
         VDBrush.Frame frame = null;
 
         if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer) {
-            if (drawingStep.getDrawingState().isVeryBegin()) {
-                if (!self.getDrawnSteps().contains(drawingStep)) {
-                    self.getDrawnSteps().add(drawingStep);
+            if (!self.getDrawnSteps().contains(drawingStep)) {
+                if (self.getDrawnSteps().size() > 0) {
+                    if (self.getDrawnSteps().get(self.getDrawnSteps().size() - 1).getStep() == drawingStep.getStep()) {
+                        self.getDrawnSteps().remove(self.getDrawnSteps().size() - 1);
+                    }
                 }
 
-                self.setCurrentDrawingStep(drawingStep);
+                self.getDrawnSteps().add(drawingStep);
             }
 
             if (drawingStep.getDrawingState().isVeryEnd()) {
-                self.setCurrentDrawingStep(null);
                 return null;
             }
 
@@ -202,19 +196,31 @@ public class VDDrawingLayerImageView extends ImageView implements VDDrawingLayer
     }
 
     @Override
-    public void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps) {
-        self.setDrawnSteps(drawnSteps);
-        for (VDDrawingStep step : drawnSteps) {
+    public void appendWithSteps(@NonNull List<VDDrawingStep> steps) {
+        self.getDrawnSteps().addAll(steps);
+        for (VDDrawingStep step : steps) {
             self.updateFrame(step);
         }
     }
 
     @Override
+    public void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps) {
+        self.getDrawnSteps().clear();
+        self.appendWithSteps(drawnSteps);
+    }
+
+
+    /** {@link VDDrawingLayerViewProtocol#getLayerHierarchy()} */
+    private int hierarchy;
+
+    @Override
     public int getLayerHierarchy() {
-        if (self.getDrawnSteps().size() > 0) {
-            return self.getDrawnSteps().get(0).getDrawingLayer().getHierarchy();
-        }
-        return 0;
+        return hierarchy;
+    }
+
+    @Override
+    public void setLayerHierarchy(int hierarchy) {
+        this.hierarchy = hierarchy;
     }
 
     /** {@link VDDrawingLayerViewProtocol#setHandling(boolean)} {@link VDDrawingLayerViewProtocol#isHandling()} */

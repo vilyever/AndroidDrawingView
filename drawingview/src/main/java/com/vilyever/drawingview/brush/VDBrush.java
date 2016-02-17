@@ -39,6 +39,16 @@ public abstract class VDBrush extends VDModel {
     }
 
     /**
+     * 复制画笔
+     * 每次存储绘制数据时都应用复制的brush存储
+     * @param <T> 类型
+     * @return 复制的brush
+     */
+    public <T extends VDBrush> T copy() {
+        return (T) new VDJson<>(this.getClass()).modelFromJson(this.toJson());
+    }
+
+    /**
      *
      * @param canvas the canvas in drawing
      * @param drawingPath the path will draw
@@ -157,6 +167,10 @@ public abstract class VDBrush extends VDModel {
      */
     public static final class DrawingState extends VDModel {
         private int pointerState;
+
+        public DrawingState() {
+        }
+
         public DrawingState(DrawingPointerState ... states) {
             for (DrawingPointerState state : states) {
                 this.pointerState |= state.state();

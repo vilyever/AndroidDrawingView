@@ -38,6 +38,12 @@ public interface VDDrawingLayerViewProtocol {
     VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep);
 
     /**
+     * 使用传入的step列表绘制图层
+     * @param steps 绘制于此图层的新增step集
+     */
+    void appendWithSteps(@NonNull List<VDDrawingStep> steps);
+
+    /**
      * 使用传入的step列表刷新图层
      * @param drawnSteps 绘制于此图层的所有step
      */
@@ -48,6 +54,12 @@ public interface VDDrawingLayerViewProtocol {
      * @return 层级
      */
     int getLayerHierarchy();
+
+    /**
+     * 设置当前图层的层级
+     * @param hierarchy 层级
+     */
+    void setLayerHierarchy(int hierarchy);
 
     /**
      * 当前图层是否正在被操作

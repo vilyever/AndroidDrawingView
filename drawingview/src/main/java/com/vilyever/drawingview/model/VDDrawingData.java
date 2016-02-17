@@ -108,6 +108,10 @@ public class VDDrawingData {
         self.setShowingStepIndex(self.getShowingStepIndex() - 1);
     }
 
+    public void replaceDrawingStep(VDDrawingStep step) {
+        self.getSteps().set(self.getShowingStepIndex(), step);
+    }
+
     /**
      * 获取当前正在绘制或刚刚绘制完成的step
      * @return 找到的step

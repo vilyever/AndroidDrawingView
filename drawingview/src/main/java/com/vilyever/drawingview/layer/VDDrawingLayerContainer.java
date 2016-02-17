@@ -94,6 +94,13 @@ public class VDDrawingLayerContainer extends RelativeLayout {
          * @param textView 被触摸的text图层
          */
         void layerTextViewDidBeginEdit(VDDrawingLayerContainer container, VDDrawingLayerTextView textView);
+
+        /**
+         * 不进行任何操作，仅显示选中图层
+         * @param container 当前容器
+         * @param layerView 被触摸的图层
+         */
+        void requireHandlingLayerView(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
     }
     private Delegate delegate;
     public VDDrawingLayerContainer setDelegate(Delegate delegate) {
@@ -386,8 +393,9 @@ public class VDDrawingLayerContainer extends RelativeLayout {
             if (event.getAction() == MotionEvent.ACTION_UP
                     || event.getAction() == MotionEvent.ACTION_CANCEL) {
 
-                // 若此次操作未造成任何变化，则无需进行后续反馈步骤
+                // 若此次操作未造成任何变化，则无需进行后续反馈步骤，相当于单击选中某个图层
                 if (self.getGestureViewOperationState() == GestureViewOperation.None.state()) {
+                    self.getDelegate().requireHandlingLayerView(self, (VDDrawingLayerViewProtocol) self.getGestureView());
                     self.setGestureView(null);
                     return false;
                 }

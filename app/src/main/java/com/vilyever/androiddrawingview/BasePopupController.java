@@ -124,6 +124,10 @@ public abstract class BasePopupController extends BaseController {
     
     /* #Public Methods */
     public void popupFromView(@NonNull View v, @NonNull PopupDirection popupDirection, boolean withArrow, int offsetX, int offsetY) {
+        if (self.getPopupWindow().isShowing()) {
+            return;
+        }
+
         self.getPopupBackgroundView().addView(self.rootView);
         self.getPopupBackgroundView().setBackgroundColor(self.getPopupBackgroundColor());
         self.getPopupBackgroundView().setRoundedRadius(self.getPopupRoundedRadius());
@@ -188,6 +192,9 @@ public abstract class BasePopupController extends BaseController {
     }
 
     public void dismissPopup() {
+        if (!self.getPopupWindow().isShowing()) {
+            return;
+        }
         self.getPopupWindow().dismiss();
     }
 
@@ -322,7 +329,7 @@ public abstract class BasePopupController extends BaseController {
             backgroundPaint.setDither(true);
             backgroundPaint.setStyle(Paint.Style.FILL);
             backgroundPaint.setColor(self.backgroundColor);
-            backgroundPaint.setShadowLayer(ShadowRadius, 0, 0, Color.DKGRAY);
+                backgroundPaint.setShadowLayer(ShadowRadius, 0, 0, Color.DKGRAY);
 
             canvas.drawPath(path, backgroundPaint);
         }

@@ -1,7 +1,13 @@
 package com.vilyever.drawingview.model;
 
+import android.support.annotation.NonNull;
+
 import com.vilyever.drawingview.brush.VDBrush;
+import com.vilyever.drawingview.layer.VDDrawingLayerViewProtocol;
+import com.vilyever.jsonmodel.VDJson;
 import com.vilyever.jsonmodel.VDModel;
+
+import java.lang.ref.WeakReference;
 
 /**
  * VDDrawingStep
@@ -12,7 +18,7 @@ import com.vilyever.jsonmodel.VDModel;
 public class VDDrawingStep extends VDModel {
     private final VDDrawingStep self = this;
 
-    /* #Constructors */
+    /* Constructors */
     public VDDrawingStep() {
     }
 
@@ -24,6 +30,24 @@ public class VDDrawingStep extends VDModel {
     }
 
     /* Public Methods */
+    /**
+     * 复制step
+     * 同步时不应传出原始step，以免被外部修改
+     * @param step 原step
+     * @return 复制的step
+     */
+    public static VDDrawingStep copy(@NonNull VDDrawingStep step) {
+        return new VDJson<>(step.getClass()).modelFromJson(step.toJson());
+    }
+
+    /**
+     * 复制step
+     * @return 复制的step
+     */
+    public VDDrawingStep copy() {
+        return new VDJson<>(this.getClass()).modelFromJson(this.toJson());
+    }
+
     /**
      * 在重绘前调用此方法设置绘制比例
      * 在不同尺寸的view上绘制时将尽量呈现出类似的图形
@@ -121,6 +145,15 @@ public class VDDrawingStep extends VDModel {
         return canceled;
     }
 
+    private boolean remote;
+    public VDDrawingStep setRemote(boolean remote) {
+        this.remote = remote;
+        return this;
+    }
+    public boolean isRemote() {
+        return remote;
+    }
+
     /**
      * 当前step绘制用的brush
      * 此brush的设置理应使用copy的brush来设置，避免被其他位置的修改影响到
@@ -187,6 +220,16 @@ public class VDDrawingStep extends VDModel {
     }
     public int getDrawingViewHeight() {
         return drawingViewHeight;
+    }
+
+    @VDJsonKeyIgnore
+    private WeakReference<VDDrawingLayerViewProtocol> handlingLayer;
+    public VDDrawingStep setHandlingLayer(VDDrawingLayerViewProtocol handlingLayer) {
+        this.handlingLayer = new WeakReference<VDDrawingLayerViewProtocol>(handlingLayer);
+        return this;
+    }
+    public VDDrawingLayerViewProtocol getHandlingLayer() {
+        return handlingLayer == null ? null : handlingLayer.get();
     }
 
     /* Private Methods */

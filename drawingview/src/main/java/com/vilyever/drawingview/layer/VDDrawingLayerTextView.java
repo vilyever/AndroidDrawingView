@@ -51,9 +51,10 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     private static DashPathEffect SecondDashPathEffect = new DashPathEffect(new float[]{0, 10, 10, 0}, 1);
 
     /* #Constructors */
-    public VDDrawingLayerTextView(Context context) {
+    public VDDrawingLayerTextView(Context context, int hierarchy) {
         super(context);
         self.init();
+        self.setLayerHierarchy(hierarchy);
     }
 
     /* Public Methods */
@@ -293,10 +294,14 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
 
         if (drawingStep.getStepType() == VDDrawingStep.StepType.CreateLayer
                 || drawingStep.getStepType() == VDDrawingStep.StepType.DrawTextOnBase) {
-            if (drawingStep.getDrawingState().isVeryBegin()) {
-                if (!self.getDrawnSteps().contains(drawingStep)) {
-                    self.getDrawnSteps().add(drawingStep);
+            if (!self.getDrawnSteps().contains(drawingStep)) {
+                if (self.getDrawnSteps().size() > 0) {
+                    if (self.getDrawnSteps().get(self.getDrawnSteps().size() - 1).getStep() == drawingStep.getStep()) {
+                        self.getDrawnSteps().remove(self.getDrawnSteps().size() - 1);
+                    }
                 }
+
+                self.getDrawnSteps().add(drawingStep);
             }
 
             // 确定图层尺寸
@@ -310,19 +315,30 @@ public class VDDrawingLayerTextView extends EditText implements VDDrawingLayerVi
     }
 
     @Override
-    public void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps) {
-        self.setDrawnSteps(drawnSteps);
-        for (VDDrawingStep step : drawnSteps) {
+    public void appendWithSteps(@NonNull List<VDDrawingStep> steps) {
+        self.getDrawnSteps().addAll(steps);
+        for (VDDrawingStep step : steps) {
             self.updateFrame(step);
         }
     }
 
     @Override
+    public void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps) {
+        self.getDrawnSteps().clear();
+        self.appendWithSteps(drawnSteps);
+    }
+
+    /** {@link VDDrawingLayerViewProtocol#getLayerHierarchy()} */
+    private int hierarchy;
+
+    @Override
     public int getLayerHierarchy() {
-        if (self.getDrawnSteps().size() > 0) {
-            return self.getDrawnSteps().get(0).getDrawingLayer().getHierarchy();
-        }
-        return 0;
+        return hierarchy;
+    }
+
+    @Override
+    public void setLayerHierarchy(int hierarchy) {
+        this.hierarchy = hierarchy;
     }
 
     /** {@link VDDrawingLayerViewProtocol#setHandling(boolean)} {@link VDDrawingLayerViewProtocol#isHandling()} */
