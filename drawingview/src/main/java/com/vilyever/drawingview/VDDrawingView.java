@@ -1235,16 +1235,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 }
 
                 if (isSkipToStepOver) {
-                    try {
-                        layerViewProtocol.appendWithSteps(stepList);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-
-                        System.out.println("step " + step);
-                        System.out.println("layer " + layerViewProtocol);
-                        throw e;
-                    }
+                    layerViewProtocol.appendWithSteps(stepList);
                 }
                 else {
                     layerViewProtocol.appendWithDrawingStep(step);
