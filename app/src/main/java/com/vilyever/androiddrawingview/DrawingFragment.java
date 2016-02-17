@@ -42,7 +42,6 @@ public class DrawingFragment extends Fragment {
     private final DrawingFragment self = this;
 
     private VDDrawingView drawingView;
-    private VDDrawingView drawingView2;
 
     private Button undoButton;
     private Button redoButton;
@@ -83,8 +82,6 @@ public class DrawingFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-        self.drawingView2 = (VDDrawingView) rootView.findViewById(R.id.drawingView2);
-        self.drawingView2.setDisableTouchDraw(true);
         self.drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
             @Override
             public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
@@ -93,7 +90,6 @@ public class DrawingFragment extends Fragment {
 
             @Override
             public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
-                self.drawingView2.drawNextOverStep(drawingView.getCurrentDrawingStep().copy());
             }
 
             @Override
