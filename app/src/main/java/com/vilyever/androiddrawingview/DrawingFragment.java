@@ -25,7 +25,6 @@ import com.vilyever.drawingview.brush.drawing.VDRightAngledTriangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDRoundedRectangleBrush;
 import com.vilyever.drawingview.brush.drawing.VDShapeBrush;
 import com.vilyever.drawingview.brush.text.VDTextBrush;
-import com.vilyever.drawingview.model.VDDrawingData;
 import com.vilyever.drawingview.model.VDDrawingStep;
 
 import java.util.ArrayList;
@@ -82,27 +81,44 @@ public class DrawingFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.drawing_fragment, container, false);
 
         self.drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-        self.drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
+        self.drawingView.setUndoRedoStateDelegate(new VDDrawingView.UndoRedoStateDelegate() {
             @Override
-            public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
-
-            }
-
-            @Override
-            public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
-            }
-
-            @Override
-            public void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+            public void onUndoRedoStateChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
                 self.undoButton.setEnabled(canUndo);
                 self.redoButton.setEnabled(canRedo);
             }
+        });
 
+        self.drawingView.setInterceptTouchDelegate(new VDDrawingView.InterceptTouchDelegate() {
             @Override
-            public void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+            public void requireInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+
+            }
+        });
+
+        self.drawingView.setDrawingStepDelegate(new VDDrawingView.DrawingStepDelegate() {
+            @Override
+            public void onDrawingStepBegin(VDDrawingView drawingView, VDDrawingStep step) {
 
             }
 
+            @Override
+            public void onDrawingStepChange(VDDrawingView drawingView, VDDrawingStep step) {
+
+            }
+
+            @Override
+            public void onDrawingStepEnd(VDDrawingView drawingView, VDDrawingStep step) {
+
+            }
+
+            @Override
+            public void onDrawingStepCancel(VDDrawingView drawingView, VDDrawingStep step) {
+
+            }
+        });
+
+        self.drawingView.setBackgroundDatasource(new VDDrawingView.BackgroundDatasource() {
             @Override
             public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
                 return null;

@@ -55,6 +55,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /* Public Methods */
+
     /**
      * 清空当前所有绘制内容
      */
@@ -72,13 +73,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.endUnfinishedStep(); // 结束当前未完成的step
         self.nativeClear(); // 清空绘制
         self.getDrawingData()
-                .newDrawingStepOnBaseLayer(self.getWidth(), self.getHeight())
-                .setStepType(VDDrawingStep.StepType.Clear); // 记录清空step
+            .newDrawingStepOnBaseLayer(self.getWidth(), self.getHeight())
+            .setStepType(VDDrawingStep.StepType.Clear); // 记录清空step
         self.overCurrentStep(); // 结束当前step
     }
     
     /**
      * 获取当前正在绘制（或刚刚绘制完成）的step
+     *
      * @return 当前step，任意修改此step可能导致错误
      */
     public VDDrawingStep getCurrentDrawingStep() {
@@ -87,6 +89,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 在当前绘制基础上增加绘制传入的step，如果传入的step与当前未完成的step是同一step（编号相同，远程同步step可能有未完成和已完成两种状态），更新当前step
+     *
      * @param step 将要绘制的step
      */
     public void drawNextStep(@NonNull VDDrawingStep step) {
@@ -112,6 +115,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 在当前绘制基础上增加绘制传入的step，此step必须是stepOver状态
      * 在远程同步绘制时，采用低频同步，仅在每一步绘制完成后同步时调用此方法
      * 不可与{@link #drawNextStep(VDDrawingStep)}同时使用
+     *
      * @param step 将要绘制的step
      */
     public void drawNextOverStep(@NonNull VDDrawingStep step) {
@@ -130,6 +134,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 使用传入的data更新绘制
+     *
      * @param data 即将绘制的data
      */
     public void refreshWithDrawingData(VDDrawingData data) {
@@ -141,7 +146,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         self.nativeClear();
         self.nativeDrawData();
 
-        self.getDrawingDelegate().didUpdateUndoRedoState(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
+        self.getUndoRedoStateDelegate().onUndoRedoStateChange(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
     }
 
     /**
@@ -160,8 +165,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 为图层设置背景色，这个设置将会记录在绘制数据中
+     *
      * @param layerHierarchy 图层层次
-     * @param color 背景色
+     * @param color          背景色
      */
     public void setBackgroundColor(int layerHierarchy, int color) {
         // 判断图层是否存在
@@ -185,18 +191,19 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
 
         self.getDrawingData()
-                .newDrawingStepOnLayer(layerHierarchy, layerType, self.getWidth(), self.getHeight())
-                .setStepType(VDDrawingStep.StepType.Background)
-                .getDrawingLayer().setBackgroundColor(color);
+            .newDrawingStepOnLayer(layerHierarchy, layerType, self.getWidth(), self.getHeight())
+            .setStepType(VDDrawingStep.StepType.Background)
+            .getDrawingLayer().setBackgroundColor(color);
         self.overCurrentStep();
     }
 
     /**
      * 为图层设置背景drawable，这个设置将会记录在绘制数据中
+     *
      * @param layerHierarchy 图层层次
-     * @param drawable 背景drawable，可以是颜色图片等
-     * @param identifier 背景drawable的唯一标识ID
-     * 因为绘制数据中不宜保存背景drawable，故存储唯一标识id，在重绘时通过{@link com.vilyever.drawingview.VDDrawingView.DrawingDelegate#gainBackground(VDDrawingView, String)}回调向外部通过id获取对应的背景drawable
+     * @param drawable       背景drawable，可以是颜色图片等
+     * @param identifier     背景drawable的唯一标识ID
+     *                       因为绘制数据中不宜保存背景drawable，故存储唯一标识id，在重绘时通过{@link com.vilyever.drawingview.VDDrawingView.BackgroundDatasource#gainBackground(VDDrawingView, String)}回调向外部通过id获取对应的背景drawable
      */
     public void setBackgroundDrawable(int layerHierarchy, Drawable drawable, String identifier) {
         // 判断图层是否存在
@@ -220,9 +227,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
 
         self.getDrawingData()
-                .newDrawingStepOnLayer(layerHierarchy, layerType, self.getWidth(), self.getHeight())
-                .setStepType(VDDrawingStep.StepType.Background)
-                .getDrawingLayer().setBackgroundImageIdentifier(identifier);
+            .newDrawingStepOnLayer(layerHierarchy, layerType, self.getWidth(), self.getHeight())
+            .setStepType(VDDrawingStep.StepType.Background)
+            .getDrawingLayer().setBackgroundImageIdentifier(identifier);
         self.overCurrentStep();
     }
 
@@ -230,10 +237,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 当前正在操作的图层，有可能为null
      */
     private VDDrawingLayerViewProtocol handlingLayerView;
+
     private VDDrawingView setHandlingLayerView(VDDrawingLayerViewProtocol handlingLayerView) {
         this.handlingLayerView = handlingLayerView;
         return this;
     }
+
     public VDDrawingLayerViewProtocol getHandlingLayerView() {
         if (!self.getCurrentDrawingStep().isStepOver()) {
             if (self.getCurrentDrawingStep().getHandlingLayer() == null) {
@@ -247,6 +256,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 删除当前操作的图层
+     *
      * @return 是否成功删除
      */
     public boolean deleteHandlingLayer() {
@@ -257,7 +267,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
         // 如果当前操作的图层存在，删除数据，移除图层，记录step
         if (self.getHandlingLayerView() != null
-                && self.getHandlingLayerView().getLayerHierarchy() > 0) {
+            && self.getHandlingLayerView().getLayerHierarchy() > 0) {
             self.endUnfinishedStep();
 
             // 此时若因endUnfinishedStep消除了当前layer，则相当于成功删除了当前layer，但此步不会出现在undo，redo中
@@ -266,8 +276,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             }
 
             self.getDrawingData()
-                    .newDrawingStepOnLayer(self.getHandlingLayerView().getLayerHierarchy(), VDDrawingLayer.LayerType.Unkonwn, self.getWidth(), self.getHeight())
-                    .setStepType(VDDrawingStep.StepType.DeleteLayer);
+                .newDrawingStepOnLayer(self.getHandlingLayerView().getLayerHierarchy(), VDDrawingLayer.LayerType.Unkonwn, self.getWidth(), self.getHeight())
+                .setStepType(VDDrawingStep.StepType.DeleteLayer);
 
             self.getLayerContainer().removeLayerView(self.getHandlingLayerView());
             self.getLayerViews().remove(self.getHandlingLayerView());
@@ -284,6 +294,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 撤销一步
+     *
      * @return 是否撤销成功
      */
     public boolean undo() {
@@ -293,7 +304,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             self.nativeClear();
             self.nativeDrawData();
 
-            self.getDrawingDelegate().didUpdateUndoRedoState(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
+            self.getUndoRedoStateDelegate().onUndoRedoStateChange(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
 
             return true;
         }
@@ -302,6 +313,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 重做一步
+     *
      * @return 是否重做成功
      */
     public boolean redo() {
@@ -311,7 +323,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             self.nativeClear();
             self.nativeDrawData();
 
-            self.getDrawingDelegate().didUpdateUndoRedoState(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
+            self.getUndoRedoStateDelegate().onUndoRedoStateChange(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
 
             return true;
         }
@@ -320,6 +332,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 判断当前是否可以撤销
+     *
      * @return 是否允许撤销
      */
     public boolean canUndo() {
@@ -328,6 +341,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 判断当前是否可以重做
+     *
      * @return 是否允许重做
      */
     public boolean canRedo() {
@@ -335,77 +349,160 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /* Properties */
+
     /**
      * 绘制代理，通知状态变更和获取数据
      */
-    public interface DrawingDelegate {
+    public interface DrawingStepDelegate {
+        /**
+         * 当前绘制step创建时回调，通常用于远程同步
+         * step处于变化状态
+         *
+         * @param drawingView 当前view
+         * @param step        当前绘制step，任意修改此step可能导致错误
+         */
+        void onDrawingStepBegin(VDDrawingView drawingView, VDDrawingStep step);
+
         /**
          * 当前绘制step变更时回调，每次touch绘制都会执行，text图层修改内容也会执行，此回调执行频繁，通常用于远程同步
          * step处于变化状态
+         *
          * @param drawingView 当前view
-         * @param step 当前绘制step，任意修改此step可能导致错误
+         * @param step        当前绘制step，任意修改此step可能导致错误
          */
-        void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step);
+        void onDrawingStepChange(VDDrawingView drawingView, VDDrawingStep step);
 
         /**
          * 当前绘制状态已改变，绘制一笔或进行撤销/重做/清空等变更记录数据的操作都会触发此回调
          * step已经完成
+         *
          * @param drawingView 当前view
-         * @param data 绘制数据，任意修改此data可能导致错误
-
+         * @param step        当前绘制step，任意修改此step可能导致错误
          */
-        void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data);
+        void onDrawingStepEnd(VDDrawingView drawingView, VDDrawingStep step);
 
+        /**
+         * 当前step撤销
+         *
+         * @param drawingView 当前view
+         * @param step        当前绘制step，任意修改此step可能导致错误
+         */
+        void onDrawingStepCancel(VDDrawingView drawingView, VDDrawingStep step);
+    }
+
+    private DrawingStepDelegate drawingStepDelegate;
+
+    public VDDrawingView setDrawingStepDelegate(DrawingStepDelegate drawingStepDelegate) {
+        this.drawingStepDelegate = drawingStepDelegate;
+        return this;
+    }
+
+    public DrawingStepDelegate getDrawingStepDelegate() {
+        if (drawingStepDelegate == null) {
+            drawingStepDelegate = new DrawingStepDelegate() {
+                @Override
+                public void onDrawingStepBegin(VDDrawingView drawingView, VDDrawingStep step) {
+
+                }
+
+                @Override
+                public void onDrawingStepChange(VDDrawingView drawingView, VDDrawingStep step) {
+                }
+
+                @Override
+                public void onDrawingStepEnd(VDDrawingView drawingView, VDDrawingStep step) {
+
+                }
+
+                @Override
+                public void onDrawingStepCancel(VDDrawingView drawingView, VDDrawingStep step) {
+
+                }
+            };
+        }
+        return drawingStepDelegate;
+    }
+    
+    public interface UndoRedoStateDelegate {
         /**
          * 撤销重做状态变更
+         *
          * @param drawingView 当前view
-         * @param canUndo 当前是否可以撤销，因为此回调可能在touching时调用，导致外部获取{@link #canUndo()}状态错误
-         * @param canRedo 当前是否可以重做，因为此回调可能在touching时调用，导致外部获取{@link #canRedo()}状态错误
+         * @param canUndo     当前是否可以撤销，因为此回调可能在touching时调用，导致外部获取{@link #canUndo()}状态错误
+         * @param canRedo     当前是否可以重做，因为此回调可能在touching时调用，导致外部获取{@link #canRedo()}状态错误
          */
-        void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo);
+        void onUndoRedoStateChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo);
+    }
+    private UndoRedoStateDelegate undoRedoStateDelegate;
+    public VDDrawingView setUndoRedoStateDelegate(UndoRedoStateDelegate undoRedoStateDelegate) {
+        this.undoRedoStateDelegate = undoRedoStateDelegate;
+        return this;
+    }
+    public UndoRedoStateDelegate getUndoRedoStateDelegate() {
+        if (undoRedoStateDelegate == null) {
+            undoRedoStateDelegate = new UndoRedoStateDelegate() {
 
+                @Override
+                public void onUndoRedoStateChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+
+                }
+            };
+        }
+        return undoRedoStateDelegate;
+    }
+    
+    
+    public interface InterceptTouchDelegate {
         /**
          * 回报当前是否拦截了touch事件进行绘画（这个回调标志着绘画开始或结束），当此drawingView是recyclerView（或类似可滑动的view）的子view时可用于通知父view禁止滑动
+         *
          * @param drawingView 当前view
          * @param isIntercept 是否拦截
          */
-        void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept);
+        void requireInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept);
+    }
+    private InterceptTouchDelegate interceptTouchDelegate;
+    public VDDrawingView setInterceptTouchDelegate(InterceptTouchDelegate interceptTouchDelegate) {
+        this.interceptTouchDelegate = interceptTouchDelegate;
+        return this;
+    }
+    public InterceptTouchDelegate getInterceptTouchDelegate() {
+        if (interceptTouchDelegate == null) {
+            interceptTouchDelegate = new InterceptTouchDelegate() {
+                @Override
+                public void requireInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+        
+                }
+            };
+        }
+        return interceptTouchDelegate;
+    }
 
+    public interface BackgroundDatasource {
         /**
          * 请求对应唯一标识ID的drawbale。{@link #setBackgroundDrawable(int, Drawable, String)}
+         *
          * @param drawingView 当前view
-         * @param identifier drawable对应的标识id
+         * @param identifier  drawable对应的标识id
          * @return 对应的drawable
          */
         Drawable gainBackground(VDDrawingView drawingView, String identifier);
     }
-    private DrawingDelegate drawingDelegate;
-    public VDDrawingView setDrawingDelegate(DrawingDelegate drawingDelegate) {
-        this.drawingDelegate = drawingDelegate;
+    private BackgroundDatasource backgroundDatasource;
+    public VDDrawingView setBackgroundDatasource(BackgroundDatasource backgroundDatasource) {
+        this.backgroundDatasource = backgroundDatasource;
         return this;
     }
-    public DrawingDelegate getDrawingDelegate() {
-        if (drawingDelegate == null) {
-            drawingDelegate = new DrawingDelegate() {
-                @Override
-                public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
-                }
-                @Override
-                public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
-                }
-                @Override
-                public void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
-                }
-                @Override
-                public void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
-                }
+    public BackgroundDatasource getBackgroundDatasource() {
+        if (backgroundDatasource == null) {
+            backgroundDatasource = new BackgroundDatasource() {
                 @Override
                 public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
                     return null;
                 }
             };
         }
-        return drawingDelegate;
+        return backgroundDatasource;
     }
 
     /**
@@ -413,10 +510,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 若当前view是同步显示view，则可设为true禁止触摸绘制
      */
     private boolean disableTouchDraw;
+
     public VDDrawingView setDisableTouchDraw(boolean disableTouchDraw) {
         this.disableTouchDraw = disableTouchDraw;
         return this;
     }
+
     public boolean isDisableTouchDraw() {
         return disableTouchDraw;
     }
@@ -425,10 +524,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 当前记录的所有的绘制数据
      */
     private VDDrawingData drawingData;
+
     private VDDrawingView setDrawingData(VDDrawingData drawingData) {
         this.drawingData = drawingData;
         return this;
     }
+
     public VDDrawingData getDrawingData() {
         if (self.drawingData == null) {
             self.drawingData = new VDDrawingData();
@@ -445,6 +546,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 当前是否正在处理触摸事件
      */
     private boolean touching;
+
     private VDDrawingView setTouching(boolean touching) {
         this.touching = touching;
         if (!touching && self.willLoseFocusAfterTouching()) {
@@ -452,15 +554,18 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
         return this;
     }
+
     public boolean isTouching() {
         return touching;
     }
 
     private boolean willLoseFocusAfterTouching;
+
     private VDDrawingView setWillLoseFocusAfterTouching(boolean willLoseFocusAfterTouching) {
         this.willLoseFocusAfterTouching = willLoseFocusAfterTouching;
         return this;
     }
+
     private boolean willLoseFocusAfterTouching() {
         return willLoseFocusAfterTouching;
     }
@@ -469,6 +574,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 当前用于绘制的brush
      */
     private VDBrush brush;
+
     public <T extends VDBrush> T getBrush() {
         if (self.brush == null) {
             // 默认使用penBrush
@@ -476,9 +582,16 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
         return (T) brush;
     }
+
     public void setBrush(VDBrush brush) {
         this.brush = brush;
-        self.setBrushChanged(true);
+
+        if (self.isTouching()) {
+            self.setBrushChanged(true);
+        }
+        else {
+            self.endUnfinishedStep();
+        }
     }
 
     /**
@@ -486,10 +599,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 推迟更换brush是由于如果正在绘制时调用了{@link #setBrush(VDBrush)}会导致各种状况
      */
     private boolean brushChanged;
+
     public VDDrawingView setBrushChanged(boolean brushChanged) {
         this.brushChanged = brushChanged;
         return this;
     }
+
     public boolean isBrushChanged() {
         return brushChanged;
     }
@@ -498,6 +613,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 绘制的底层图层，此图层不可进行平移/缩放/旋转
      */
     private VDDrawingLayerBaseView baseLayerImageView;
+
     public VDDrawingLayerBaseView getBaseLayerImageView() {
         if (baseLayerImageView == null) {
             baseLayerImageView = new VDDrawingLayerBaseView(self.getContext());
@@ -524,13 +640,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 处理图层相关触摸操作，z轴上在底层上一层
      */
     private VDDrawingLayerContainer layerContainer;
+
     public VDDrawingLayerContainer getLayerContainer() {
         if (layerContainer == null) {
             layerContainer = new VDDrawingLayerContainer(self.getContext());
             layerContainer.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             layerContainer.setDelegate(new VDDrawingLayerContainer.Delegate() {
                 @Override
-                public void layerTextViewDidBeginEdit(VDDrawingLayerContainer container, VDDrawingLayerTextView textView) {
+                public void onLayerTextViewEditBegin(VDDrawingLayerContainer container, VDDrawingLayerTextView textView) {
 
                     // 取消先前生成的变换step
                     self.cancelCurrentStep();
@@ -541,14 +658,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                      * 记录此step开始
                      */
                     self.getDrawingData()
-                            .newDrawingStepOnLayer(textView.getLayerHierarchy(), VDDrawingLayer.LayerType.LayerText, self.getWidth(), self.getHeight())
-                            .setStepType(VDDrawingStep.StepType.TextChange)
-                            .setHandlingLayer(textView);
-                    self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                        .newDrawingStepOnLayer(textView.getLayerHierarchy(), VDDrawingLayer.LayerType.LayerText, self.getWidth(), self.getHeight())
+                        .setStepType(VDDrawingStep.StepType.TextChange)
+                        .setHandlingLayer(textView);
+                    self.getDrawingStepDelegate().onDrawingStepBegin(self, self.getCurrentDrawingStep());
                 }
 
                 @Override
-                public void layerViewDidBeginTouch(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
+                public void onLayerViewTouchBegin(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
                     /**
                      * 图层被触摸时，此后将会对图层进行平移/缩放/旋转
                      * 因此，结束当前未完成的step
@@ -567,14 +684,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     }
 
                     self.getDrawingData()
-                            .newDrawingStepOnLayer(layerView.getLayerHierarchy(), layerType, self.getWidth(), self.getHeight())
-                            .setStepType(VDDrawingStep.StepType.Transform)
-                            .setHandlingLayer(layerView);
-                    self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                        .newDrawingStepOnLayer(layerView.getLayerHierarchy(), layerType, self.getWidth(), self.getHeight())
+                        .setStepType(VDDrawingStep.StepType.Transform)
+                        .setHandlingLayer(layerView);
+                    self.getDrawingStepDelegate().onDrawingStepBegin(self, self.getCurrentDrawingStep());
                 }
 
                 @Override
-                public void layerViewTransforming(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
+                public void onLayerViewTransforming(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
                     View v = (View) layerView;
 
                     RelativeLayout.LayoutParams layoutParams = (LayoutParams) v.getLayoutParams();
@@ -585,11 +702,11 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     self.getCurrentDrawingStep().getDrawingLayer().setScale(v.getScaleX());
                     self.getCurrentDrawingStep().getDrawingLayer().setRotation(v.getRotation());
 
-                    self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                    self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
                 }
 
                 @Override
-                public void layerViewDidEndTransform(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
+                public void onLayerViewTransformEnd(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView) {
                     View v = (View) layerView;
 
                     RelativeLayout.LayoutParams layoutParams = (LayoutParams) v.getLayoutParams();
@@ -618,6 +735,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 存放所有图层
      */
     private List<VDDrawingLayerViewProtocol> layerViews;
+
     public List<VDDrawingLayerViewProtocol> getLayerViews() {
         if (layerViews == null) {
             layerViews = new ArrayList<>();
@@ -630,6 +748,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 在底层进行大量数据耗时绘制时显示
      */
     private VDDrawingAnimationView animationView;
+
     public VDDrawingAnimationView getAnimationView() {
         if (animationView == null) {
             animationView = new VDDrawingAnimationView(self.getContext());
@@ -642,10 +761,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 是否应该处理触摸事件，用于禁用多指触摸绘制，多指触摸可能导致多种意外
      */
     private boolean shouldHandleOnTouch; // for limit only first finger can draw.
+
     private VDDrawingView setShouldHandleOnTouch(boolean shouldHandleOnTouch) {
         this.shouldHandleOnTouch = shouldHandleOnTouch;
         return this;
     }
+
     private boolean shouldHandleOnTouch() {
         return shouldHandleOnTouch;
     }
@@ -662,12 +783,22 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case MotionEvent.ACTION_DOWN:
                 // 禁止父容器拦截touch事件，解决在recyclerView中无法绘画问题
                 self.getParent().requestDisallowInterceptTouchEvent(true);
-                self.getDrawingDelegate().didInterceptTouchEvent(self, true);
+                self.getInterceptTouchDelegate().requireInterceptTouchEvent(self, true);
+                self.setTouching(true);
+
+                /**
+                 * 若此时brush需要更换，则结束当前未完成step
+                 */
+                if (self.isBrushChanged()) {
+                    self.setBrushChanged(false);
+                    self.endUnfinishedStep();
+                }
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                self.getDrawingDelegate().didInterceptTouchEvent(self, false);
+                self.getInterceptTouchDelegate().requireInterceptTouchEvent(self, false);
                 self.getParent().requestDisallowInterceptTouchEvent(false);
+                self.setTouching(false);
                 break;
         }
         return super.dispatchTouchEvent(event);
@@ -719,7 +850,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
          * 第一只触摸的手指离开屏幕时，终止此轮触摸事件流继续绘制的许可
          */
         if (maskAction == MotionEvent.ACTION_POINTER_UP
-                && event.getActionIndex() == 0) {
+            && event.getActionIndex() == 0) {
             action = MotionEvent.ACTION_UP;
             self.setShouldHandleOnTouch(false);
         }
@@ -729,7 +860,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
          */
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                self.setTouching(true);
                 self.drawBeginTouch(event.getX(), event.getY());
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -738,7 +868,6 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 self.drawTouchEnd(event.getX(), event.getY());
-                self.setTouching(false);
                 break;
         }
 
@@ -746,6 +875,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     }
 
     /* Delegates */
+
     /** {@link android.view.View.OnLayoutChangeListener} */
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -772,11 +902,12 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     @Override
     public void didChangeText(VDDrawingLayerTextView textView, String text) {
         self.getCurrentDrawingStep().getDrawingLayer().setText(text);
-        self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+        self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
     }
     /** {@link com.vilyever.drawingview.layer.VDDrawingLayerTextView.Delegate} */
 
     /* Private Methods */
+
     /**
      * 初始化内部控件
      */
@@ -799,18 +930,11 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
      * 开始绘制
      * 若此时开始新的step绘制，生成一个新的未完成的step
      * 若此时继续绘制当前未完成的step，此次调用将类似于{@link #drawTouchMoving(float, float)}
+     *
      * @param x 触摸x坐标
      * @param y 触摸y坐标
      */
     private void drawBeginTouch(float x, float y) {
-        /**
-         * 若此时brush需要更换，则结束当前未完成step
-         */
-        if (self.isBrushChanged()) {
-            self.setBrushChanged(false);
-            self.endUnfinishedStep();
-        }
-
         // 绘制point的标识符id递增
         VDDrawingPoint.IncrementPointerID();
 
@@ -818,7 +942,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         if (self.getCurrentDrawingStep().isStepOver()) {
             self.handleLayer(UnhandleAnyLayer);
 
-             // 根据brush类型进行绘制
+            // 根据brush类型进行绘制
             if (self.getBrush() instanceof VDDrawingBrush) {
                 VDDrawingBrush drawingBrush = self.getBrush();
 
@@ -839,10 +963,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                      * 若绘制在base底层，仅生成step
                      */
                     self.getDrawingData()
-                            .newDrawingStepOnBaseLayer(self.getWidth(), self.getHeight())
-                            .setStepType(VDDrawingStep.StepType.DrawOnBase)
-                            .setBrush(VDBrush.copy(drawingBrush))
-                            .setHandlingLayer(self.getBaseLayerImageView());
+                        .newDrawingStepOnBaseLayer(self.getWidth(), self.getHeight())
+                        .setStepType(VDDrawingStep.StepType.DrawOnBase)
+                        .setBrush(VDBrush.copy(drawingBrush))
+                        .setHandlingLayer(self.getBaseLayerImageView());
                 }
             }
             else if (self.getBrush() instanceof VDTextBrush) {
@@ -865,10 +989,10 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                      * 若绘制在base底层，生成step，同绘制图层相同生成临时输入text图层，step结束后消除图层
                      */
                     self.getDrawingData()
-                            .newTextStepOnBaseLayer(self.getWidth(), self.getHeight())
-                            .setStepType(VDDrawingStep.StepType.DrawTextOnBase)
-                            .setBrush(VDBrush.copy(textBrush))
-                            .setHandlingLayer(new VDDrawingLayerTextView(self.getContext(), self.getCurrentDrawingStep().getDrawingLayer().getHierarchy()));
+                        .newTextStepOnBaseLayer(self.getWidth(), self.getHeight())
+                        .setStepType(VDDrawingStep.StepType.DrawTextOnBase)
+                        .setBrush(VDBrush.copy(textBrush))
+                        .setHandlingLayer(new VDDrawingLayerTextView(self.getContext(), self.getCurrentDrawingStep().getDrawingLayer().getHierarchy()));
 
 //                    self.getHandlingLayerView().setCanHandle(false); // 不显示图层效果
                     self.getLayerViews().add(self.getHandlingLayerView());
@@ -882,6 +1006,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             if (self.getHandlingLayerView() != null) {
                 self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
                 self.getHandlingLayerView().setHandling(true);
+
+                self.getDrawingStepDelegate().onDrawingStepBegin(self, self.getCurrentDrawingStep());
             }
         }
         else {
@@ -893,6 +1019,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
             if (self.getHandlingLayerView() != null) {
                 self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
+                self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
             }
         }
 
@@ -900,13 +1027,11 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
             self.cancelCurrentStep();
             self.setShouldHandleOnTouch(false);
         }
-        else {
-            self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
-        }
     }
 
     /**
      * 绘制进行中，完善绘制信息
+     *
      * @param x 触摸x坐标
      * @param y 触摸y坐标
      */
@@ -917,13 +1042,14 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         if (self.getCurrentDrawingStep().getDrawingPath().addPoint(new VDDrawingPoint(x, y))) {
             self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.TouchMoving));
             self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
-            self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+            self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
         }
     }
 
     /**
      * 当前触摸事件流结束
      * 调用此方法可能完成当前step，也可能未完成
+     *
      * @param x 触摸x坐标
      * @param y 触摸y坐标
      */
@@ -942,7 +1068,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.TouchUp));
                 boolean stepOver = !self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep()).requireMoreDetail;
 
-                self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
 
                 if (stepOver) {
                     self.finishDraw();
@@ -960,7 +1086,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 textView.setDelegate(self);
                 textView.beginEdit(true);
 
-                self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
                 break;
         }
     }
@@ -1010,8 +1136,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
     private void endUnfinishedStep() {
         // 仅处理未完成的step
         if (self.getCurrentDrawingStep() != null
-                && !self.getCurrentDrawingStep().isStepOver()
-                && self.getHandlingLayerView() != null) {
+            && !self.getCurrentDrawingStep().isStepOver()
+            && self.getHandlingLayerView() != null) {
 
             switch (self.getCurrentDrawingStep().getDrawingLayer().getLayerType()) {
                 case BaseDrawing: {
@@ -1019,7 +1145,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                     self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.ForceFinish));
                     self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
 
-                    self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                    self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
 
                     self.finishDraw();
                     break;
@@ -1032,7 +1158,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                             self.getCurrentDrawingStep().setDrawingState(new VDBrush.DrawingState(VDBrush.DrawingPointerState.ForceFinish));
                             self.getHandlingLayerView().appendWithDrawingStep(self.getCurrentDrawingStep());
 
-                            self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                            self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
 
                             self.finishDraw();
                             break;
@@ -1059,7 +1185,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         self.getCurrentDrawingStep().setHandlingLayer(self.getBaseLayerImageView());
                         self.handleLayer(self.getCurrentDrawingStep().getDrawingLayer().getHierarchy());
 
-                        self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+                        self.getDrawingStepDelegate().onDrawingStepChange(self, self.getCurrentDrawingStep());
 
                         self.finishDraw();
                     }
@@ -1080,7 +1206,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                                 // 对text图层，若此时是第一次创建完图层，若已输入内容，结束此step
                                 self.getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
                                 self.overCurrentStep();
-                            } else {
+                            }
+                            else {
                                 // 若未开始编辑，撤销此step
                                 self.getLayerContainer().removeLayerView(textView);
                                 self.getLayerViews().remove(textView);
@@ -1093,7 +1220,8 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                             if (textView.isChangedSinceLastStep()) {
                                 self.getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
                                 self.overCurrentStep();
-                            } else {
+                            }
+                            else {
                                 self.cancelCurrentStep();
                             }
                             break;
@@ -1115,7 +1243,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         if (!self.getCurrentDrawingStep().isStepOver()) {
 
             self.getCurrentDrawingStep().setCanceled(true);
-            self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
+            self.getDrawingStepDelegate().onDrawingStepCancel(self, self.getCurrentDrawingStep());
 
             self.getDrawingData().cancelDrawingStep();
             self.handleLayer(UnhandleAnyLayer);
@@ -1142,13 +1270,13 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
         }
 
         self.getCurrentDrawingStep().setStepOver(true);
-        self.getDrawingDelegate().didUpdateCurrentStep(self, self.getCurrentDrawingStep());
-        self.getDrawingDelegate().didUpdateDrawingData(self, self.getDrawingData());
-        self.getDrawingDelegate().didUpdateUndoRedoState(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
+        self.getDrawingStepDelegate().onDrawingStepEnd(self, self.getCurrentDrawingStep());
+        self.getUndoRedoStateDelegate().onUndoRedoStateChange(self, self.getDrawingData().canUndo(), self.getDrawingData().canRedo());
     }
 
     /**
      * 切换当前操作的图层
+     *
      * @param layerHierarchy 将变成当前操作图层的层级
      */
     private void handleLayer(int layerHierarchy) {
@@ -1164,6 +1292,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
 
     /**
      * 根据层级查找图层
+     *
      * @param layerHierarchy 层级
      * @return 图层
      */
@@ -1209,8 +1338,9 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 break;
             case Background:
                 if (step.getDrawingLayer().getBackgroundImageIdentifier() != null) {
-                    self.nativeSetBackgroundDrawable(step.getDrawingLayer().getHierarchy(), self.getDrawingDelegate().gainBackground(self, step.getDrawingLayer().getBackgroundImageIdentifier()));
-                } else if (step.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
+                    self.nativeSetBackgroundDrawable(step.getDrawingLayer().getHierarchy(), self.getBackgroundDatasource().gainBackground(self, step.getDrawingLayer().getBackgroundImageIdentifier()));
+                }
+                else if (step.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
                     self.nativeSetBackgroundColor(step.getDrawingLayer().getHierarchy(), step.getDrawingLayer().getBackgroundColor());
                 }
                 break;
@@ -1399,7 +1529,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
              * 获取当前图层应当绘制的background在哪一步step
              */
             int lastBackgroundStepIndex = -1;
-            for (int i = 0; i <currentLayerSteps.size(); i++) {
+            for (int i = 0; i < currentLayerSteps.size(); i++) {
                 VDDrawingStep step = currentLayerSteps.get(i);
 
                 step.updateDrawingRatio(self.getWidth(), self.getHeight());
@@ -1418,7 +1548,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                 if (lastBackgroundStepIndex >= 0) {
                     VDDrawingStep lastBackgroundDrawingStep = currentLayerSteps.get(lastBackgroundStepIndex);
                     if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier() != null) {
-                        self.getBaseLayerImageView().setBackground(self.getDrawingDelegate().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
+                        self.getBaseLayerImageView().setBackground(self.getBackgroundDatasource().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
                     }
                     else if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
                         self.getBaseLayerImageView().setBackgroundColor(lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor());
@@ -1445,7 +1575,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         if (lastBackgroundStepIndex >= 0) {
                             VDDrawingStep lastBackgroundDrawingStep = currentLayerSteps.get(lastBackgroundStepIndex);
                             if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier() != null) {
-                                imageView.setBackground(self.getDrawingDelegate().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
+                                imageView.setBackground(self.getBackgroundDatasource().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
                             }
                             else if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
                                 imageView.setBackgroundColor(lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor());
@@ -1466,7 +1596,7 @@ public class VDDrawingView extends RelativeLayout implements View.OnLayoutChange
                         if (lastBackgroundStepIndex >= 0) {
                             VDDrawingStep lastBackgroundDrawingStep = currentLayerSteps.get(lastBackgroundStepIndex);
                             if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier() != null) {
-                                textView.setBackground(self.getDrawingDelegate().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
+                                textView.setBackground(self.getBackgroundDatasource().gainBackground(self, lastBackgroundDrawingStep.getDrawingLayer().getBackgroundImageIdentifier()));
                             }
                             else if (lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor() != VDDrawingLayer.UnsetValue) {
                                 textView.setBackgroundColor(lastBackgroundDrawingStep.getDrawingLayer().getBackgroundColor());

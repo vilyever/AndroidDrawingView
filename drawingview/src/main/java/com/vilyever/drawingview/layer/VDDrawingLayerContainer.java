@@ -72,28 +72,28 @@ public class VDDrawingLayerContainer extends RelativeLayout {
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void layerViewDidBeginTouch(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTouchBegin(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
 
         /**
          * 图层每次变换（平移/旋转/缩放）时的反馈，此反馈是连续微小的主要用于远程同步
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void layerViewTransforming(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTransforming(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
 
         /**
          * 图层结束变换，此时当前变化step理应结束
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void layerViewDidEndTransform(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTransformEnd(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
 
         /**
          * 对于text图层有一个双击进行编辑的操作，此操作与其他操作独立
          * @param container 当前容器
          * @param textView 被触摸的text图层
          */
-        void layerTextViewDidBeginEdit(VDDrawingLayerContainer container, VDDrawingLayerTextView textView);
+        void onLayerTextViewEditBegin(VDDrawingLayerContainer container, VDDrawingLayerTextView textView);
 
         /**
          * 不进行任何操作，仅显示选中图层
@@ -180,7 +180,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                 layoutParams.leftMargin = (int) Math.floor(originalLeftMargin + dx);
                 layoutParams.topMargin = (int) Math.floor(originalTopMargin + dy);
                 self.getGestureView().setLayoutParams(layoutParams);
-                self.getDelegate().layerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
             }
             return true;
         }
@@ -209,7 +209,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                 VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
                 textView.beginEdit(false);
 
-                self.getDelegate().layerTextViewDidBeginEdit(self, textView);
+                self.getDelegate().onLayerTextViewEditBegin(self, textView);
             }
             return true;
         }
@@ -251,7 +251,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                 float scaleFactor = detector.getScaleFactor();
                 self.getGestureView().setScaleX(self.getGestureView().getScaleX() * scaleFactor);
                 self.getGestureView().setScaleY(self.getGestureView().getScaleY() * scaleFactor);
-                self.getDelegate().layerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
             }
             return true;
         }
@@ -290,7 +290,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         private float originalRotation;
         private float triggerOffset;
         @Override
-        public void onRotation(VDRotationGestureDetector rotationDetector) {
+        public void onRotate(VDRotationGestureDetector rotationDetector) {
             float angle = rotationDetector.getAngle();
 
             /**
@@ -316,7 +316,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                 }
 
                 self.getGestureView().setRotation(-(angle + triggerOffset - originalRotation));
-                self.getDelegate().layerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
             }
         }
     }
@@ -371,7 +371,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
 
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         self.setGestureView(v);
-                        self.getDelegate().layerViewDidBeginTouch(self, (VDDrawingLayerViewProtocol) v);
+                        self.getDelegate().onLayerViewTouchBegin(self, (VDDrawingLayerViewProtocol) v);
                     }
                     return false;
                 }
@@ -412,7 +412,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                     }
                 }
 
-                self.getDelegate().layerViewDidEndTransform(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getDelegate().onLayerViewTransformEnd(self, (VDDrawingLayerViewProtocol) self.getGestureView());
 
                 self.setGestureView(null);
                 self.setGestureViewOperationState(GestureViewOperation.None.state());

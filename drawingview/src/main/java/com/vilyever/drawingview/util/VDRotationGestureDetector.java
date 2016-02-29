@@ -46,7 +46,7 @@ public class VDRotationGestureDetector {
                     mAngle = angleBetweenLines(firstX, firstY, secondX, secondY, nfX, nfY, nsX, nsY);
 
                     if (mListener != null) {
-                        mListener.onRotation(this);
+                        mListener.onRotate(this);
                     }
                 }
                 break;
@@ -90,6 +90,6 @@ public class VDRotationGestureDetector {
 
     /* Interfaces */
     public interface OnRotationGestureListener {
-        void onRotation(VDRotationGestureDetector rotationDetector);
+        void onRotate(VDRotationGestureDetector rotationDetector);
     }
 }

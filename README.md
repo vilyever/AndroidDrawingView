@@ -30,26 +30,44 @@ dependencies {
         android:layout_height="match_parent" />
 
 drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-drawingView.setDrawingDelegate(new VDDrawingView.DrawingDelegate() {
+drawingView.setUndoRedoStateDelegate(new VDDrawingView.UndoRedoStateDelegate() {
     @Override
-    public void didUpdateCurrentStep(VDDrawingView drawingView, VDDrawingStep step) {
-    }
-
-    @Override
-    public void didUpdateDrawingData(VDDrawingView drawingView, VDDrawingData data) {
-    }
-
-    @Override
-    public void didUpdateUndoRedoState(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+    public void onUndoRedoStateChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
         undoButton.setEnabled(canUndo);
         redoButton.setEnabled(canRedo);
     }
+});
 
+drawingView.setInterceptTouchDelegate(new VDDrawingView.InterceptTouchDelegate() {
     @Override
-    public void didInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+    public void requireInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+
+    }
+});
+
+drawingView.setDrawingStepDelegate(new VDDrawingView.DrawingStepDelegate() {
+    @Override
+    public void onDrawingStepBegin(VDDrawingView drawingView, VDDrawingStep step) {
 
     }
 
+    @Override
+    public void onDrawingStepChange(VDDrawingView drawingView, VDDrawingStep step) {
+
+    }
+
+    @Override
+    public void onDrawingStepEnd(VDDrawingView drawingView, VDDrawingStep step) {
+
+    }
+
+    @Override
+    public void onDrawingStepCancel(VDDrawingView drawingView, VDDrawingStep step) {
+
+    }
+});
+
+drawingView.setBackgroundDatasource(new VDDrawingView.BackgroundDatasource() {
     @Override
     public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
         return null;
