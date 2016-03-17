@@ -7,12 +7,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.jsonmodel.VDJson;
-import com.vilyever.jsonmodel.VDModel;
+import com.vilyever.drawingview.brush.drawing.DrawingBrush;
+import com.vilyever.drawingview.brush.text.TextBrush;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.jsonmodel.Json;
+import com.vilyever.jsonmodel.JsonModel;
 
 /**
- * VDBrush
+ * Brush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/27.
  * Feature:
@@ -20,11 +22,11 @@ import com.vilyever.jsonmodel.VDModel;
  * 定义基本绘制方法
  * 具体实现由子类完成
  * Known Direct Subclasses:
- * {@link com.vilyever.drawingview.brush.drawing.VDDrawingBrush}
- * {@link com.vilyever.drawingview.brush.text.VDTextBrush}
+ * {@link DrawingBrush}
+ * {@link TextBrush}
  */
-public abstract class VDBrush extends VDModel {
-    final VDBrush self = this;
+public abstract class Brush extends JsonModel {
+    final Brush self = this;
 
     /* Public Methods */
     /**
@@ -34,8 +36,8 @@ public abstract class VDBrush extends VDModel {
      * @param <T> 类型
      * @return 复制的brush
      */
-    public static <T extends VDBrush> T copy(@NonNull VDBrush brush) {
-        return (T) new VDJson<>(brush.getClass()).modelFromJson(brush.toJson());
+    public static <T extends Brush> T copy(@NonNull Brush brush) {
+        return (T) new Json<>(brush.getClass()).modelFromJson(brush.toJson());
     }
 
     /**
@@ -44,8 +46,8 @@ public abstract class VDBrush extends VDModel {
      * @param <T> 类型
      * @return 复制的brush
      */
-    public <T extends VDBrush> T copy() {
-        return (T) new VDJson<>(this.getClass()).modelFromJson(this.toJson());
+    public <T extends Brush> T copy() {
+        return (T) new Json<>(this.getClass()).modelFromJson(this.toJson());
     }
 
     /**
@@ -56,7 +58,7 @@ public abstract class VDBrush extends VDModel {
      * @return 绘制图形所处的Frame，不同state可能返回不同坐标，若返回EmptyFrame表示path不足以作图，若返回requireMoreDetail为true表示当前path不能完成作图，需要进一步触摸绘制
      */
     @NonNull
-    public abstract Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state);
+    public abstract Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state);
 
     /**
      * 当前版本暂时未使用到
@@ -72,11 +74,11 @@ public abstract class VDBrush extends VDModel {
      */
     protected boolean oneStrokeToLayer;
     public boolean isOneStrokeToLayer() {
-        return oneStrokeToLayer;
+        return this.oneStrokeToLayer;
     }
-    public <T extends VDBrush> T setOneStrokeToLayer(boolean oneStrokeToLayer) {
+    public <T extends Brush> T setOneStrokeToLayer(boolean oneStrokeToLayer) {
         this.oneStrokeToLayer = oneStrokeToLayer;
-        return (T) self;
+        return (T) this;
     }
 
     /**
@@ -86,9 +88,9 @@ public abstract class VDBrush extends VDModel {
      *
      * 在brush中此比例不分xy轴，取xy轴中变化最大的一轴
      */
-    @VDJsonKeyIgnore
+    @JsonKeyIgnore
     private float drawingRatio = 1.0f;
-    public VDBrush setDrawingRatio(float drawingRatio) {
+    public Brush setDrawingRatio(float drawingRatio) {
         this.drawingRatio = drawingRatio;
         return this;
     }
@@ -138,7 +140,7 @@ public abstract class VDBrush extends VDModel {
 
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeByte((byte) (requireMoreDetail ? 1 : 0));
+            out.writeByte((byte) (this.requireMoreDetail ? 1 : 0));
         }
 
         public static final Parcelable.Creator<Frame> CREATOR = new Parcelable.Creator<Frame>() {
@@ -158,14 +160,14 @@ public abstract class VDBrush extends VDModel {
 
         public void readFromParcel(Parcel in) {
             super.readFromParcel(in);
-            requireMoreDetail = in.readByte() != 0;
+            this.requireMoreDetail = in.readByte() != 0;
         }
     }
 
     /**
      * 绘制状态快捷判断
      */
-    public static final class DrawingState extends VDModel {
+    public static final class DrawingState extends JsonModel {
         private int pointerState;
 
         public DrawingState() {

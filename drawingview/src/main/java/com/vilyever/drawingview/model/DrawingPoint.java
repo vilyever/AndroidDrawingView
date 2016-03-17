@@ -1,29 +1,29 @@
 package com.vilyever.drawingview.model;
 
-import com.vilyever.jsonmodel.VDModel;
+import com.vilyever.jsonmodel.JsonModel;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * VDDrawingPoint
+ * DrawingPoint
  * AndroidDrawingBoard <com.vilyever.drawingboard>
  * Created by vilyever on 2015/9/16.
  * Feature:
  * 绘画数据：绘制点
  */
-public class VDDrawingPoint extends VDModel {
-    private final VDDrawingPoint self = this;
+public class DrawingPoint extends JsonModel {
+    private final DrawingPoint self = this;
 
 
     /* #Constructors */
-    public VDDrawingPoint() {
+    public DrawingPoint() {
     }
 
-    public VDDrawingPoint(float x, float y) {
-        this(VDDrawingPoint.CurrentPointerID(), x, y);
+    public DrawingPoint(float x, float y) {
+        this(DrawingPoint.CurrentPointerID(), x, y);
     }
 
-    public VDDrawingPoint(int pointerID, float x, float y) {
+    public DrawingPoint(int pointerID, float x, float y) {
         this.pointerID = pointerID;
         this.x = x;
         this.y = y;
@@ -36,7 +36,7 @@ public class VDDrawingPoint extends VDModel {
      * @param point 比较的point
      * @return 是否相同
      */
-    public boolean isSamePoint(VDDrawingPoint point) {
+    public boolean isSamePoint(DrawingPoint point) {
         return this.pointerID == point.pointerID && this.x == point.x && this.y == point.y;
     }
 
@@ -45,8 +45,8 @@ public class VDDrawingPoint extends VDModel {
      * @param point 复制的原point
      * @return 复制的point
      */
-    public static VDDrawingPoint copy(VDDrawingPoint point) {
-        return new VDDrawingPoint(point.pointerID, point.x, point.y);
+    public static DrawingPoint copy(DrawingPoint point) {
+        return new DrawingPoint(point.pointerID, point.x, point.y);
     }
 
     /* Properties */
@@ -60,11 +60,11 @@ public class VDDrawingPoint extends VDModel {
     // x，y坐标
     private float x;
     public float getX() {
-        return x * self.getDrawingRatioX();
+        return this.x * getDrawingRatioX();
     }
     private float y;
     public float getY() {
-        return y * self.getDrawingRatioY();
+        return this.y * getDrawingRatioY();
     }
 
     // 触摸事件发生的时间
@@ -75,14 +75,14 @@ public class VDDrawingPoint extends VDModel {
      * 在记录数据时drawingView的宽高和当前重绘时的宽高比
      * 用于在不同分辨率下重绘相似的图形全貌
      */
-    @VDJsonKeyIgnore
+    @JsonKeyIgnore
     private float drawingRatioX = 1.0f;
-    public VDDrawingPoint setDrawingRatioX(float drawingRatioX) {
+    public DrawingPoint setDrawingRatioX(float drawingRatioX) {
         this.drawingRatioX = drawingRatioX;
         return this;
     }
     public float getDrawingRatioX() {
-        return drawingRatioX;
+        return this.drawingRatioX;
     }
 
     /**
@@ -90,14 +90,14 @@ public class VDDrawingPoint extends VDModel {
      * 在记录数据时drawingView的宽高和当前重绘时的宽高比
      * 用于在不同分辨率下重绘相似的图形全貌
      */
-    @VDJsonKeyIgnore
+    @JsonKeyIgnore
     private float drawingRatioY = 1.0f;
-    public VDDrawingPoint setDrawingRatioY(float drawingRatioY) {
+    public DrawingPoint setDrawingRatioY(float drawingRatioY) {
         this.drawingRatioY = drawingRatioY;
         return this;
     }
     public float getDrawingRatioY() {
-        return drawingRatioY;
+        return this.drawingRatioY;
     }
 
     // ID产生，每次开始触摸时自增

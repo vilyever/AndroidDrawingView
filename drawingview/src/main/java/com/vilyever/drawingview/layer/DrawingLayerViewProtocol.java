@@ -2,8 +2,8 @@ package com.vilyever.drawingview.layer;
 
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.model.VDDrawingStep;
+import com.vilyever.drawingview.brush.Brush;
+import com.vilyever.drawingview.model.DrawingStep;
 
 import java.util.List;
 
@@ -15,11 +15,11 @@ import java.util.List;
  * 图层基础接口
  *
  * Known Direct implement classes：
- * {@link VDDrawingLayerBaseView}
- * {@link VDDrawingLayerImageView}
- * {@link VDDrawingLayerTextView}
+ * {@link DrawingLayerBaseView}
+ * {@link DrawingLayerImageView}
+ * {@link DrawingLayerTextView}
  */
-public interface VDDrawingLayerViewProtocol {
+public interface DrawingLayerViewProtocol {
 
     /**
      * 清楚当前所有的绘制
@@ -35,19 +35,19 @@ public interface VDDrawingLayerViewProtocol {
      * @param drawingStep 将要绘制的step
      * @return 绘制step后图层需要的frame，确定图层位置和大小
      */
-    VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep);
+    Brush.Frame appendWithDrawingStep(@NonNull DrawingStep drawingStep);
 
     /**
      * 使用传入的step列表绘制图层
      * @param steps 绘制于此图层的新增step集
      */
-    void appendWithSteps(@NonNull List<VDDrawingStep> steps);
+    void appendWithSteps(@NonNull List<DrawingStep> steps);
 
     /**
      * 使用传入的step列表刷新图层
      * @param drawnSteps 绘制于此图层的所有step
      */
-    void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps);
+    void refreshWithDrawnSteps(@NonNull List<DrawingStep> drawnSteps);
 
     /**
      * 获取当前图层的层级

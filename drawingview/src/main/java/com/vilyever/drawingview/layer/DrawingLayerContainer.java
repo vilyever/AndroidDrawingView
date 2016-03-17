@@ -8,7 +8,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.RelativeLayout;
 
-import com.vilyever.drawingview.util.VDRotationGestureDetector;
+import com.vilyever.drawingview.util.RotationGestureDetector;
 
 /**
  * VDDrawingLayerContainer
@@ -17,21 +17,21 @@ import com.vilyever.drawingview.util.VDRotationGestureDetector;
  * Feature:
  * 图层容器，管理除base图层以外的所有图层的触摸响应
  */
-public class VDDrawingLayerContainer extends RelativeLayout {
-    final VDDrawingLayerContainer self = this;
+public class DrawingLayerContainer extends RelativeLayout {
+    final DrawingLayerContainer self = this;
 
     /* #Constructors */
-    public VDDrawingLayerContainer(Context context) {
+    public DrawingLayerContainer(Context context) {
         this(context, null);
     }
 
-    public VDDrawingLayerContainer(Context context, AttributeSet attrs) {
+    public DrawingLayerContainer(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public VDDrawingLayerContainer(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DrawingLayerContainer(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        self.initial(context);
+        init();
     }
 
     /* Public Methods */
@@ -39,91 +39,91 @@ public class VDDrawingLayerContainer extends RelativeLayout {
      * 添加图层
      * @param layerView 添加的图层
      */
-    public void addLayerView(VDDrawingLayerViewProtocol layerView) {
-        self.addView((View) layerView);
+    public void addLayerView(DrawingLayerViewProtocol layerView) {
+        addView((View) layerView);
 
         // 由容器控制layer的触摸响应
-        ((View) layerView).setOnTouchListener(self.getLayerOnTouchListener());
+        ((View) layerView).setOnTouchListener(getLayerOnTouchListener());
     }
 
     /**
      * 移除图层
      * @param layerView 移除的图层
      */
-    public void removeLayerView(VDDrawingLayerViewProtocol layerView) {
-        self.removeView((View) layerView);
-        self.setGestureView(null);
+    public void removeLayerView(DrawingLayerViewProtocol layerView) {
+        removeView((View) layerView);
+        setGestureView(null);
     }
 
     /**
      * 清空图层
      */
     public void clear() {
-        if (self.getChildCount() > 0) {
-            self.removeAllViews();
+        if (getChildCount() > 0) {
+            removeAllViews();
         }
-        self.setGestureView(null);
+        setGestureView(null);
     }
 
     /* Properties */
-    public interface Delegate {
+    public interface LayerDelegate {
         /**
          * 图层被触摸ACTION_DOWN时的反馈，此时理应准备开始下一step，接收者应在此时结束先前未完成的step
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void onLayerViewTouchBegin(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTouchBegin(DrawingLayerContainer container, DrawingLayerViewProtocol layerView);
 
         /**
          * 图层每次变换（平移/旋转/缩放）时的反馈，此反馈是连续微小的主要用于远程同步
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void onLayerViewTransforming(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTransforming(DrawingLayerContainer container, DrawingLayerViewProtocol layerView);
 
         /**
          * 图层结束变换，此时当前变化step理应结束
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void onLayerViewTransformEnd(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void onLayerViewTransformEnd(DrawingLayerContainer container, DrawingLayerViewProtocol layerView);
 
         /**
          * 对于text图层有一个双击进行编辑的操作，此操作与其他操作独立
          * @param container 当前容器
          * @param textView 被触摸的text图层
          */
-        void onLayerTextViewEditBegin(VDDrawingLayerContainer container, VDDrawingLayerTextView textView);
+        void onLayerTextViewEditBegin(DrawingLayerContainer container, DrawingLayerTextView textView);
 
         /**
          * 不进行任何操作，仅显示选中图层
          * @param container 当前容器
          * @param layerView 被触摸的图层
          */
-        void requireHandlingLayerView(VDDrawingLayerContainer container, VDDrawingLayerViewProtocol layerView);
+        void requireHandlingLayerView(DrawingLayerContainer container, DrawingLayerViewProtocol layerView);
     }
-    private Delegate delegate;
-    public VDDrawingLayerContainer setDelegate(Delegate delegate) {
-        this.delegate = delegate;
+    private LayerDelegate layerDelegate;
+    public DrawingLayerContainer setLayerDelegate(LayerDelegate layerDelegate) {
+        this.layerDelegate = layerDelegate;
         return this;
     }
-    public Delegate getDelegate() {
-        return delegate;
+    public LayerDelegate getLayerDelegate() {
+        return this.layerDelegate;
     }
 
     /**
      * 手势检测，主要用于平移和text图层的双击编辑
      */
     private GestureDetector gestureDetector;
-    private VDDrawingLayerContainer setGestureDetector(GestureDetector gestureDetector) {
+    private DrawingLayerContainer setGestureDetector(GestureDetector gestureDetector) {
         this.gestureDetector = gestureDetector;
         return this;
     }
     private GestureDetector getGestureDetector() {
-        if (gestureDetector == null) {
-            gestureDetector = new GestureDetector(self.getContext(), new GestureListener());
+        if (this.gestureDetector == null) {
+            this.gestureDetector = new GestureDetector(getContext(), new GestureListener());
         }
-        return gestureDetector;
+        return this.gestureDetector;
     }
     private class GestureListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
         float originalLeftMargin;
@@ -135,12 +135,12 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         public boolean onDown(MotionEvent e) {
             // 记录初始位置
             if (self.getGestureView() != null) {
-                RelativeLayout.LayoutParams layoutParams = (LayoutParams) self.getGestureView().getLayoutParams();
-                originalLeftMargin = layoutParams.leftMargin;
-                originalTopMargin = layoutParams.topMargin;
+                RelativeLayout.LayoutParams layoutParams = (LayoutParams) getGestureView().getLayoutParams();
+                this.originalLeftMargin = layoutParams.leftMargin;
+                this.originalTopMargin = layoutParams.topMargin;
 
-                beginX = e.getRawX();
-                beginY = e.getRawY();
+                this.beginX = e.getRawX();
+                this.beginY = e.getRawY();
             }
             return true;
         }
@@ -159,12 +159,12 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                                 float distanceX, float distanceY) {
             // 存储平移操作
             if ((self.getGestureViewOperationState() & GestureViewOperation.Moving.state())  != GestureViewOperation.Moving.state()) {
-                self.setGestureViewOperationState(self.getGestureViewOperationState() | GestureViewOperation.Moving.state());
+                self.setGestureViewOperationState(getGestureViewOperationState() | GestureViewOperation.Moving.state());
             }
 
             // 判断是否在操作处于编辑状态的text图层，若是，则禁止变换
-            if (self.getGestureView() instanceof VDDrawingLayerTextView) {
-                VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
+            if (self.getGestureView() instanceof DrawingLayerTextView) {
+                DrawingLayerTextView textView = (DrawingLayerTextView) self.getGestureView();
                 if (textView.isEditing()) {
                     return true;
                 }
@@ -173,14 +173,14 @@ public class VDDrawingLayerContainer extends RelativeLayout {
             // 缩放和旋转的操作优先于平移，若正在进行缩放或旋转操作，禁止平移
             if (self.getGestureView() != null
                     && (self.getGestureViewOperationState() == (GestureViewOperation.None.state() | GestureViewOperation.Moving.state()))) {
-                float dx = e2.getRawX() - beginX;
-                float dy = e2.getRawY() - beginY;
+                float dx = e2.getRawX() - this.beginX;
+                float dy = e2.getRawY() - this.beginY;
 
                 RelativeLayout.LayoutParams layoutParams = (LayoutParams) self.getGestureView().getLayoutParams();
-                layoutParams.leftMargin = (int) Math.floor(originalLeftMargin + dx);
-                layoutParams.topMargin = (int) Math.floor(originalTopMargin + dy);
+                layoutParams.leftMargin = (int) Math.floor(this.originalLeftMargin + dx);
+                layoutParams.topMargin = (int) Math.floor(this.originalTopMargin + dy);
                 self.getGestureView().setLayoutParams(layoutParams);
-                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getLayerDelegate().onLayerViewTransforming(self, (DrawingLayerViewProtocol) self.getGestureView());
             }
             return true;
         }
@@ -203,13 +203,13 @@ public class VDDrawingLayerContainer extends RelativeLayout {
         public boolean onDoubleTap(MotionEvent e) {
             // 对于text图层，双击操作有最高优先级
             if (self.getGestureView() != null
-                    && self.getGestureView() instanceof VDDrawingLayerTextView) {
+                    && self.getGestureView() instanceof DrawingLayerTextView) {
                 self.setGestureViewOperationState(self.getGestureViewOperationState() | GestureViewOperation.DoubleTap.state());
 
-                VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
+                DrawingLayerTextView textView = (DrawingLayerTextView) self.getGestureView();
                 textView.beginEdit(false);
 
-                self.getDelegate().onLayerTextViewEditBegin(self, textView);
+                self.getLayerDelegate().onLayerTextViewEditBegin(self, textView);
             }
             return true;
         }
@@ -224,15 +224,15 @@ public class VDDrawingLayerContainer extends RelativeLayout {
      * 缩放手势检测
      */
     private ScaleGestureDetector scaleGestureDetector;
-    private VDDrawingLayerContainer setScaleGestureDetector(ScaleGestureDetector scaleGestureDetector) {
+    private DrawingLayerContainer setScaleGestureDetector(ScaleGestureDetector scaleGestureDetector) {
         this.scaleGestureDetector = scaleGestureDetector;
         return this;
     }
     private ScaleGestureDetector getScaleGestureDetector() {
-        if (scaleGestureDetector == null) {
-            scaleGestureDetector = new ScaleGestureDetector(self.getContext(), new ScaleListener());
+        if (this.scaleGestureDetector == null) {
+            this.scaleGestureDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
         }
-        return scaleGestureDetector;
+        return this.scaleGestureDetector;
     }
     private class ScaleListener implements ScaleGestureDetector.OnScaleGestureListener {
         @Override
@@ -241,8 +241,8 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                     && ((self.getGestureViewOperationState() & GestureViewOperation.Scaling.state()) == GestureViewOperation.Scaling.state()) ) {
 
                 // 判断是否在操作处于编辑状态的text图层，若是，则禁止变换
-                if (self.getGestureView() instanceof VDDrawingLayerTextView) {
-                    VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
+                if (self.getGestureView() instanceof DrawingLayerTextView) {
+                    DrawingLayerTextView textView = (DrawingLayerTextView) self.getGestureView();
                     if (textView.isEditing()) {
                         return true;
                     }
@@ -251,7 +251,7 @@ public class VDDrawingLayerContainer extends RelativeLayout {
                 float scaleFactor = detector.getScaleFactor();
                 self.getGestureView().setScaleX(self.getGestureView().getScaleX() * scaleFactor);
                 self.getGestureView().setScaleY(self.getGestureView().getScaleY() * scaleFactor);
-                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getLayerDelegate().onLayerViewTransforming(self, (DrawingLayerViewProtocol) self.getGestureView());
             }
             return true;
         }
@@ -274,23 +274,23 @@ public class VDDrawingLayerContainer extends RelativeLayout {
     /**
      * 旋转手势检测
      */
-    private VDRotationGestureDetector rotationGestureDetector;
-    private VDDrawingLayerContainer setRotationGestureDetector(VDRotationGestureDetector rotationGestureDetector) {
+    private RotationGestureDetector rotationGestureDetector;
+    private DrawingLayerContainer setRotationGestureDetector(RotationGestureDetector rotationGestureDetector) {
         this.rotationGestureDetector = rotationGestureDetector;
         return this;
     }
-    private VDRotationGestureDetector getRotationGestureDetector() {
-        if (rotationGestureDetector == null) {
-            rotationGestureDetector = new VDRotationGestureDetector(new RotationListener());
+    private RotationGestureDetector getRotationGestureDetector() {
+        if (this.rotationGestureDetector == null) {
+            this.rotationGestureDetector = new RotationGestureDetector(new RotationListener());
         }
-        return rotationGestureDetector;
+        return this.rotationGestureDetector;
     }
-    private class RotationListener implements VDRotationGestureDetector.OnRotationGestureListener {
+    private class RotationListener implements RotationGestureDetector.OnRotationGestureListener {
         private static final float TriggerAngle = 10.0f;
         private float originalRotation;
         private float triggerOffset;
         @Override
-        public void onRotate(VDRotationGestureDetector rotationDetector) {
+        public void onRotate(RotationGestureDetector rotationDetector) {
             float angle = rotationDetector.getAngle();
 
             /**
@@ -300,23 +300,23 @@ public class VDDrawingLayerContainer extends RelativeLayout {
             if (Math.abs(angle) > TriggerAngle
                     && ((self.getGestureViewOperationState() & GestureViewOperation.Rotation.state()) != GestureViewOperation.Rotation.state()) ) {
                 self.setGestureViewOperationState(self.getGestureViewOperationState() | GestureViewOperation.Rotation.state());
-                originalRotation = self.getGestureView().getRotation();
-                triggerOffset = -Math.signum(angle);
+                this.originalRotation = self.getGestureView().getRotation();
+                this.triggerOffset = -Math.signum(angle);
             }
 
             if (self.getGestureView() != null
                     && ((self.getGestureViewOperationState() & GestureViewOperation.Rotation.state()) == GestureViewOperation.Rotation.state()) ) {
 
                 // 判断是否在操作处于编辑状态的text图层，若是，则禁止变换
-                if (self.getGestureView() instanceof VDDrawingLayerTextView) {
-                    VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
+                if (self.getGestureView() instanceof DrawingLayerTextView) {
+                    DrawingLayerTextView textView = (DrawingLayerTextView) self.getGestureView();
                     if (textView.isEditing()) {
                         return;
                     }
                 }
 
-                self.getGestureView().setRotation(-(angle + triggerOffset - originalRotation));
-                self.getDelegate().onLayerViewTransforming(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                self.getGestureView().setRotation(-(angle + this.triggerOffset - this.originalRotation));
+                self.getLayerDelegate().onLayerViewTransforming(self, (DrawingLayerViewProtocol) self.getGestureView());
             }
         }
     }
@@ -325,24 +325,24 @@ public class VDDrawingLayerContainer extends RelativeLayout {
      * 当前正在进行手势操作的图层view
      */
     private View gestureView;
-    private VDDrawingLayerContainer setGestureView(View gestureView) {
+    private DrawingLayerContainer setGestureView(View gestureView) {
         this.gestureView = gestureView;
         return this;
     }
     private View getGestureView() {
-        return gestureView;
+        return this.gestureView;
     }
 
     /**
      * {@link #gestureView}正在进行的操作
      */
     private int gestureViewOperationState;
-    private VDDrawingLayerContainer setGestureViewOperationState(int gestureViewOperationState) {
+    private DrawingLayerContainer setGestureViewOperationState(int gestureViewOperationState) {
         this.gestureViewOperationState = gestureViewOperationState;
         return this;
     }
     private int getGestureViewOperationState() {
-        return gestureViewOperationState;
+        return this.gestureViewOperationState;
     }
 
     /**
@@ -351,19 +351,19 @@ public class VDDrawingLayerContainer extends RelativeLayout {
      */
     private OnTouchListener layerOnTouchListener;
     public OnTouchListener getLayerOnTouchListener() {
-        if (layerOnTouchListener == null) {
-            layerOnTouchListener = new OnTouchListener() {
+        if (this.layerOnTouchListener == null) {
+            this.layerOnTouchListener = new OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    VDDrawingLayerViewProtocol layerViewProtocol = (VDDrawingLayerViewProtocol) v;
+                    DrawingLayerViewProtocol layerViewProtocol = (DrawingLayerViewProtocol) v;
                     // 检测图层是否允许操作
                     if (!layerViewProtocol.canHandle()) {
                         return false;
                     }
 
                     // 检测是否是正在编辑的text图层
-                    if (v instanceof VDDrawingLayerTextView) {
-                        VDDrawingLayerTextView textView = (VDDrawingLayerTextView) v;
+                    if (v instanceof DrawingLayerTextView) {
+                        DrawingLayerTextView textView = (DrawingLayerTextView) v;
                         if (textView.isEditing()) {
                             return false;
                         }
@@ -371,51 +371,51 @@ public class VDDrawingLayerContainer extends RelativeLayout {
 
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         self.setGestureView(v);
-                        self.getDelegate().onLayerViewTouchBegin(self, (VDDrawingLayerViewProtocol) v);
+                        self.getLayerDelegate().onLayerViewTouchBegin(self, (DrawingLayerViewProtocol) v);
                     }
                     return false;
                 }
             };
         }
-        return layerOnTouchListener;
+        return this.layerOnTouchListener;
     }
 
     /* Overrides */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         /** 若先前调用的{@link #layerOnTouchListener} 检测此时无法进行操作（gestureView为空），则不进行手势判断 */
-        if (self.getGestureView() != null) {
-            self.getScaleGestureDetector().onTouchEvent(event);
-            self.getRotationGestureDetector().onTouchEvent(event);
-            self.getGestureDetector().onTouchEvent(event);
+        if (getGestureView() != null) {
+            getScaleGestureDetector().onTouchEvent(event);
+            getRotationGestureDetector().onTouchEvent(event);
+            getGestureDetector().onTouchEvent(event);
 
             // 一轮触摸取消时，反馈到上级并重置手势判断相关参数
             if (event.getAction() == MotionEvent.ACTION_UP
                     || event.getAction() == MotionEvent.ACTION_CANCEL) {
 
                 // 若此次操作未造成任何变化，则无需进行后续反馈步骤，相当于单击选中某个图层
-                if (self.getGestureViewOperationState() == GestureViewOperation.None.state()) {
-                    self.getDelegate().requireHandlingLayerView(self, (VDDrawingLayerViewProtocol) self.getGestureView());
-                    self.setGestureView(null);
+                if (getGestureViewOperationState() == GestureViewOperation.None.state()) {
+                    getLayerDelegate().requireHandlingLayerView(this, (DrawingLayerViewProtocol) getGestureView());
+                    setGestureView(null);
                     return false;
                 }
 
                 // 若操作的图层此时是处于编辑状态的text图层，仅重置手势判断相关参数
-                if (self.getGestureView() instanceof VDDrawingLayerTextView) {
-                    if (self.getGestureViewOperationState() == (GestureViewOperation.None.state() | GestureViewOperation.DoubleTap.state())) {
-                        VDDrawingLayerTextView textView = (VDDrawingLayerTextView) self.getGestureView();
+                if (getGestureView() instanceof DrawingLayerTextView) {
+                    if (getGestureViewOperationState() == (GestureViewOperation.None.state() | GestureViewOperation.DoubleTap.state())) {
+                        DrawingLayerTextView textView = (DrawingLayerTextView) getGestureView();
                         if (textView.isEditing()) {
-                            self.setGestureView(null);
-                            self.setGestureViewOperationState(GestureViewOperation.None.state());
+                            setGestureView(null);
+                            setGestureViewOperationState(GestureViewOperation.None.state());
                             return false;
                         }
                     }
                 }
 
-                self.getDelegate().onLayerViewTransformEnd(self, (VDDrawingLayerViewProtocol) self.getGestureView());
+                getLayerDelegate().onLayerViewTransformEnd(this, (DrawingLayerViewProtocol) getGestureView());
 
-                self.setGestureView(null);
-                self.setGestureViewOperationState(GestureViewOperation.None.state());
+                setGestureView(null);
+                setGestureViewOperationState(GestureViewOperation.None.state());
 
                 return false;
             }
@@ -426,12 +426,12 @@ public class VDDrawingLayerContainer extends RelativeLayout {
     }
 
     /* Private Methods */
-    private void initial(Context context) {
+    private void init() {
         // layer view can draw border outside
         // 图层可以在其frame外显示内容
-        self.setClipChildren(false);
+        setClipChildren(false);
 
-        self.setGestureViewOperationState(GestureViewOperation.None.state());
+        setGestureViewOperationState(GestureViewOperation.None.state());
     }
 
     /* Enums */

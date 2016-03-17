@@ -6,39 +6,41 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.R;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.drawingview.model.DrawingPoint;
+import com.vilyever.resource.Resource;
 
 /**
- * VDCenterCircleBrush
+ * CenterCircleBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
  * 中心圆绘制，即以起点为圆心，终点到起点距离为半径
  */
-public class VDCenterCircleBrush extends VDShapeBrush {
-    final VDCenterCircleBrush self = this;
+public class CenterCircleBrush extends ShapeBrush {
+    final CenterCircleBrush self = this;
 
 
     /* #Constructors */
-    public VDCenterCircleBrush() {
+    public CenterCircleBrush() {
     }
 
-    public VDCenterCircleBrush(float size, int color) {
+    public CenterCircleBrush(float size, int color) {
         this(size, color, FillType.Hollow);
     }
 
-    public VDCenterCircleBrush(float size, int color, FillType fillType) {
+    public CenterCircleBrush(float size, int color, FillType fillType) {
         this(size, color, fillType, false);
     }
 
-    public VDCenterCircleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+    public CenterCircleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
     }
 
     /* Public Methods */
-    public static VDCenterCircleBrush defaultBrush() {
-        return new VDCenterCircleBrush(5, Color.BLACK);
+    public static CenterCircleBrush defaultBrush() {
+        return new CenterCircleBrush(Resource.getDimensionPixelSize(R.dimen.drawingViewBrushDefaultSize), Color.BLACK);
     }
 
     /* #Overrides */
@@ -49,11 +51,11 @@ public class VDCenterCircleBrush extends VDShapeBrush {
 
     @NonNull
     @Override
-    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
-        self.updatePaint();
+    public Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state) {
+        updatePaint();
         if (drawingPath.getPoints().size() > 1) {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            DrawingPoint beginPoint = drawingPath.getPoints().get(0);
+            DrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             float centerX = beginPoint.getX();
             float centerY = beginPoint.getY();
@@ -65,12 +67,12 @@ public class VDCenterCircleBrush extends VDShapeBrush {
             drawingRect.right = centerX + radius;
             drawingRect.bottom = centerY + radius;
 
-            if ((drawingRect.right - drawingRect.left) < self.getSize()
-                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+            if ((drawingRect.right - drawingRect.left) < getSize()
+                    || (drawingRect.bottom - drawingRect.top) < getSize()) {
                 return Frame.EmptyFrame();
             }
 
-            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
+            Frame pathFrame = makeFrameWithBrushSpace(drawingRect);
 
             if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
@@ -83,7 +85,7 @@ public class VDCenterCircleBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, self.getPaint());
+            canvas.drawPath(path, getPaint());
 
             return pathFrame;
         }

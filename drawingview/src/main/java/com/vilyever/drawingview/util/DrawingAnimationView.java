@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.vilyever.unitconversion.VDDimenConversion;
+import com.vilyever.unitconversion.DimenConverter;
 
 /**
  * VDDrawingAnimationView
@@ -19,31 +19,31 @@ import com.vilyever.unitconversion.VDDimenConversion;
  * Feature:
  * 绘制忙碌时显示的动画视图
  */
-public class VDDrawingAnimationView extends View {
-    final VDDrawingAnimationView self = this;
+public class DrawingAnimationView extends View {
+    final DrawingAnimationView self = this;
 
-    private static final float AnimationRadius = VDDimenConversion.dpToPixel(25);
+    private static final float AnimationRadius = DimenConverter.dpToPixel(25);
 
     /* #Constructors */
-    public VDDrawingAnimationView(Context context) {
+    public DrawingAnimationView(Context context) {
         this(context, null);
     }
 
-    public VDDrawingAnimationView(Context context, AttributeSet attrs) {
+    public DrawingAnimationView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public VDDrawingAnimationView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public DrawingAnimationView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        self.initial();
+        init();
     }
 
     /* Properties */
     private boolean animated;
-    public VDDrawingAnimationView setAnimated(boolean animated) {
+    public DrawingAnimationView setAnimated(boolean animated) {
         this.animated = animated;
-        self.setAnimationStartPointPercent(0);
-        self.invalidate();
+        setAnimationStartPointPercent(0);
+        invalidate();
         return this;
     }
     public boolean isAnimated() {
@@ -79,14 +79,14 @@ public class VDDrawingAnimationView extends View {
             animationPaint.setStyle(Paint.Style.STROKE);
             animationPaint.setStrokeJoin(Paint.Join.ROUND);
             animationPaint.setStrokeCap(Paint.Cap.ROUND);
-            animationPaint.setStrokeWidth(VDDimenConversion.dpToPixel(5));
+            animationPaint.setStrokeWidth(DimenConverter.dpToPixel(5));
             animationPaint.setColor(Color.parseColor("#43B8F7"));
         }
         return animationPaint;
     }
 
     private int animationStartPointPercent;
-    private VDDrawingAnimationView setAnimationStartPointPercent(int animationStartPointPercent) {
+    private DrawingAnimationView setAnimationStartPointPercent(int animationStartPointPercent) {
         this.animationStartPointPercent = animationStartPointPercent % 101;
         return this;
     }
@@ -95,13 +95,13 @@ public class VDDrawingAnimationView extends View {
     }
 
     private int animationSweepPercent;
-    private VDDrawingAnimationView setAnimationSweepPercent(int animationSweepPercent) {
+    private DrawingAnimationView setAnimationSweepPercent(int animationSweepPercent) {
         this.animationSweepPercent = animationSweepPercent;
         if (this.animationSweepPercent == 120) {
-            self.setSweepReverse(true);
+            setSweepReverse(true);
         }
         else if (this.animationSweepPercent == -30) {
-            self.setSweepReverse(false);
+            setSweepReverse(false);
         }
         return this;
     }
@@ -112,7 +112,7 @@ public class VDDrawingAnimationView extends View {
     }
 
     private boolean sweepReverse;
-    private VDDrawingAnimationView setSweepReverse(boolean sweepReverse) {
+    private DrawingAnimationView setSweepReverse(boolean sweepReverse) {
         this.sweepReverse = sweepReverse;
         return this;
     }
@@ -126,35 +126,35 @@ public class VDDrawingAnimationView extends View {
         super.onDraw(canvas);
 
         // 绘制动画
-        if (self.isAnimated()) {
-            self.getAnimationRect().set(self.getWidth() / 2.0f - AnimationRadius,
-                    self.getHeight() / 2.0f - AnimationRadius,
-                    self.getWidth() / 2.0f + AnimationRadius,
-                    self.getHeight() / 2.0f + AnimationRadius);
+        if (isAnimated()) {
+            getAnimationRect().set(getWidth() / 2.0f - AnimationRadius,
+                    getHeight() / 2.0f - AnimationRadius,
+                    getWidth() / 2.0f + AnimationRadius,
+                    getHeight() / 2.0f + AnimationRadius);
 
-            float startAngle = 360.0f * self.getAnimationStartPointPercent() / 100.0f;
-            float sweepAngle = -(360.0f * 0.65f * self.getAnimationSweepPercent() / 100.0f + 5.0f);
+            float startAngle = 360.0f * getAnimationStartPointPercent() / 100.0f;
+            float sweepAngle = -(360.0f * 0.65f * getAnimationSweepPercent() / 100.0f + 5.0f);
 
-            self.getAnimationPath().reset();
-            self.getAnimationPath().addArc(animationRect, startAngle, sweepAngle);
+            getAnimationPath().reset();
+            getAnimationPath().addArc(animationRect, startAngle, sweepAngle);
 
-            canvas.drawPath(self.getAnimationPath(), self.getAnimationPaint());
+            canvas.drawPath(getAnimationPath(), getAnimationPaint());
 
-            if (self.getAnimationSweepPercent() == 0) {
-                self.setAnimationStartPointPercent(self.getAnimationStartPointPercent() + 1);
+            if (getAnimationSweepPercent() == 0) {
+                setAnimationStartPointPercent(getAnimationStartPointPercent() + 1);
             }
             else {
-                self.setAnimationStartPointPercent(self.getAnimationStartPointPercent() + 3);
+                setAnimationStartPointPercent(getAnimationStartPointPercent() + 3);
             }
 
-            if (!self.isSweepReverse()) {
-                self.setAnimationSweepPercent(self.animationSweepPercent + 3);
+            if (!isSweepReverse()) {
+                setAnimationSweepPercent(animationSweepPercent + 3);
             }
             else {
-                self.setAnimationSweepPercent(self.animationSweepPercent - 3);
+                setAnimationSweepPercent(animationSweepPercent - 3);
             }
 
-            self.invalidate();
+            invalidate();
         }
     }
 
@@ -169,7 +169,7 @@ public class VDDrawingAnimationView extends View {
     /**
      * 初始化
      */
-    private void initial() {
-        self.setBackground(null);
+    private void init() {
+        setBackground(null);
     }
 }

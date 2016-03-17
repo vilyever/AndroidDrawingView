@@ -1,0 +1,8 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="drawingViewBrushDefaultSize">5dp</dimen>
+    <dimen name="drawingViewRoundedRectangleBrushDefaultRoundedRadius">20dp</dimen>
+    <dimen name="drawingViewTextBrushDefaultSize">14sp</dimen>
+</resources>

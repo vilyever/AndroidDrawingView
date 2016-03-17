@@ -11,137 +11,137 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.model.VDDrawingStep;
+import com.vilyever.drawingview.brush.Brush;
+import com.vilyever.drawingview.model.DrawingStep;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * VDDrawingLayerBaseView
+ * DrawingLayerBaseView
  * AndroidDrawingView <com.vilyever.drawingview>
  * Created by vilyever on 2015/9/24.
  * Feature:
  * base底层view，同步绘制/异步绘制，不可移动变换
  */
-public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDrawingLayerViewProtocol {
-    private final VDDrawingLayerBaseView self = this;
+public class DrawingLayerBaseView extends ImageView implements Runnable, DrawingLayerViewProtocol {
+    private final DrawingLayerBaseView self = this;
 
     /* Constructors */
-    public VDDrawingLayerBaseView(Context context) {
+    public DrawingLayerBaseView(Context context) {
         super(context);
-        self.init();
+        init();
     }
 
     /* Public Methods */
     public void drawView(View view) {
-        self.checkDrawingBitmap();
-        if (self.getDrawingCanvas() != null) {
-            self.getDrawingCanvas().save();
-            self.getDrawingCanvas().translate(view.getLeft(), view.getTop());
+        checkDrawingBitmap();
+        if (getDrawingCanvas() != null) {
+            getDrawingCanvas().save();
+            getDrawingCanvas().translate(view.getLeft(), view.getTop());
 
-            view.draw(self.getDrawingCanvas());
-            self.getDrawingCanvas().restore();
+            view.draw(getDrawingCanvas());
+            getDrawingCanvas().restore();
 
-            self.invalidate();
+            invalidate();
         }
     }
 
     /* Properties */
-    public interface Delegate {
+    public interface BusyStateDelegate {
         /**
          * 当前图层busy状态变更时回调
          * {@link #busying}
          * @param baseView 当前图层view
          * @param busying 当前busy状态
          */
-        void didChangeBusyState(VDDrawingLayerBaseView baseView, boolean busying);
+        void onDrawingBusyStateChange(DrawingLayerBaseView baseView, boolean busying);
     }
-    private Delegate delegate;
-    public VDDrawingLayerBaseView setDelegate(Delegate delegate) {
-        this.delegate = delegate;
+    private BusyStateDelegate busyStateDelegate;
+    public DrawingLayerBaseView setBusyStateDelegate(BusyStateDelegate busyStateDelegate) {
+        this.busyStateDelegate = busyStateDelegate;
         return this;
     }
-    public Delegate getDelegate() {
-        if (delegate == null) {
-            delegate = new Delegate() {
+    public BusyStateDelegate getBusyStateDelegate() {
+        if (this.busyStateDelegate == null) {
+            this.busyStateDelegate = new BusyStateDelegate() {
                 @Override
-                public void didChangeBusyState(VDDrawingLayerBaseView baseView, boolean busying) {
+                public void onDrawingBusyStateChange(DrawingLayerBaseView baseView, boolean busying) {
                 }
             };
         }
-        return delegate;
+        return this.busyStateDelegate;
     }
 
     /**
      * 用于绘制的bitmap，常驻内存
      */
     private Bitmap drawingBitmap;
-    private VDDrawingLayerBaseView setDrawingBitmap(Bitmap drawingBitmap) {
+    private DrawingLayerBaseView setDrawingBitmap(Bitmap drawingBitmap) {
         this.drawingBitmap = drawingBitmap;
         return this;
     }
     private Bitmap getDrawingBitmap() {
-        return drawingBitmap;
+        return this.drawingBitmap;
     }
 
     /**
      * 关联{@link #drawingBitmap}的画布
      */
     private Canvas drawingCanvas;
-    private VDDrawingLayerBaseView setDrawingCanvas(Canvas drawingCanvas) {
+    private DrawingLayerBaseView setDrawingCanvas(Canvas drawingCanvas) {
         this.drawingCanvas = drawingCanvas;
         return this;
     }
     private Canvas getDrawingCanvas() {
-        return drawingCanvas;
+        return this.drawingCanvas;
     }
 
     /**
      * 在绘制下一step时，临时存储先前绘制状态的bitmap，仅在新绘制时存在，用完即回收
      */
     private Bitmap tempBitmap;
-    private VDDrawingLayerBaseView setTempBitmap(Bitmap tempBitmap) {
+    private DrawingLayerBaseView setTempBitmap(Bitmap tempBitmap) {
         this.tempBitmap = tempBitmap;
         return this;
     }
     private Bitmap getTempBitmap() {
-        return tempBitmap;
+        return this.tempBitmap;
     }
 
     /**
      * 当前绘制的所有step
      */
-    private List<VDDrawingStep> drawnSteps;
-    private VDDrawingLayerBaseView setDrawnSteps(List<VDDrawingStep> drawnSteps) {
+    private List<DrawingStep> drawnSteps;
+    private DrawingLayerBaseView setDrawnSteps(List<DrawingStep> drawnSteps) {
         this.drawnSteps = drawnSteps;
         return this;
     }
-    public List<VDDrawingStep> getDrawnSteps() {
-        if (drawnSteps == null) {
-            drawnSteps = new ArrayList<>();
+    public List<DrawingStep> getDrawnSteps() {
+        if (this.drawnSteps == null) {
+            this.drawnSteps = new ArrayList<>();
         }
-        return drawnSteps;
+        return this.drawnSteps;
     }
 
-    private List<VDDrawingStep> willDrawSteps;
-    private List<VDDrawingStep> getWillDrawSteps() {
-        if (willDrawSteps == null) {
-            willDrawSteps = new ArrayList<>();
+    private List<DrawingStep> willDrawSteps;
+    private List<DrawingStep> getWillDrawSteps() {
+        if (this.willDrawSteps == null) {
+            this.willDrawSteps = new ArrayList<>();
         }
-        return willDrawSteps;
+        return this.willDrawSteps;
     }
 
     /**
      * 当前正在绘制的step
      */
-    private VDDrawingStep currentDrawingStep;
-    private VDDrawingLayerBaseView setCurrentDrawingStep(VDDrawingStep currentDrawingStep) {
+    private DrawingStep currentDrawingStep;
+    private DrawingLayerBaseView setCurrentDrawingStep(DrawingStep currentDrawingStep) {
         this.currentDrawingStep = currentDrawingStep;
         return this;
     }
-    public VDDrawingStep getCurrentDrawingStep() {
-        return currentDrawingStep;
+    public DrawingStep getCurrentDrawingStep() {
+        return this.currentDrawingStep;
     }
 
     /**
@@ -154,12 +154,12 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
      *
      */
     private Thread drawingThread;
-    public VDDrawingLayerBaseView setDrawingThread(Thread drawingThread) {
+    public DrawingLayerBaseView setDrawingThread(Thread drawingThread) {
         this.drawingThread = drawingThread;
         return this;
     }
     public Thread getDrawingThread() {
-        return drawingThread;
+        return this.drawingThread;
     }
 
     /**
@@ -170,13 +170,13 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     /**
      * 使用{@link #uiHandler}来更新状态，无论ui线程或后台线程都可以直接调用此方法
      */
-    private VDDrawingLayerBaseView setBusying(boolean busying) {
+    private DrawingLayerBaseView setBusying(boolean busying) {
         this.busying = busying;
-        self.getUIHandler().sendEmptyMessage(0);
+        getUIHandler().sendEmptyMessage(0);
         return this;
     }
     public boolean isBusying() {
-        return busying;
+        return this.busying;
     }
 
     /**
@@ -185,24 +185,24 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
      */
     private Handler uiHandler;
     private Handler getUIHandler() {
-        if (uiHandler == null) {
-            uiHandler = new Handler(new Handler.Callback() {
+        if (this.uiHandler == null) {
+            this.uiHandler = new Handler(new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message msg) {
                     // 此handler只处理一种信息，无需判断
                     if (self.getWillDrawSteps().size() > 0) {
-                        for (VDDrawingStep step : self.getWillDrawSteps()) {
+                        for (DrawingStep step : self.getWillDrawSteps()) {
                             self.appendWithDrawingStep(step);
                         }
                     }
                     self.getWillDrawSteps().clear();
-                    /** {@link VDDrawingLayerBaseView#setBusying(boolean)} */
-                    self.getDelegate().didChangeBusyState(self, self.isBusying());
+                    /** {@link DrawingLayerBaseView#setBusying(boolean)} */
+                    self.getBusyStateDelegate().onDrawingBusyStateChange(self, self.isBusying());
                     return false;
                 }
             });
         }
-        return uiHandler;
+        return this.uiHandler;
     }
 
     /* Overrides */
@@ -211,7 +211,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         super.onDraw(canvas);
 
         // 讲当前已绘制好的bitmap绘制到系统画布上
-        canvas.drawBitmap(self.getDrawingBitmap(), 0, 0, null);
+        canvas.drawBitmap(getDrawingBitmap(), 0, 0, null);
     }
 
     /* Delegates */
@@ -223,22 +223,22 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     public void run() {
 //        long beginTime = System.currentTimeMillis();
         try {
-            self.setBusying(true); // 开始绘制时进入busying状态
+            setBusying(true); // 开始绘制时进入busying状态
 
             /**
              * 检查{@link #drawingCanvas}是否存在
              * 由于{@link #drawingBitmap}可能在view尺寸为0时未初始化，与之关联的canvas显然此时也未初始化
              */
-            if (self.getDrawingCanvas() != null) {
+            if (getDrawingCanvas() != null) {
 
-                /** 绘制需要绘制的步骤step，base图层只处理 {@link VDDrawingStep.StepType#DrawOnBase}，其他type由外部处理 */
-                for (int i = 0; i < self.getDrawnSteps().size(); i++) {
-                    VDDrawingStep step = self.getDrawnSteps().get(i);
-                    if (step.getStepType() == VDDrawingStep.StepType.DrawOnBase) {
-                        step.getBrush().drawPath(self.getDrawingCanvas(), step.getDrawingPath(), new VDBrush.DrawingState(VDBrush.DrawingPointerState.ForceFinish));
+                /** 绘制需要绘制的步骤step，base图层只处理 {@link DrawingStep.StepType#DrawOnBase}，其他type由外部处理 */
+                for (int i = 0; i < getDrawnSteps().size(); i++) {
+                    DrawingStep step = getDrawnSteps().get(i);
+                    if (step.getStepType() == DrawingStep.StepType.DrawOnBase) {
+                        step.getBrush().drawPath(getDrawingCanvas(), step.getDrawingPath(), new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
                     }
-                    else if (step.getStepType() == VDDrawingStep.StepType.DrawTextOnBase) {
-                        self.drawTextStep(step);
+                    else if (step.getStepType() == DrawingStep.StepType.DrawTextOnBase) {
+                        drawTextStep(step);
                     }
                 }
             }
@@ -252,47 +252,47 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
 //            }
 
             // 结束绘制时脱离busying状态
-            self.setBusying(false);
-            self.postInvalidate();
+            setBusying(false);
+            postInvalidate();
         }
     }
     /** {@link Runnable} */
 
 
-    /** {@link VDDrawingLayerViewProtocol} */
+    /** {@link DrawingLayerViewProtocol} */
     @Override
     public void clearDrawing() {
-        self.getDrawnSteps().clear();
-        self.setCurrentDrawingStep(null);
+        getDrawnSteps().clear();
+        setCurrentDrawingStep(null);
 
-        self.checkDrawingBitmap();
-        if (self.getDrawingCanvas() != null) {
-            self.getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        checkDrawingBitmap();
+        if (getDrawingCanvas() != null) {
+            getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         }
-        self.invalidate();
+        invalidate();
     }
 
     @Override
-    public VDBrush.Frame appendWithDrawingStep(@NonNull VDDrawingStep drawingStep) {
+    public Brush.Frame appendWithDrawingStep(@NonNull DrawingStep drawingStep) {
         // 禁止在busying时添加step
-        if (self.isBusying()) {
-            if (self.getWillDrawSteps().size() > 0) {
-                if (self.getWillDrawSteps().get(self.getWillDrawSteps().size() - 1).getStep() == drawingStep.getStep()) {
-                    self.getWillDrawSteps().remove(self.getWillDrawSteps().size() - 1);
+        if (isBusying()) {
+            if (getWillDrawSteps().size() > 0) {
+                if (getWillDrawSteps().get(getWillDrawSteps().size() - 1).getStep() == drawingStep.getStep()) {
+                    getWillDrawSteps().remove(getWillDrawSteps().size() - 1);
                 }
             }
-            self.getWillDrawSteps().add(drawingStep);
+            getWillDrawSteps().add(drawingStep);
             return null;
         }
 
-        /** base图层只处理 {@link VDDrawingStep.StepType#DrawOnBase}{@link VDDrawingStep.StepType#DrawTextOnBase}，其他type由外部处理 */
-        if (drawingStep.getStepType() != VDDrawingStep.StepType.DrawOnBase
-                && drawingStep.getStepType() != VDDrawingStep.StepType.DrawTextOnBase) {
+        /** base图层只处理 {@link DrawingStep.StepType#DrawOnBase}{@link DrawingStep.StepType#DrawTextOnBase}，其他type由外部处理 */
+        if (drawingStep.getStepType() != DrawingStep.StepType.DrawOnBase
+                && drawingStep.getStepType() != DrawingStep.StepType.DrawTextOnBase) {
             return null;
         }
 
         // 记录当前step为传入step，即使当前step与传入step是同一step也无妨
-        self.setCurrentDrawingStep(drawingStep);
+        setCurrentDrawingStep(drawingStep);
 
         /**
          * step处于very begin状态（即通常是step刚刚创建，此次绘制为该step的第一次绘制）的处理
@@ -301,8 +301,8 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
          * 而原先在没有状态记录时，每次绘制都存储tempBitmap然后释放会导致频繁的内存操作
          */
         if (drawingStep.getDrawingState().isVeryBegin()) {
-            if (self.getDrawingBitmap() != null) {
-                self.setTempBitmap(Bitmap.createBitmap(self.getDrawingBitmap(), 0, 0, self.getDrawingBitmap().getWidth(), self.getDrawingBitmap().getHeight()));
+            if (getDrawingBitmap() != null) {
+                setTempBitmap(Bitmap.createBitmap(getDrawingBitmap(), 0, 0, getDrawingBitmap().getWidth(), getDrawingBitmap().getHeight()));
             }
         }
 
@@ -312,16 +312,16 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
          * 当前记录的临时tempBitmap释放
          */
         if (drawingStep.getDrawingState().isVeryEnd()) {
-            self.setCurrentDrawingStep(null);
-            if (self.getTempBitmap() != null && !self.getTempBitmap().isRecycled()) {
-                self.getTempBitmap().recycle();
+            setCurrentDrawingStep(null);
+            if (getTempBitmap() != null && !getTempBitmap().isRecycled()) {
+                getTempBitmap().recycle();
             }
-            self.setTempBitmap(null);
+            setTempBitmap(null);
             System.gc();
             return null;
         }
 
-        VDBrush.Frame frame = null;
+        Brush.Frame frame = null;
 
         /**
          * 通常状态的绘制
@@ -331,36 +331,36 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
          * 返回frame主要是在frame为空时提示外层此step无需绘制，没有意义
          * 或者frame需要更多笔画来完成绘制
          */
-        self.checkDrawingBitmap();
-        if (self.getDrawingCanvas() != null) {
-            if (self.getTempBitmap() != null) {
-                self.getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                self.getDrawingCanvas().drawBitmap(self.getTempBitmap(), 0, 0, null);
+        checkDrawingBitmap();
+        if (getDrawingCanvas() != null) {
+            if (getTempBitmap() != null) {
+                getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                getDrawingCanvas().drawBitmap(getTempBitmap(), 0, 0, null);
             }
 
-            if (drawingStep.getStepType() == VDDrawingStep.StepType.DrawOnBase) {
-                frame = self.getCurrentDrawingStep().getBrush().drawPath(self.getDrawingCanvas(), self.getCurrentDrawingStep().getDrawingPath(), drawingStep.getDrawingState());
+            if (drawingStep.getStepType() == DrawingStep.StepType.DrawOnBase) {
+                frame = getCurrentDrawingStep().getBrush().drawPath(getDrawingCanvas(), getCurrentDrawingStep().getDrawingPath(), drawingStep.getDrawingState());
                 drawingStep.getDrawingLayer().setFrame(frame);
             }
-            else if (drawingStep.getStepType() == VDDrawingStep.StepType.DrawTextOnBase) {
-                self.drawTextStep(drawingStep);
+            else if (drawingStep.getStepType() == DrawingStep.StepType.DrawTextOnBase) {
+                drawTextStep(drawingStep);
             }
 
-            self.invalidate();
+            invalidate();
         }
 
         return frame;
     }
 
     @Override
-    public void appendWithSteps(@NonNull List<VDDrawingStep> steps) {
+    public void appendWithSteps(@NonNull List<DrawingStep> steps) {
         /**
          * 若当前有后台线程正在绘制上一次请求，打断这个线程
          * 并重新生成一个线程开始绘制当前请求
          */
         try {
-            if (self.getDrawingThread() != null) {
-                self.getDrawingThread().interrupt();
+            if (getDrawingThread() != null) {
+                getDrawingThread().interrupt();
             }
         }
         catch (Exception e) {
@@ -368,23 +368,23 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         }
 
         // 存储step列表
-        self.getDrawnSteps().clear();
-        self.getDrawnSteps().addAll(steps);
+        getDrawnSteps().clear();
+        getDrawnSteps().addAll(steps);
 
-        self.checkDrawingBitmap();
+        checkDrawingBitmap();
 
-        self.setDrawingThread(new Thread(self));
-        self.getDrawingThread().start();
+        setDrawingThread(new Thread(this));
+        getDrawingThread().start();
     }
 
     @Override
-    public void refreshWithDrawnSteps(@NonNull List<VDDrawingStep> drawnSteps) {
-        if (self.getDrawingCanvas() != null) {
+    public void refreshWithDrawnSteps(@NonNull List<DrawingStep> drawnSteps) {
+        if (getDrawingCanvas() != null) {
             // 清空画布
-            self.getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            getDrawingCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         }
 
-        self.appendWithSteps(drawnSteps);
+        appendWithSteps(drawnSteps);
     }
 
     @Override
@@ -414,7 +414,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
     public void setCanHandle(boolean canHandle) {
 
     }
-    /** {@link VDDrawingLayerViewProtocol} */
+    /** {@link DrawingLayerViewProtocol} */
 
     /* Private Methods */
     /**
@@ -422,7 +422,7 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
      */
     private void init() {
         // 在UI线程创建handler，避免懒加载在线程中创建导致错误
-        self.getUIHandler();
+        getUIHandler();
     }
 
     /**
@@ -430,18 +430,18 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
      * 根据当前view状态生成铺满view的bitmap
      */
     private void checkDrawingBitmap() {
-        if (self.getWidth() > 0 && self.getHeight() > 0) {
+        if (getWidth() > 0 && getHeight() > 0) {
             try {
-                if (self.getDrawingBitmap() == null) {
-                    self.setDrawingBitmap(Bitmap.createBitmap(self.getWidth(), self.getHeight(), Bitmap.Config.ARGB_8888));
-                    self.setDrawingCanvas(new Canvas(self.getDrawingBitmap()));
+                if (getDrawingBitmap() == null) {
+                    setDrawingBitmap(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888));
+                    setDrawingCanvas(new Canvas(getDrawingBitmap()));
                 }
-                else if (self.getDrawingBitmap().getWidth() != self.getWidth()
-                        || self.getDrawingBitmap().getHeight() != self.getHeight()) {
-                    self.getDrawingBitmap().recycle();
+                else if (getDrawingBitmap().getWidth() != getWidth()
+                        || getDrawingBitmap().getHeight() != getHeight()) {
+                    getDrawingBitmap().recycle();
                     System.gc();
-                    self.setDrawingBitmap(Bitmap.createBitmap(self.getWidth(), self.getHeight(), Bitmap.Config.ARGB_8888));
-                    self.setDrawingCanvas(new Canvas(self.getDrawingBitmap()));
+                    setDrawingBitmap(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888));
+                    setDrawingCanvas(new Canvas(getDrawingBitmap()));
                 }
             }
             catch (Exception e) {
@@ -453,20 +453,20 @@ public class VDDrawingLayerBaseView extends ImageView implements Runnable, VDDra
         }
     }
 
-    private void drawTextStep(VDDrawingStep step) {
+    private void drawTextStep(DrawingStep step) {
         // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
-        VDDrawingLayerTextView textView = new VDDrawingLayerTextView(self.getContext(), 0);
+        DrawingLayerTextView textView = new DrawingLayerTextView(getContext(), 0);
         textView.appendWithDrawingStep(step);
 
-        textView.measure(MeasureSpec.makeMeasureSpec(self.getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(self.getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
+        textView.measure(MeasureSpec.makeMeasureSpec(getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
         int left = (int) Math.floor(step.getDrawingLayer().getLeft());
         int top = (int) Math.floor(step.getDrawingLayer().getTop());
         textView.layout(left, top, left + textView.getMeasuredWidth(), top + textView.getMeasuredHeight());
 
-        self.getDrawingCanvas().save();
-        self.getDrawingCanvas().translate(step.getDrawingLayer().getLeft(), step.getDrawingLayer().getTop());
+        getDrawingCanvas().save();
+        getDrawingCanvas().translate(step.getDrawingLayer().getLeft(), step.getDrawingLayer().getTop());
 
-        textView.draw(self.getDrawingCanvas());
-        self.getDrawingCanvas().restore();
+        textView.draw(getDrawingCanvas());
+        getDrawingCanvas().restore();
     }
 }

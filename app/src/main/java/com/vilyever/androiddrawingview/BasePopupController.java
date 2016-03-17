@@ -17,7 +17,8 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 
-import com.vilyever.unitconversion.VDDimenConversion;
+import com.vilyever.unitconversion.DimenConverter;
+
 
 /**
  * BasePopupController
@@ -202,8 +203,8 @@ public abstract class BasePopupController extends BaseController {
     private static class PopupBackgroundView extends RelativeLayout {
         final PopupBackgroundView self = this;
 
-        public static final int ShadowRadius = VDDimenConversion.dpToPixel(3);
-        public static final int ArrowRadius = VDDimenConversion.dpToPixel(16);
+        public static final int ShadowRadius = DimenConverter.dpToPixel(3);
+        public static final int ArrowRadius = DimenConverter.dpToPixel(16);
 
         private int backgroundColor = Color.WHITE;
         private int roundedRadius;

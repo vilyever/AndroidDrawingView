@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 
-import com.vilyever.unitconversion.VDDimenConversion;
+import com.vilyever.unitconversion.DimenConverter;
 
 /**
  * ThicknessAdjustController
@@ -27,8 +27,8 @@ public class ThicknessAdjustController extends BasePopupController {
 
         self.rootView = View.inflate(context, R.layout.thickness_adjust_controller, null);
         self.rootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        self.preferWidth = VDDimenConversion.dpToPixel(250);
-        self.preferHeight = VDDimenConversion.dpToPixel(50);
+        self.preferWidth = DimenConverter.dpToPixel(250);
+        self.preferHeight = DimenConverter.dpToPixel(50);
 
         self.setPopupBackgroundColor(Color.BLACK);
 

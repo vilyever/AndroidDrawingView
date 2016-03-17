@@ -6,33 +6,32 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.drawingview.model.VDDrawingPoint;
-import com.vilyever.unitconversion.VDDimenConversion;
+import com.vilyever.drawingview.R;
+import com.vilyever.drawingview.brush.Brush;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.drawingview.model.DrawingPoint;
+import com.vilyever.resource.Resource;
 
 /**
- * VDTextBrush
+ * TextBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/27.
  * Feature:
- * 绘制文本框，实际上文本框由{@link com.vilyever.drawingview.layer.VDDrawingLayerTextView}自行判断大小绘制
+ * 绘制文本框，实际上文本框由{@link com.vilyever.drawingview.layer.DrawingLayerTextView}自行判断大小绘制
  * 此brush仅确定文本框的初始位置
  */
-public class VDTextBrush extends VDBrush {
-    final VDTextBrush self = this;
-
-    public static final int DefaultTextLayerPadding = VDDimenConversion.dpToPixel(8);
+public class TextBrush extends Brush {
+    final TextBrush self = this;
 
     /* #Constructors */
-    public VDTextBrush() {
+    public TextBrush() {
     }
 
-    public VDTextBrush(float size, int color) {
+    public TextBrush(float size, int color) {
         this(size, color, Typeface.NORMAL);
     }
 
-    public VDTextBrush(float size, int color, int typefaceStyle) {
+    public TextBrush(float size, int color, int typefaceStyle) {
         this.size = size;
         this.color = color;
         this.typefaceStyle = typefaceStyle;
@@ -43,8 +42,8 @@ public class VDTextBrush extends VDBrush {
      * 默认brush
      * @return 默认brush
      */
-    public static VDTextBrush defaultBrush() {
-        return new VDTextBrush(14, Color.BLACK);
+    public static TextBrush defaultBrush() {
+        return new TextBrush(Resource.getDimensionPixelSize(R.dimen.drawingViewTextBrushDefaultSize), Color.BLACK);
     }
 
     /* Properties */
@@ -53,11 +52,11 @@ public class VDTextBrush extends VDBrush {
      */
     protected float size;
     public float getSize() {
-        return size * self.getDrawingRatio();
+        return this.size * getDrawingRatio();
     }
-    public <T extends VDTextBrush> T setSize(float size) {
+    public <T extends TextBrush> T setSize(float size) {
         this.size = size;
-        return (T) self;
+        return (T) this;
     }
 
     /**
@@ -65,11 +64,11 @@ public class VDTextBrush extends VDBrush {
      */
     protected int color;
     public int getColor() {
-        return color;
+        return this.color;
     }
-    public <T extends VDTextBrush> T setColor(int color) {
+    public <T extends TextBrush> T setColor(int color) {
         this.color = color;
-        return (T) self;
+        return (T) this;
     }
 
     /**
@@ -77,11 +76,11 @@ public class VDTextBrush extends VDBrush {
      */
     protected int typefaceStyle; /** {@link Typeface#NORMAL} {@link Typeface#BOLD} {@link Typeface#ITALIC} {@link Typeface#BOLD_ITALIC} or any created Typeface */
     public int getTypefaceStyle() {
-        return typefaceStyle;
+        return this.typefaceStyle;
     }
-    public <T extends VDTextBrush> T setTypefaceStyle(int typefaceStyle) {
+    public <T extends TextBrush> T setTypefaceStyle(int typefaceStyle) {
         this.typefaceStyle = typefaceStyle;
-        return (T) self;
+        return (T) this;
     }
 
     /* Overrides */
@@ -91,10 +90,10 @@ public class VDTextBrush extends VDBrush {
      */
     @NonNull
     @Override
-    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
+    public Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state) {
         if (drawingPath.getPoints().size() > 0) {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            DrawingPoint beginPoint = drawingPath.getPoints().get(0);
+            DrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
 

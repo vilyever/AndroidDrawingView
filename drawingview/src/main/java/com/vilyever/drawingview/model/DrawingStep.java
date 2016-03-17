@@ -2,27 +2,27 @@ package com.vilyever.drawingview.model;
 
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.brush.VDBrush;
-import com.vilyever.drawingview.layer.VDDrawingLayerViewProtocol;
-import com.vilyever.jsonmodel.VDJson;
-import com.vilyever.jsonmodel.VDModel;
+import com.vilyever.drawingview.brush.Brush;
+import com.vilyever.drawingview.layer.DrawingLayerViewProtocol;
+import com.vilyever.jsonmodel.Json;
+import com.vilyever.jsonmodel.JsonModel;
 
 import java.lang.ref.WeakReference;
 
 /**
- * VDDrawingStep
+ * DrawingStep
  * AndroidDrawingBoard <com.vilyever.drawingboard>
  * Created by vilyever on 2015/9/18.
  * Feature:
  */
-public class VDDrawingStep extends VDModel {
-    private final VDDrawingStep self = this;
+public class DrawingStep extends JsonModel {
+    private final DrawingStep self = this;
 
     /* Constructors */
-    public VDDrawingStep() {
+    public DrawingStep() {
     }
 
-    public VDDrawingStep(int step, int onLayerHierarchy, VDDrawingLayer.LayerType layerType, int drawingViewWidth, int drawingViewHeight) {
+    public DrawingStep(int step, int onLayerHierarchy, DrawingLayer.LayerType layerType, int drawingViewWidth, int drawingViewHeight) {
         this.step = step;
         newDrawingLayer(onLayerHierarchy, layerType);
         setDrawingViewWidth(drawingViewWidth);
@@ -36,16 +36,16 @@ public class VDDrawingStep extends VDModel {
      * @param step 原step
      * @return 复制的step
      */
-    public static VDDrawingStep copy(@NonNull VDDrawingStep step) {
-        return new VDJson<>(step.getClass()).modelFromJson(step.toJson());
+    public static DrawingStep copy(@NonNull DrawingStep step) {
+        return new Json<>(step.getClass()).modelFromJson(step.toJson());
     }
 
     /**
      * 复制step
      * @return 复制的step
      */
-    public VDDrawingStep copy() {
-        return new VDJson<>(this.getClass()).modelFromJson(this.toJson());
+    public DrawingStep copy() {
+        return new Json<>(this.getClass()).modelFromJson(this.toJson());
     }
 
     /**
@@ -55,18 +55,18 @@ public class VDDrawingStep extends VDModel {
      * @param currentDrawingViewHeight 当前绘制view的高
      */
     public void updateDrawingRatio(int currentDrawingViewWidth, int currentDrawingViewHeight) {
-        float ratioX = (float) currentDrawingViewWidth / (float) self.getDrawingViewWidth();
-        float ratioY = (float) currentDrawingViewHeight / (float) self.getDrawingViewHeight();
-        if (self.getDrawingLayer() != null) {
-            self.getDrawingLayer().setDrawingRatioX(ratioX);
-            self.getDrawingLayer().setDrawingRatioY(ratioY);
+        float ratioX = (float) currentDrawingViewWidth / (float) getDrawingViewWidth();
+        float ratioY = (float) currentDrawingViewHeight / (float) getDrawingViewHeight();
+        if (getDrawingLayer() != null) {
+            getDrawingLayer().setDrawingRatioX(ratioX);
+            getDrawingLayer().setDrawingRatioY(ratioY);
         }
-        if (self.getDrawingPath() != null) {
-            self.getDrawingPath().setDrawingRatioX(ratioX);
-            self.getDrawingPath().setDrawingRatioY(ratioY);
+        if (getDrawingPath() != null) {
+            getDrawingPath().setDrawingRatioX(ratioX);
+            getDrawingPath().setDrawingRatioY(ratioY);
         }
-        if (self.getBrush() != null) {
-            self.getBrush().setDrawingRatio(Math.max(ratioX, ratioY));
+        if (getBrush() != null) {
+            getBrush().setDrawingRatio(Math.max(ratioX, ratioY));
         }
     }
 
@@ -75,7 +75,7 @@ public class VDDrawingStep extends VDModel {
      * @return 是否是clear step
      */
     public boolean isClearStep() {
-        return self.getStepType() == StepType.Clear;
+        return getStepType() == StepType.Clear;
     }
 
     /* Properties */
@@ -84,12 +84,12 @@ public class VDDrawingStep extends VDModel {
      * drawingView在重绘时会按此序号顺序绘制
      */
     private int step;
-    public VDDrawingStep setStep(int step) {
+    public DrawingStep setStep(int step) {
         this.step = step;
         return this;
     }
     public int getStep() {
-        return step;
+        return this.step;
     }
 
     /**
@@ -99,24 +99,24 @@ public class VDDrawingStep extends VDModel {
         Clear, DrawOnBase, DrawTextOnBase, Background, CreateLayer, Transform, TextChange, DeleteLayer;
     }
     private StepType stepType;
-    public VDDrawingStep setStepType(StepType stepType) {
+    public DrawingStep setStepType(StepType stepType) {
         this.stepType = stepType;
         return this;
     }
     public StepType getStepType() {
-        return stepType;
+        return this.stepType;
     }
 
     /**
      * 当前绘制的状态，用于brush绘制
      */
-    private VDBrush.DrawingState drawingState;
-    public VDDrawingStep setDrawingState(VDBrush.DrawingState drawingState) {
+    private Brush.DrawingState drawingState;
+    public DrawingStep setDrawingState(Brush.DrawingState drawingState) {
         this.drawingState = drawingState;
         return this;
     }
-    public VDBrush.DrawingState getDrawingState() {
-        return drawingState;
+    public Brush.DrawingState getDrawingState() {
+        return this.drawingState;
     }
 
     /**
@@ -124,12 +124,12 @@ public class VDDrawingStep extends VDModel {
      * 某些step需要多次绘制才能完成
      */
     private boolean stepOver;
-    public VDDrawingStep setStepOver(boolean stepOver) {
+    public DrawingStep setStepOver(boolean stepOver) {
         this.stepOver = stepOver;
         return this;
     }
     public boolean isStepOver() {
-        return stepOver;
+        return this.stepOver;
     }
 
     /**
@@ -137,61 +137,61 @@ public class VDDrawingStep extends VDModel {
      * 用于远程同步
      */
     private boolean canceled;
-    public VDDrawingStep setCanceled(boolean canceled) {
+    public DrawingStep setCanceled(boolean canceled) {
         this.canceled = canceled;
         return this;
     }
     public boolean isCanceled() {
-        return canceled;
+        return this.canceled;
     }
 
     private boolean remote;
-    public VDDrawingStep setRemote(boolean remote) {
+    public DrawingStep setRemote(boolean remote) {
         this.remote = remote;
         return this;
     }
     public boolean isRemote() {
-        return remote;
+        return this.remote;
     }
 
     /**
      * 当前step绘制用的brush
      * 此brush的设置理应使用copy的brush来设置，避免被其他位置的修改影响到
      */
-    private VDBrush brush;
-    public VDDrawingStep setBrush(VDBrush brush) {
+    private Brush brush;
+    public DrawingStep setBrush(Brush brush) {
         this.brush = brush;
         return this;
     }
-    public <T extends VDBrush> T getBrush() {
-        return (T) brush;
+    public <T extends Brush> T getBrush() {
+        return (T) this.brush;
     }
 
     /**
      * 当前step作用的图层
      */
-    private VDDrawingLayer drawingLayer;
-    private VDDrawingStep setDrawingLayer(VDDrawingLayer drawingLayer) {
+    private DrawingLayer drawingLayer;
+    private DrawingStep setDrawingLayer(DrawingLayer drawingLayer) {
         this.drawingLayer = drawingLayer;
         return this;
     }
-    public VDDrawingLayer getDrawingLayer() {
-        return drawingLayer;
+    public DrawingLayer getDrawingLayer() {
+        return this.drawingLayer;
     }
 
     /**
      * 当前step记录的绘制路径
      */
-    private VDDrawingPath drawingPath;
-    private VDDrawingStep setDrawingPath(VDDrawingPath drawingPath) {
+    private DrawingPath drawingPath;
+    private DrawingStep setDrawingPath(DrawingPath drawingPath) {
         this.drawingPath = drawingPath;
         return this;
     }
-    public VDDrawingPath getDrawingPath() {
-        if (drawingPath == null) {
-            drawingPath = new VDDrawingPath();
+    public DrawingPath getDrawingPath() {
+        if (this.drawingPath == null) {
+            this.drawingPath = new DrawingPath();
         }
-        return drawingPath;
+        return this.drawingPath;
     }
 
     /**
@@ -200,12 +200,12 @@ public class VDDrawingStep extends VDModel {
      * 必须在step初始化后设置
      */
     private int drawingViewWidth;
-    public VDDrawingStep setDrawingViewWidth(int drawingViewWidth) {
+    public DrawingStep setDrawingViewWidth(int drawingViewWidth) {
         this.drawingViewWidth = drawingViewWidth;
         return this;
     }
     public int getDrawingViewWidth() {
-        return drawingViewWidth;
+        return this.drawingViewWidth;
     }
 
     /**
@@ -214,22 +214,22 @@ public class VDDrawingStep extends VDModel {
      * 必须在step初始化后设置
      */
     private int drawingViewHeight;
-    public VDDrawingStep setDrawingViewHeight(int drawingViewHeight) {
+    public DrawingStep setDrawingViewHeight(int drawingViewHeight) {
         this.drawingViewHeight = drawingViewHeight;
         return this;
     }
     public int getDrawingViewHeight() {
-        return drawingViewHeight;
+        return this.drawingViewHeight;
     }
 
-    @VDJsonKeyIgnore
-    private WeakReference<VDDrawingLayerViewProtocol> handlingLayer;
-    public VDDrawingStep setHandlingLayer(VDDrawingLayerViewProtocol handlingLayer) {
-        this.handlingLayer = new WeakReference<VDDrawingLayerViewProtocol>(handlingLayer);
+    @JsonKeyIgnore
+    private WeakReference<DrawingLayerViewProtocol> handlingLayer;
+    public DrawingStep setHandlingLayer(DrawingLayerViewProtocol handlingLayer) {
+        this.handlingLayer = new WeakReference<DrawingLayerViewProtocol>(handlingLayer);
         return this;
     }
-    public VDDrawingLayerViewProtocol getHandlingLayer() {
-        return handlingLayer == null ? null : handlingLayer.get();
+    public DrawingLayerViewProtocol getHandlingLayer() {
+        return this.handlingLayer == null ? null : this.handlingLayer.get();
     }
 
     /* Private Methods */
@@ -240,11 +240,11 @@ public class VDDrawingStep extends VDModel {
      * @param layerType 图层类型
      * @return 生成的图层layer
      */
-    private VDDrawingLayer newDrawingLayer(int hierarchy, VDDrawingLayer.LayerType layerType) {
-        if (self.getDrawingLayer() == null) {
-            self.setDrawingLayer(new VDDrawingLayer(hierarchy));
-            self.getDrawingLayer().setLayerType(layerType);
+    private DrawingLayer newDrawingLayer(int hierarchy, DrawingLayer.LayerType layerType) {
+        if (getDrawingLayer() == null) {
+            setDrawingLayer(new DrawingLayer(hierarchy));
+            getDrawingLayer().setLayerType(layerType);
         }
-        return self.getDrawingLayer();
+        return getDrawingLayer();
     }
 }

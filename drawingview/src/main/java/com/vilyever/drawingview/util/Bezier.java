@@ -1,19 +1,19 @@
 package com.vilyever.drawingview.util;
 
-import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.model.DrawingPoint;
 
 /**
- * VDBezier
+ * Bezier
  * AndroidDrawingView <com.vilyever.drawingview.util>
  * Created by vilyever on 2015/11/13.
  * Feature:
  * 贝塞尔曲线计算
  */
-public class VDBezier {
-    final VDBezier self = this;
+public class Bezier {
+    final Bezier self = this;
 
     /* #Constructors */
-    public VDBezier(VDDrawingPoint startPoint, VDDrawingPoint secondPoint, VDDrawingPoint endPoint) {
+    public Bezier(DrawingPoint startPoint, DrawingPoint secondPoint, DrawingPoint endPoint) {
         this.startPoint = startPoint;
         this.secondPoint = secondPoint;
         this.endPoint = endPoint;
@@ -29,8 +29,8 @@ public class VDBezier {
 
         for (i = 0; i <= steps; i++) {
             t = i / steps;
-            cx = VDBezier.point(t, this.startPoint.getX(), this.secondPoint.getX(), this.endPoint.getX());
-            cy = VDBezier.point(t, this.startPoint.getY(), this.secondPoint.getY(), this.endPoint.getY());
+            cx = Bezier.point(t, this.startPoint.getX(), this.secondPoint.getX(), this.endPoint.getX());
+            cy = Bezier.point(t, this.startPoint.getY(), this.secondPoint.getY(), this.endPoint.getY());
             if (i > 0) {
                 xdiff = cx - px;
                 ydiff = cy - py;
@@ -62,7 +62,7 @@ public class VDBezier {
 //    }
 
     /* Properties */
-    public VDDrawingPoint startPoint;
-    public VDDrawingPoint secondPoint;
-    public VDDrawingPoint endPoint;
+    public DrawingPoint startPoint;
+    public DrawingPoint secondPoint;
+    public DrawingPoint endPoint;
 }

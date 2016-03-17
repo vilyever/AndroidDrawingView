@@ -6,32 +6,34 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.R;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.drawingview.model.DrawingPoint;
+import com.vilyever.resource.Resource;
 
 /**
- * VDPenBrush
+ * PenBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/20.
  * Feature:
  * 任意点绘制，手指跟随
  * 贝塞尔平滑
  */
-public class VDPenBrush extends VDDrawingBrush {
-    final VDPenBrush self = this;
+public class PenBrush extends DrawingBrush {
+    final PenBrush self = this;
 
     /* Constructors */
-    public VDPenBrush() {
+    public PenBrush() {
 
     }
 
-    public VDPenBrush(float size, int color) {
+    public PenBrush(float size, int color) {
         super(size, color);
     }
 
     /* Public Methods */
-    public static VDPenBrush defaultBrush() {
-        return new VDPenBrush(5, Color.BLACK);
+    public static PenBrush defaultBrush() {
+        return new PenBrush(Resource.getDimensionPixelSize(R.dimen.drawingViewBrushDefaultSize), Color.BLACK);
     }
 
     /* Overrides */
@@ -39,16 +41,16 @@ public class VDPenBrush extends VDDrawingBrush {
     protected void updatePaint() {
         super.updatePaint();
 
-        self.getPaint().setStyle(Paint.Style.STROKE);
-        self.getPaint().setStrokeCap(Paint.Cap.ROUND);
-        self.getPaint().setStrokeJoin(Paint.Join.ROUND);
-        self.getPaint().setStrokeMiter(0);
+        getPaint().setStyle(Paint.Style.STROKE);
+        getPaint().setStrokeCap(Paint.Cap.ROUND);
+        getPaint().setStrokeJoin(Paint.Join.ROUND);
+        getPaint().setStrokeMiter(0);
     }
 
     @NonNull
     @Override
-    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
-        self.updatePaint();
+    public Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state) {
+        updatePaint();
         if (drawingPath.getPoints().size() > 0) {
             Frame pathFrame = super.drawPath(canvas, drawingPath, state);
 
@@ -56,19 +58,19 @@ public class VDPenBrush extends VDDrawingBrush {
                 return pathFrame;
             }
 
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            DrawingPoint beginPoint = drawingPath.getPoints().get(0);
+            DrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             Path path = new Path();
             if (drawingPath.getPoints().size() == 1) {
-                self.getPaint().setStyle(Paint.Style.FILL);
-                path.addCircle(beginPoint.getX(), beginPoint.getY(), self.getSize() / 2.0f, Path.Direction.CW);
+                getPaint().setStyle(Paint.Style.FILL);
+                path.addCircle(beginPoint.getX(), beginPoint.getY(), getSize() / 2.0f, Path.Direction.CW);
             }
             else if (drawingPath.getPoints().size() > 1) {
                 path.moveTo(beginPoint.getX(), beginPoint.getY());
                 for (int i = 1; i < drawingPath.getPoints().size(); i++) {
-                    VDDrawingPoint prePoint = drawingPath.getPoints().get(i - 1);
-                    VDDrawingPoint currentPoint = drawingPath.getPoints().get(i);
+                    DrawingPoint prePoint = drawingPath.getPoints().get(i - 1);
+                    DrawingPoint currentPoint = drawingPath.getPoints().get(i);
 
                     double s = Math.sqrt(Math.pow(currentPoint.getX() - prePoint.getX(), 2) + Math.pow(currentPoint.getY() - prePoint.getY(), 2));
 
@@ -93,7 +95,7 @@ public class VDPenBrush extends VDDrawingBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, self.getPaint());
+            canvas.drawPath(path, getPaint());
 
             return pathFrame;
         }

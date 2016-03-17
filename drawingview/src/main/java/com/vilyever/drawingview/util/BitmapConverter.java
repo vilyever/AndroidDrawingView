@@ -6,14 +6,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 /**
- * VDBitmapConvertor
+ * BitmapConverter
  * AndroidDrawingView <com.vilyever.drawingview>
  * Created by vilyever on 2015/9/22.
  * Feature:
  * drawable转换bitmap
  */
-public class VDBitmapConvertor {
-    private final VDBitmapConvertor self = this;
+public class BitmapConverter {
+    private final BitmapConverter self = this;
 
     /* Public Methods */
     public static Bitmap drawableToBitmap(Drawable drawable) {

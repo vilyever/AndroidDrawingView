@@ -7,40 +7,42 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.R;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.drawingview.model.DrawingPoint;
+import com.vilyever.resource.Resource;
 
 /**
- * VDIsoscelesTriangleBrush
+ * IsoscelesTriangleBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
  * 等腰三角形绘制
  */
-public class VDIsoscelesTriangleBrush extends VDShapeBrush {
-    final VDIsoscelesTriangleBrush self = this;
+public class IsoscelesTriangleBrush extends ShapeBrush {
+    final IsoscelesTriangleBrush self = this;
 
 
     /* #Constructors */
-    public VDIsoscelesTriangleBrush() {
+    public IsoscelesTriangleBrush() {
 
     }
 
-    public VDIsoscelesTriangleBrush(float size, int color) {
+    public IsoscelesTriangleBrush(float size, int color) {
         this(size, color, FillType.Hollow);
     }
 
-    public VDIsoscelesTriangleBrush(float size, int color, FillType fillType) {
+    public IsoscelesTriangleBrush(float size, int color, FillType fillType) {
         this(size, color, fillType, false);
     }
 
-    public VDIsoscelesTriangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+    public IsoscelesTriangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
     }
 
     /* Public Methods */
-    public static VDIsoscelesTriangleBrush defaultBrush() {
-        return new VDIsoscelesTriangleBrush(5, Color.BLACK);
+    public static IsoscelesTriangleBrush defaultBrush() {
+        return new IsoscelesTriangleBrush(Resource.getDimensionPixelSize(R.dimen.drawingViewBrushDefaultSize), Color.BLACK);
     }
 
     /* #Overrides */
@@ -48,20 +50,20 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
     protected void updatePaint() {
         super.updatePaint();
 
-        if (!self.isEdgeRounded()) {
-            self.paint.setStrokeMiter(Integer.MAX_VALUE);
-            self.paint.setStrokeWidth(0);
-            self.paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        if (!isEdgeRounded()) {
+            getPaint().setStrokeMiter(Integer.MAX_VALUE);
+            getPaint().setStrokeWidth(0);
+            getPaint().setStyle(Paint.Style.FILL_AND_STROKE);
         }
     }
 
     @NonNull
     @Override
-    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
-        self.updatePaint();
+    public Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state) {
+        updatePaint();
         if (drawingPath.getPoints().size() > 1) {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            DrawingPoint beginPoint = drawingPath.getPoints().get(0);
+            DrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
             drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
@@ -69,8 +71,8 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
             drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
             drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
-            if ((drawingRect.right - drawingRect.left) < self.getSize() * 2.0f
-                    || (drawingRect.bottom - drawingRect.top) < self.getSize() * 2.0f) {
+            if ((drawingRect.right - drawingRect.left) < getSize() * 2.0f
+                    || (drawingRect.bottom - drawingRect.top) < getSize() * 2.0f) {
                 return Frame.EmptyFrame();
             }
 
@@ -82,18 +84,18 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
 //            double h = pathFrame.bottom - pathFrame.top; // 高
 //            double y = Math.sqrt((x / 2.0f) * (x / 2.0f) + h * h); // 斜边
 //            double sin = (x / 2.0f) / y; // 顶角角度一半的sin值
-//            double factor = (h + (self.getSize() / 2.0f) * (1 / sin + 1)) / h; // 相似比
+//            double factor = (h + (getSize() / 2.0f) * (1 / sin + 1)) / h; // 相似比
 //
 //            pathFrame.left -= x * (factor - 1) / 2.0f;
-//            pathFrame.top -= h * (factor - 1) - self.getSize() / 2.0f;
+//            pathFrame.top -= h * (factor - 1) - getSize() / 2.0f;
 //            pathFrame.right += x * (factor - 1) / 2.0f;
 //
-//            pathFrame.bottom += self.getSize() / 2.0f;
+//            pathFrame.bottom += getSize() / 2.0f;
 
             Path path = new Path();
             Frame pathFrame;
 
-            if (self.isEdgeRounded()) {
+            if (isEdgeRounded()) {
                 pathFrame = super.drawPath(canvas, drawingPath, state);
                 if (state.isFetchFrame() || canvas == null) {
                     return pathFrame;
@@ -105,7 +107,7 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
                 path.lineTo(drawingRect.left, drawingRect.bottom);
             }
             else {
-                double w = self.getSize() / 2.0; // 内外间距
+                double w = getSize() / 2.0; // 内外间距
                 double x = drawingRect.right - drawingRect.left; // 底边
                 double h = drawingRect.bottom - drawingRect.top; // 高
                 double a = Math.atan(x / 2.0 / h) * 2.0; // 顶角
@@ -117,13 +119,13 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
                 outerRect.left -= dx;
                 outerRect.top -= dy;
                 outerRect.right += dx;
-                outerRect.bottom += self.getSize() / 2.0f;
+                outerRect.bottom += getSize() / 2.0f;
 
                 RectF innerRect = new RectF(drawingRect);
                 innerRect.left += dx;
                 innerRect.top += dy;
                 innerRect.right -= dx;
-                innerRect.bottom -= self.getSize() / 2.0f;
+                innerRect.bottom -= getSize() / 2.0f;
 
                 pathFrame = new Frame(outerRect);
                 if (state.isFetchFrame() || canvas == null) {
@@ -135,7 +137,7 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
                 path.lineTo((outerRect.left + outerRect.right) / 2.0f, outerRect.top);
                 path.lineTo(outerRect.left, outerRect.bottom);
 
-                if (self.getFillType() == FillType.Hollow) {
+                if (getFillType() == FillType.Hollow) {
                     path.lineTo(innerRect.left, innerRect.bottom);
                     path.lineTo((innerRect.left + innerRect.right) / 2.0f, innerRect.top);
                     path.lineTo(innerRect.right, innerRect.bottom);
@@ -149,7 +151,7 @@ public class VDIsoscelesTriangleBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, self.getPaint());
+            canvas.drawPath(path, getPaint());
 
             return pathFrame;
         }

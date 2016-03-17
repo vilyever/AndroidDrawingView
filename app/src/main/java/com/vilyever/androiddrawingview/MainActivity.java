@@ -5,8 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.vilyever.contextholder.VDContextHolder;
-
 public class MainActivity extends AppCompatActivity {
     private final MainActivity self = this;
 
@@ -16,8 +14,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        VDContextHolder.initial(getApplicationContext());
 
         getFragmentManager().beginTransaction()
                 .replace(R.id.drawingFragmentLayout, getDrawingFragment(), "drawingFragment")

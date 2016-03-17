@@ -6,50 +6,52 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 
-import com.vilyever.drawingview.model.VDDrawingPath;
-import com.vilyever.drawingview.model.VDDrawingPoint;
+import com.vilyever.drawingview.R;
+import com.vilyever.drawingview.model.DrawingPath;
+import com.vilyever.drawingview.model.DrawingPoint;
+import com.vilyever.resource.Resource;
 
 /**
- * VDRectangleBrush
+ * RectangleBrush
  * AndroidDrawingView <com.vilyever.drawingview.brush>
  * Created by vilyever on 2015/10/21.
  * Feature:
  * 矩形绘制
  */
-public class VDRectangleBrush extends VDShapeBrush {
-    final VDRectangleBrush self = this;
+public class RectangleBrush extends ShapeBrush {
+    final RectangleBrush self = this;
 
     
     /* #Constructors */
-    public VDRectangleBrush() {
+    public RectangleBrush() {
 
     }
 
-    public VDRectangleBrush(float size, int color) {
+    public RectangleBrush(float size, int color) {
         this(size, color, FillType.Hollow);
     }
 
-    public VDRectangleBrush(float size, int color, FillType fillType) {
+    public RectangleBrush(float size, int color, FillType fillType) {
         this(size, color, fillType, false);
     }
 
-    public VDRectangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
+    public RectangleBrush(float size, int color, FillType fillType, boolean edgeRounded) {
         super(size, color, fillType, edgeRounded);
     }
 
     /* Public Methods */
-    public static VDRectangleBrush defaultBrush() {
-        return new VDRectangleBrush(5, Color.BLACK);
+    public static RectangleBrush defaultBrush() {
+        return new RectangleBrush(Resource.getDimensionPixelSize(R.dimen.drawingViewBrushDefaultSize), Color.BLACK);
     }
 
     /* #Overrides */
     @NonNull
     @Override
-    public Frame drawPath(Canvas canvas, @NonNull VDDrawingPath drawingPath, @NonNull DrawingState state) {
-        self.updatePaint();
+    public Frame drawPath(Canvas canvas, @NonNull DrawingPath drawingPath, @NonNull DrawingState state) {
+        updatePaint();
         if (drawingPath.getPoints().size() > 1) {
-            VDDrawingPoint beginPoint = drawingPath.getPoints().get(0);
-            VDDrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
+            DrawingPoint beginPoint = drawingPath.getPoints().get(0);
+            DrawingPoint lastPoint = drawingPath.getPoints().get(drawingPath.getPoints().size() - 1);
 
             RectF drawingRect = new RectF();
             drawingRect.left = Math.min(beginPoint.getX(), lastPoint.getX());
@@ -57,12 +59,12 @@ public class VDRectangleBrush extends VDShapeBrush {
             drawingRect.right = Math.max(beginPoint.getX(), lastPoint.getX());
             drawingRect.bottom = Math.max(beginPoint.getY(), lastPoint.getY());
 
-            if ((drawingRect.right - drawingRect.left) < self.getSize()
-                    || (drawingRect.bottom - drawingRect.top) < self.getSize()) {
+            if ((drawingRect.right - drawingRect.left) < getSize()
+                    || (drawingRect.bottom - drawingRect.top) < getSize()) {
                 return Frame.EmptyFrame();
             }
 
-            Frame pathFrame = self.makeFrameWithBrushSpace(drawingRect);
+            Frame pathFrame = makeFrameWithBrushSpace(drawingRect);
 
             if (state.isFetchFrame() || canvas == null) {
                 return pathFrame;
@@ -75,7 +77,7 @@ public class VDRectangleBrush extends VDShapeBrush {
                 path.offset(-pathFrame.left, -pathFrame.top);
             }
 
-            canvas.drawPath(path, self.getPaint());
+            canvas.drawPath(path, getPaint());
 
             return pathFrame;
         }

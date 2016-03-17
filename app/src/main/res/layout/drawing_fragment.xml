@@ -3,7 +3,7 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.vilyever.drawingview.VDDrawingView
+    <com.vilyever.drawingview.DrawingView
         android:id="@+id/drawingView"
         android:layout_width="0dp"
         android:layout_height="match_parent"

@@ -3,34 +3,34 @@ package com.vilyever.drawingview.model;
 import android.graphics.RectF;
 import android.widget.RelativeLayout;
 
-import com.vilyever.jsonmodel.VDModel;
+import com.vilyever.jsonmodel.JsonModel;
 
 /**
- * VDDrawingLayer
+ * DrawingLayer
  * AndroidDrawingBoard <com.vilyever.drawingboard>
  * Created by vilyever on 2015/9/18.
  * Feature:
  * 绘画数据：图层数据
  * 每一层并不限制此类数据的数量
  */
-public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer> {
-    private final VDDrawingLayer self = this;
+public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> {
+    private final DrawingLayer self = this;
 
     // 未设定的值
     public static final int UnsetValue = -1;
 
     /* #Constructors */
-    public VDDrawingLayer() {
+    public DrawingLayer() {
         this(UnsetValue);
     }
 
-    public VDDrawingLayer(int hierarchy) {
+    public DrawingLayer(int hierarchy) {
         this(hierarchy, null);
     }
 
-    public VDDrawingLayer(int hierarchy, RectF frame) {
+    public DrawingLayer(int hierarchy, RectF frame) {
         // 预先初始化，可能影响到一些变量，故先操作
-        self.init();
+        init();
 
         this.hierarchy = hierarchy;
         this.layerType = LayerType.LayerDrawing;
@@ -41,34 +41,34 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
     // left，top，right，bottom快捷设置
     public void setFrame(RectF frame) {
         if (frame == null) {
-            self.left = UnsetValue;
-            self.top = UnsetValue;
-            self.right = UnsetValue;
-            self.bottom = UnsetValue;
+            setLeft(UnsetValue);
+            setTop(UnsetValue);
+            setRight(UnsetValue);
+            setBottom(UnsetValue);
             return;
         }
-        self.left = frame.left;
-        self.top = frame.top;
-        self.right = frame.right;
-        self.bottom = frame.bottom;
+        setLeft(frame.left);
+        setTop(frame.top);
+        setRight(frame.right);
+        setBottom(frame.bottom);
     }
 
     // left，top，right，bottom快捷获取
     public RectF getFrame() {
-        if (self.left == UnsetValue) {
+        if (getLeft() == UnsetValue) {
             return null;
         }
-        return new RectF(self.left, self.top, self.right, self.bottom);
+        return new RectF(getLeft(), getTop(), getRight(), getBottom());
     }
 
     // 获取宽度
     public float getWidth() {
-        return self.getRight() - self.getLeft();
+        return getRight() - getLeft();
     }
 
     // 获取高度
     public float getHeight() {
-        return self.getBottom() - self.getTop();
+        return getBottom() - getTop();
     }
 
     /**
@@ -77,14 +77,14 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
      * @return 生成的LayoutParams
      */
     public RelativeLayout.LayoutParams getLayoutParams() {
-        if (self.getLeft() == UnsetValue) {
+        if (getLeft() == UnsetValue) {
             return null;
         }
 
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Math.floor(self.getWidth()),
-                (int) Math.floor(self.getHeight()));
-        layoutParams.leftMargin = (int) Math.floor(self.getLeft());
-        layoutParams.topMargin = (int) Math.floor(self.getTop());
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams((int) Math.floor(getWidth()),
+                (int) Math.floor(getHeight()));
+        layoutParams.leftMargin = (int) Math.floor(getLeft());
+        layoutParams.topMargin = (int) Math.floor(getTop());
         layoutParams.rightMargin = -Integer.MAX_VALUE;
         layoutParams.bottomMargin = -Integer.MAX_VALUE;
 
@@ -96,138 +96,138 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
      * 层级
      */
     private int hierarchy;
-    public VDDrawingLayer setHierarchy(int hierarchy) {
+    public DrawingLayer setHierarchy(int hierarchy) {
         this.hierarchy = hierarchy;
         return this;
     }
     public int getHierarchy() {
-        return hierarchy;
+        return this.hierarchy;
     }
 
     /**
      * 图层类别
      */
     public enum LayerType {
-        Unkonwn, BaseDrawing, BaseText, LayerDrawing, LayerText;
+        Unknown, BaseDrawing, BaseText, LayerDrawing, LayerText;
     }
     private LayerType layerType;
-    public VDDrawingLayer setLayerType(LayerType layerType) {
+    public DrawingLayer setLayerType(LayerType layerType) {
         this.layerType = layerType;
         return this;
     }
     public LayerType getLayerType() {
-        if (layerType == null) {
-            layerType = LayerType.Unkonwn;
+        if (this.layerType == null) {
+            this.layerType = LayerType.Unknown;
         }
-        return layerType;
+        return this.layerType;
     }
 
     /**
      * 背景色
      */
     private int backgroundColor;
-    public VDDrawingLayer setBackgroundColor(int backgroundColor) {
+    public DrawingLayer setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
         return this;
     }
     public int getBackgroundColor() {
-        return backgroundColor;
+        return this.backgroundColor;
     }
 
     /**
      * 背景图片标识
      */
     private String backgroundImageIdentifier;
-    public VDDrawingLayer setBackgroundImageIdentifier(String backgroundImageIdentifier) {
+    public DrawingLayer setBackgroundImageIdentifier(String backgroundImageIdentifier) {
         this.backgroundImageIdentifier = backgroundImageIdentifier;
         return this;
     }
     public String getBackgroundImageIdentifier() {
-        return backgroundImageIdentifier;
+        return this.backgroundImageIdentifier;
     }
 
     /**
      * text图层的内容
      */
     private String text;
-    public VDDrawingLayer setText(String text) {
+    public DrawingLayer setText(String text) {
         this.text = text;
         return this;
     }
     public String getText() {
-        return text;
+        return this.text;
     }
 
     /**
      * left坐标
      */
     private float left;
-    public VDDrawingLayer setLeft(float left) {
+    public DrawingLayer setLeft(float left) {
         this.left = left;
         return this;
     }
     public float getLeft() {
-        return left * self.getDrawingRatioX();
+        return this.left * getDrawingRatioX();
     }
 
     /**
      * top坐标
      */
     private float top;
-    public VDDrawingLayer setTop(float top) {
+    public DrawingLayer setTop(float top) {
         this.top = top;
         return this;
     }
     public float getTop() {
-        return top * self.getDrawingRatioY();
+        return this.top * getDrawingRatioY();
     }
 
     /**
      * right坐标
      */
     private float right;
-    public VDDrawingLayer setRight(float right) {
+    public DrawingLayer setRight(float right) {
         this.right = right;
         return this;
     }
     public float getRight() {
-        return right * self.getDrawingRatioX();
+        return this.right * getDrawingRatioX();
     }
 
     /**
      * bottom坐标
      */
     private float bottom;
-    public VDDrawingLayer setBottom(float bottom) {
+    public DrawingLayer setBottom(float bottom) {
         this.bottom = bottom;
         return this;
     }
     public float getBottom() {
-        return bottom * self.getDrawingRatioY();
+        return this.bottom * getDrawingRatioY();
     }
 
     /**
      * 图层缩放比例，xy同等
      */
     private float scale;
-    public VDDrawingLayer setScale(float scale) {
+    public DrawingLayer setScale(float scale) {
         this.scale = scale;
         return this;
     }
     public float getScale() {
-        return scale;
+        return this.scale;
     }
 
     /**
      * 图层旋转角度
      */
     private float rotation;
-    public VDDrawingLayer setRotation(float rotation) {
+    public DrawingLayer setRotation(float rotation) {
         this.rotation = rotation;
         return this;
     }
     public float getRotation() {
-        return rotation;
+        return this.rotation;
     }
 
     /**
@@ -235,14 +235,14 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
      * 在记录数据时drawingView的宽高和当前重绘时的宽高比
      * 用于在不同分辨率下重绘相似的图形全貌
      */
-    @VDJsonKeyIgnore
+    @JsonKeyIgnore
     private float drawingRatioX = 1.0f;
-    public VDDrawingLayer setDrawingRatioX(float drawingRatioX) {
+    public DrawingLayer setDrawingRatioX(float drawingRatioX) {
         this.drawingRatioX = drawingRatioX;
         return this;
     }
     public float getDrawingRatioX() {
-        return drawingRatioX;
+        return this.drawingRatioX;
     }
 
     /**
@@ -250,36 +250,36 @@ public class VDDrawingLayer extends VDModel implements Comparable<VDDrawingLayer
      * 在记录数据时drawingView的宽高和当前重绘时的宽高比
      * 用于在不同分辨率下重绘相似的图形全貌
      */
-    @VDJsonKeyIgnore
+    @JsonKeyIgnore
     private float drawingRatioY = 1.0f;
-    public VDDrawingLayer setDrawingRatioY(float drawingRatioY) {
+    public DrawingLayer setDrawingRatioY(float drawingRatioY) {
         this.drawingRatioY = drawingRatioY;
         return this;
     }
     public float getDrawingRatioY() {
-        return drawingRatioY;
+        return this.drawingRatioY;
     }
 
     /* Delegates */
-    /** {@link Comparable<VDDrawingLayer>} */
+    /** {@link Comparable< DrawingLayer >} */
     @Override
-    public int compareTo(VDDrawingLayer another) {
-        return self.getHierarchy() - another.getHierarchy();
+    public int compareTo(DrawingLayer another) {
+        return getHierarchy() - another.getHierarchy();
     }
-    /** {@link Comparable<VDDrawingLayer>} */
+    /** {@link Comparable< DrawingLayer >} */
 
     /* Private Methods */
     /**
      * 初始化
      */
     private void init() {
-        self.setHierarchy(UnsetValue);
-        self.setBackgroundColor(UnsetValue);
-        self.setLeft(UnsetValue);
-        self.setTop(UnsetValue);
-        self.setRight(UnsetValue);
-        self.setBottom(UnsetValue);
-        self.setScale(UnsetValue);
-        self.setRotation(UnsetValue);
+        setHierarchy(UnsetValue);
+        setBackgroundColor(UnsetValue);
+        setLeft(UnsetValue);
+        setTop(UnsetValue);
+        setRight(UnsetValue);
+        setBottom(UnsetValue);
+        setScale(UnsetValue);
+        setRotation(UnsetValue);
     }
 }
