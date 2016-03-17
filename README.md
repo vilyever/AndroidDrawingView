@@ -17,64 +17,65 @@ Step 2. Add the dependency in the form
 
 ```gradle
 dependencies {
-  compile 'com.github.vilyever:AndroidDrawingView:1.5.0'
+  compile 'com.github.vilyever:AndroidDrawingView:1.6.0'
 }
 ```
 
 ## Usage
 ```java
 
-<com.vilyever.drawingview.VDDrawingView
-        android:id="@+id/drawingView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+<com.vilyever.drawingview.DrawingView
+    android:id="@+id/drawingView"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"/>
 
-drawingView = (VDDrawingView) rootView.findViewById(R.id.drawingView);
-drawingView.setUndoRedoStateDelegate(new VDDrawingView.UndoRedoStateDelegate() {
+drawingView = (DrawingView) rootView.findViewById(R.id.drawingView);
+drawingView.setUndoRedoStateDelegate(new DrawingView.UndoRedoStateDelegate() {
     @Override
-    public void onUndoRedoStateChange(VDDrawingView drawingView, boolean canUndo, boolean canRedo) {
+    public void onUndoRedoStateChange(DrawingView drawingView, boolean canUndo, boolean canRedo) {
         undoButton.setEnabled(canUndo);
         redoButton.setEnabled(canRedo);
     }
 });
 
-drawingView.setInterceptTouchDelegate(new VDDrawingView.InterceptTouchDelegate() {
+drawingView.setInterceptTouchDelegate(new DrawingView.InterceptTouchDelegate() {
     @Override
-    public void requireInterceptTouchEvent(VDDrawingView drawingView, boolean isIntercept) {
+    public void requireInterceptTouchEvent(DrawingView drawingView, boolean isIntercept) {
 
     }
 });
 
-drawingView.setDrawingStepDelegate(new VDDrawingView.DrawingStepDelegate() {
+drawingView.setDrawingStepDelegate(new DrawingView.DrawingStepDelegate() {
     @Override
-    public void onDrawingStepBegin(VDDrawingView drawingView, VDDrawingStep step) {
+    public void onDrawingStepBegin(DrawingView drawingView, DrawingStep step) {
 
     }
 
     @Override
-    public void onDrawingStepChange(VDDrawingView drawingView, VDDrawingStep step) {
+    public void onDrawingStepChange(DrawingView drawingView, DrawingStep step) {
 
     }
 
     @Override
-    public void onDrawingStepEnd(VDDrawingView drawingView, VDDrawingStep step) {
+    public void onDrawingStepEnd(DrawingView drawingView, DrawingStep step) {
 
     }
 
     @Override
-    public void onDrawingStepCancel(VDDrawingView drawingView, VDDrawingStep step) {
+    public void onDrawingStepCancel(DrawingView drawingView, DrawingStep step) {
 
     }
 });
 
-drawingView.setBackgroundDatasource(new VDDrawingView.BackgroundDatasource() {
+drawingView.setBackgroundDatasource(new DrawingView.BackgroundDatasource() {
     @Override
-    public Drawable gainBackground(VDDrawingView drawingView, String identifier) {
+    public Drawable gainBackground(DrawingView drawingView, String identifier) {
         return null;
     }
 });
 
-penBrush = VDPenBrush.defaultBrush();
+penBrush = PenBrush.defaultBrush();
 drawingView.setBrush(penBrush);
 ```
 
