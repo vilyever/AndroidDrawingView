@@ -1315,6 +1315,7 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
      */
     private void internalUpdateCurrentStep(boolean isSkipToStepOver) {
         DrawingStep step = getCurrentDrawingStep();
+        step.updateDrawingRatio(getWidth(), getHeight());
         ArrayList<DrawingStep> stepList = new ArrayList<>();
         stepList.add(step);
 

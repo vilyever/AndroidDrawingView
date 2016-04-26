@@ -17,7 +17,7 @@ Step 2. Add the dependency in the form
 
 ```gradle
 dependencies {
-  compile 'com.github.vilyever:AndroidDrawingView:1.6.0'
+  compile 'com.github.vilyever:AndroidDrawingView:1.6.1'
 }
 ```
 
@@ -42,28 +42,6 @@ drawingView.setUndoRedoStateDelegate(new DrawingView.UndoRedoStateDelegate() {
 drawingView.setInterceptTouchDelegate(new DrawingView.InterceptTouchDelegate() {
     @Override
     public void requireInterceptTouchEvent(DrawingView drawingView, boolean isIntercept) {
-
-    }
-});
-
-drawingView.setDrawingStepDelegate(new DrawingView.DrawingStepDelegate() {
-    @Override
-    public void onDrawingStepBegin(DrawingView drawingView, DrawingStep step) {
-
-    }
-
-    @Override
-    public void onDrawingStepChange(DrawingView drawingView, DrawingStep step) {
-
-    }
-
-    @Override
-    public void onDrawingStepEnd(DrawingView drawingView, DrawingStep step) {
-
-    }
-
-    @Override
-    public void onDrawingStepCancel(DrawingView drawingView, DrawingStep step) {
 
     }
 });
