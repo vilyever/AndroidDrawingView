@@ -1330,11 +1330,16 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                 break;
             case DrawOnBase:
             case DrawTextOnBase:
-                if (isSkipToStepOver) {
+//                if (isSkipToStepOver) {
 //                    getBaseLayerImageView().appendWithSteps(stepList);
-                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
-                    getBaseLayerImageView().appendWithDrawingStep(step);
-                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
+//                }
+//                else {
+//                    getBaseLayerImageView().appendWithDrawingStep(step);
+//                }
+                if (step.isStepOver()) {
+                    setHandlingLayerView(getBaseLayerImageView());
+                    step.setStepOver(false);
+                    endUnfinishedStep();
                 }
                 else {
                     getBaseLayerImageView().appendWithDrawingStep(step);
@@ -1368,14 +1373,20 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                     return;
                 }
 
-                if (isSkipToStepOver) {
+//                if (isSkipToStepOver) {
 //                    layerViewProtocol.appendWithSteps(stepList);
-                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
-                    layerViewProtocol.appendWithDrawingStep(step);
-                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
+//                }
+//                else {
+//                    layerViewProtocol.appendWithDrawingStep(step);
+//                }
+
+                if (step.isStepOver()) {
+                    setHandlingLayerView(layerViewProtocol);
+                    step.setStepOver(false);
+                    endUnfinishedStep();
                 }
                 else {
-                    layerViewProtocol.appendWithDrawingStep(step);
+                    getBaseLayerImageView().appendWithDrawingStep(step);
                 }
 
                 if (step.isStepOver()) {
@@ -1384,27 +1395,37 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                 break;
             case Transform:
                 if (layerViewProtocol != null) {
-                    if (isSkipToStepOver) {
+//                    if (isSkipToStepOver) {
 //                        layerViewProtocol.appendWithSteps(stepList);
-                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
-                        layerViewProtocol.appendWithDrawingStep(step);
-                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
+//                    }
+//                    else {
+//                        layerViewProtocol.appendWithDrawingStep(step);
+//                    }
+                    if (step.isStepOver()) {
+                        setHandlingLayerView(layerViewProtocol);
+                        step.setStepOver(false);
+                        endUnfinishedStep();
                     }
                     else {
-                        layerViewProtocol.appendWithDrawingStep(step);
+                        getBaseLayerImageView().appendWithDrawingStep(step);
                     }
                 }
                 break;
             case TextChange:
                 if (layerViewProtocol != null) {
-                    if (isSkipToStepOver) {
+//                    if (isSkipToStepOver) {
 //                        layerViewProtocol.appendWithSteps(stepList);
-                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
-                        layerViewProtocol.appendWithDrawingStep(step);
-                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
+//                    }
+//                    else {
+//                        layerViewProtocol.appendWithDrawingStep(step);
+//                    }
+                    if (step.isStepOver()) {
+                        setHandlingLayerView(layerViewProtocol);
+                        step.setStepOver(false);
+                        endUnfinishedStep();
                     }
                     else {
-                        layerViewProtocol.appendWithDrawingStep(step);
+                        getBaseLayerImageView().appendWithDrawingStep(step);
                     }
                 }
                 break;
