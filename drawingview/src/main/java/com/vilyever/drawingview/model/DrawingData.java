@@ -1,5 +1,7 @@
 package com.vilyever.drawingview.model;
 
+import com.vilyever.jsonmodel.JsonModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +11,7 @@ import java.util.List;
  * Created by vilyever on 2015/9/25.
  * Feature:
  */
-public class DrawingData {
+public class DrawingData extends JsonModel {
     private final DrawingData self = this;
 
     /**
