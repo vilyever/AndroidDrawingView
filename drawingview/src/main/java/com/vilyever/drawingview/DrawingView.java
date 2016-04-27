@@ -1331,7 +1331,10 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
             case DrawOnBase:
             case DrawTextOnBase:
                 if (isSkipToStepOver) {
-                    getBaseLayerImageView().appendWithSteps(stepList);
+//                    getBaseLayerImageView().appendWithSteps(stepList);
+                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
+                    getBaseLayerImageView().appendWithDrawingStep(step);
+                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
                 }
                 else {
                     getBaseLayerImageView().appendWithDrawingStep(step);
@@ -1366,7 +1369,10 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                 }
 
                 if (isSkipToStepOver) {
-                    layerViewProtocol.appendWithSteps(stepList);
+//                    layerViewProtocol.appendWithSteps(stepList);
+                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
+                    layerViewProtocol.appendWithDrawingStep(step);
+                    step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
                 }
                 else {
                     layerViewProtocol.appendWithDrawingStep(step);
@@ -1379,7 +1385,10 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
             case Transform:
                 if (layerViewProtocol != null) {
                     if (isSkipToStepOver) {
-                        layerViewProtocol.appendWithSteps(stepList);
+//                        layerViewProtocol.appendWithSteps(stepList);
+                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
+                        layerViewProtocol.appendWithDrawingStep(step);
+                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
                     }
                     else {
                         layerViewProtocol.appendWithDrawingStep(step);
@@ -1389,7 +1398,10 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
             case TextChange:
                 if (layerViewProtocol != null) {
                     if (isSkipToStepOver) {
-                        layerViewProtocol.appendWithSteps(stepList);
+//                        layerViewProtocol.appendWithSteps(stepList);
+                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.ForceFinish));
+                        layerViewProtocol.appendWithDrawingStep(step);
+                        step.setDrawingState(new Brush.DrawingState(Brush.DrawingPointerState.VeryEnd));
                     }
                     else {
                         layerViewProtocol.appendWithDrawingStep(step);
