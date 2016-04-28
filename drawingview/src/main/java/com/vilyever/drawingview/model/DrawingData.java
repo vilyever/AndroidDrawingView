@@ -215,6 +215,7 @@ public class DrawingData extends JsonModel {
     /**
      * 当前最大层级
      */
+    @JsonKey("TLH")
     private int topLayerHierarchy = -1;
     private DrawingData setTopLayerHierarchy(int topLayerHierarchy) {
         this.topLayerHierarchy = topLayerHierarchy;
@@ -228,6 +229,7 @@ public class DrawingData extends JsonModel {
      * 当前展示的最大step游标
      * 用于撤销重做
      */
+    @JsonKey("SSI")
     private int showingStepIndex = -1;
     private DrawingData setShowingStepIndex(int showingStepIndex) {
         this.showingStepIndex = showingStepIndex;

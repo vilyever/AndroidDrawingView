@@ -39,6 +39,7 @@ public abstract class DrawingBrush extends Brush {
     /**
      * 笔刷大小
      */
+    @JsonKey("S")
     protected float size;
     public float getSize() {
         return this.size * getDrawingRatio();
@@ -52,6 +53,7 @@ public abstract class DrawingBrush extends Brush {
     /**
      * 笔刷颜色
      */
+    @JsonKey("C")
     protected int color;
     public int getColor() {
         if (isEraser()) {
@@ -68,6 +70,7 @@ public abstract class DrawingBrush extends Brush {
     /**
      * 是否是橡皮擦
      */
+    @JsonKey("E")
     protected boolean isEraser;
     public boolean isEraser() {
         return this.isEraser;

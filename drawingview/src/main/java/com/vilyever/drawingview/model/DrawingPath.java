@@ -41,6 +41,7 @@ public class DrawingPath extends JsonModel {
     }
 
     /* Properties */
+    @JsonKey("P")
     private List<DrawingPoint> points;
     public List<DrawingPoint> getPoints() {
         if (this.points == null) {

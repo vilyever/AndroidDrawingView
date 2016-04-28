@@ -72,6 +72,7 @@ public abstract class Brush extends JsonModel {
     /**
      * 此画笔是否绘制一个新的图层
      */
+    @JsonKey("OSTL")
     protected boolean oneStrokeToLayer;
     public boolean isOneStrokeToLayer() {
         return this.oneStrokeToLayer;

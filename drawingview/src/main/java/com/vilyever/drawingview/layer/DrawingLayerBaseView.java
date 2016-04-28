@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -50,7 +51,10 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
     public void drawTextStep(DrawingStep step) {
         // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
         DrawingLayerTextView textView = new DrawingLayerTextView(getContext(), 0);
+
+        RectF frame = step.getDrawingLayer().getFrame();
         textView.appendWithDrawingStep(step);
+        step.getDrawingLayer().setFrame(frame);
 
         textView.measure(MeasureSpec.makeMeasureSpec(getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
         int left = (int) Math.floor(step.getDrawingLayer().getLeft());
@@ -62,6 +66,10 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
 
         textView.draw(getDrawingCanvas());
         getDrawingCanvas().restore();
+    }
+
+    public void retainSnapshotOnNextBackgroundDraw() {
+        setRetainSnapshot(true);
     }
 
     /* Properties */
@@ -188,12 +196,24 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
      * 使用{@link #uiHandler}来更新状态，无论ui线程或后台线程都可以直接调用此方法
      */
     private DrawingLayerBaseView setBusying(boolean busying) {
-        this.busying = busying;
-        getUIHandler().sendEmptyMessage(0);
+        if (this.busying != busying) {
+            this.busying = busying;
+            getUIHandler().sendEmptyMessage(0);
+        }
         return this;
     }
     public boolean isBusying() {
         return this.busying;
+    }
+
+
+    private boolean retainSnapshot;
+    protected DrawingLayerBaseView setRetainSnapshot(boolean retainSnapshot) {
+        this.retainSnapshot = retainSnapshot;
+        return this;
+    }
+    protected boolean isRetainSnapshot() {
+        return this.retainSnapshot;
     }
 
     /**
@@ -240,7 +260,12 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
     public void run() {
 //        long beginTime = System.currentTimeMillis();
         try {
-            setBusying(true); // 开始绘制时进入busying状态
+            if (!isRetainSnapshot()) {
+                setBusying(true); // 开始绘制时进入busying状态
+            }
+            else {
+                setRetainSnapshot(false);
+            }
 
             /**
              * 检查{@link #drawingCanvas}是否存在

@@ -1198,11 +1198,11 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                         }
                     }
                     else {
-                        getBaseLayerImageView().drawTextStep(getCurrentDrawingStep());
-
-                        getDrawingStepDelegate().onDrawingStepChange(this, getCurrentDrawingStep());
-
-                        finishDraw();
+//                        getBaseLayerImageView().drawTextStep(getCurrentDrawingStep());
+//
+//                        getDrawingStepDelegate().onDrawingStepChange(this, getCurrentDrawingStep());
+//
+//                        finishDraw();
                     }
                     break;
                 }
@@ -1339,20 +1339,21 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                 break;
             case DrawOnBase:
             case DrawTextOnBase:
-//                if (isSkipToStepOver) {
-//                    getBaseLayerImageView().appendWithSteps(stepList);
-//                }
-//                else {
-//                    getBaseLayerImageView().appendWithDrawingStep(step);
-//                }
-                if (step.isStepOver()) {
-                    setHandlingLayerView(getBaseLayerImageView());
-                    step.setStepOver(false);
-                    endUnfinishedStep();
+                if (isSkipToStepOver) {
+                    getBaseLayerImageView().retainSnapshotOnNextBackgroundDraw();
+                    getBaseLayerImageView().appendWithSteps(stepList);
                 }
                 else {
                     getBaseLayerImageView().appendWithDrawingStep(step);
                 }
+//                if (step.isStepOver()) {
+//                    setHandlingLayerView(getBaseLayerImageView());
+//                    step.setStepOver(false);
+//                    endUnfinishedStep();
+//                }
+//                else {
+//                    getBaseLayerImageView().appendWithDrawingStep(step);
+//                }
                 break;
             case Background:
                 if (step.getDrawingLayer().getBackgroundImageIdentifier() != null) {
@@ -1382,21 +1383,21 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                     return;
                 }
 
-//                if (isSkipToStepOver) {
-//                    layerViewProtocol.appendWithSteps(stepList);
-//                }
-//                else {
-//                    layerViewProtocol.appendWithDrawingStep(step);
-//                }
-
-                if (step.isStepOver()) {
-                    setHandlingLayerView(layerViewProtocol);
-                    step.setStepOver(false);
-                    endUnfinishedStep();
+                if (isSkipToStepOver) {
+                    layerViewProtocol.appendWithSteps(stepList);
                 }
                 else {
-                    getBaseLayerImageView().appendWithDrawingStep(step);
+                    layerViewProtocol.appendWithDrawingStep(step);
                 }
+
+//                if (step.isStepOver()) {
+//                    setHandlingLayerView(layerViewProtocol);
+//                    step.setStepOver(false);
+//                    endUnfinishedStep();
+//                }
+//                else {
+//                    getBaseLayerImageView().appendWithDrawingStep(step);
+//                }
 
                 if (step.isStepOver()) {
                     layerViewProtocol.setCanHandle(true);
@@ -1404,38 +1405,38 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                 break;
             case Transform:
                 if (layerViewProtocol != null) {
-//                    if (isSkipToStepOver) {
-//                        layerViewProtocol.appendWithSteps(stepList);
-//                    }
-//                    else {
-//                        layerViewProtocol.appendWithDrawingStep(step);
-//                    }
-                    if (step.isStepOver()) {
-                        setHandlingLayerView(layerViewProtocol);
-                        step.setStepOver(false);
-                        endUnfinishedStep();
+                    if (isSkipToStepOver) {
+                        layerViewProtocol.appendWithSteps(stepList);
                     }
                     else {
-                        getBaseLayerImageView().appendWithDrawingStep(step);
+                        layerViewProtocol.appendWithDrawingStep(step);
                     }
+//                    if (step.isStepOver()) {
+//                        setHandlingLayerView(layerViewProtocol);
+//                        step.setStepOver(false);
+//                        endUnfinishedStep();
+//                    }
+//                    else {
+//                        getBaseLayerImageView().appendWithDrawingStep(step);
+//                    }
                 }
                 break;
             case TextChange:
                 if (layerViewProtocol != null) {
-//                    if (isSkipToStepOver) {
-//                        layerViewProtocol.appendWithSteps(stepList);
-//                    }
-//                    else {
-//                        layerViewProtocol.appendWithDrawingStep(step);
-//                    }
-                    if (step.isStepOver()) {
-                        setHandlingLayerView(layerViewProtocol);
-                        step.setStepOver(false);
-                        endUnfinishedStep();
+                    if (isSkipToStepOver) {
+                        layerViewProtocol.appendWithSteps(stepList);
                     }
                     else {
-                        getBaseLayerImageView().appendWithDrawingStep(step);
+                        layerViewProtocol.appendWithDrawingStep(step);
                     }
+//                    if (step.isStepOver()) {
+//                        setHandlingLayerView(layerViewProtocol);
+//                        step.setStepOver(false);
+//                        endUnfinishedStep();
+//                    }
+//                    else {
+//                        getBaseLayerImageView().appendWithDrawingStep(step);
+//                    }
                 }
                 break;
             case DeleteLayer:

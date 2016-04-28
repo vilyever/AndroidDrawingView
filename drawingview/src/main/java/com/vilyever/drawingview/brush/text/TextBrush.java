@@ -50,6 +50,7 @@ public class TextBrush extends Brush {
     /**
      * 字体大小
      */
+    @JsonKey("S")
     protected float size;
     public float getSize() {
         return this.size * getDrawingRatio();
@@ -62,6 +63,7 @@ public class TextBrush extends Brush {
     /**
      * 字体颜色
      */
+    @JsonKey("C")
     protected int color;
     public int getColor() {
         return this.color;
@@ -74,6 +76,7 @@ public class TextBrush extends Brush {
     /**
      * 字体样式
      */
+    @JsonKey("TS")
     protected int typefaceStyle; /** {@link Typeface#NORMAL} {@link Typeface#BOLD} {@link Typeface#ITALIC} {@link Typeface#BOLD_ITALIC} or any created Typeface */
     public int getTypefaceStyle() {
         return this.typefaceStyle;

@@ -83,6 +83,7 @@ public class DrawingStep extends JsonModel {
      * 当前step的序号
      * drawingView在重绘时会按此序号顺序绘制
      */
+    @JsonKey("S")
     private int step;
     public DrawingStep setStep(int step) {
         this.step = step;
@@ -98,6 +99,7 @@ public class DrawingStep extends JsonModel {
     public enum StepType {
         Clear, DrawOnBase, DrawTextOnBase, Background, CreateLayer, Transform, TextChange, DeleteLayer;
     }
+    @JsonKey("ST")
     private StepType stepType;
     public DrawingStep setStepType(StepType stepType) {
         this.stepType = stepType;
@@ -110,6 +112,7 @@ public class DrawingStep extends JsonModel {
     /**
      * 当前绘制的状态，用于brush绘制
      */
+    @JsonKey("DS")
     private Brush.DrawingState drawingState;
     public DrawingStep setDrawingState(Brush.DrawingState drawingState) {
         this.drawingState = drawingState;
@@ -123,6 +126,7 @@ public class DrawingStep extends JsonModel {
      * 当前step是否是完成的step
      * 某些step需要多次绘制才能完成
      */
+    @JsonKey("SO")
     private boolean stepOver;
     public DrawingStep setStepOver(boolean stepOver) {
         this.stepOver = stepOver;
@@ -136,6 +140,7 @@ public class DrawingStep extends JsonModel {
      * 当前step是否处于cancel状态
      * 用于远程同步
      */
+    @JsonKey("C")
     private boolean canceled;
     public DrawingStep setCanceled(boolean canceled) {
         this.canceled = canceled;
@@ -145,6 +150,7 @@ public class DrawingStep extends JsonModel {
         return this.canceled;
     }
 
+    @JsonKey("R")
     private boolean remote;
     public DrawingStep setRemote(boolean remote) {
         this.remote = remote;
@@ -158,6 +164,7 @@ public class DrawingStep extends JsonModel {
      * 当前step绘制用的brush
      * 此brush的设置理应使用copy的brush来设置，避免被其他位置的修改影响到
      */
+    @JsonKey("BR")
     private Brush brush;
     public DrawingStep setBrush(Brush brush) {
         this.brush = brush;
@@ -170,6 +177,7 @@ public class DrawingStep extends JsonModel {
     /**
      * 当前step作用的图层
      */
+    @JsonKey("DL")
     private DrawingLayer drawingLayer;
     private DrawingStep setDrawingLayer(DrawingLayer drawingLayer) {
         this.drawingLayer = drawingLayer;
@@ -182,6 +190,7 @@ public class DrawingStep extends JsonModel {
     /**
      * 当前step记录的绘制路径
      */
+    @JsonKey("DP")
     private DrawingPath drawingPath;
     private DrawingStep setDrawingPath(DrawingPath drawingPath) {
         this.drawingPath = drawingPath;
@@ -199,6 +208,7 @@ public class DrawingStep extends JsonModel {
      * 用于在不同分辨率下重绘时的路径偏移修正
      * 必须在step初始化后设置
      */
+    @JsonKey("DVW")
     private int drawingViewWidth;
     public DrawingStep setDrawingViewWidth(int drawingViewWidth) {
         this.drawingViewWidth = drawingViewWidth;
@@ -213,6 +223,7 @@ public class DrawingStep extends JsonModel {
      * 用于在不同分辨率下重绘时的路径偏移修正
      * 必须在step初始化后设置
      */
+    @JsonKey("DVH")
     private int drawingViewHeight;
     public DrawingStep setDrawingViewHeight(int drawingViewHeight) {
         this.drawingViewHeight = drawingViewHeight;

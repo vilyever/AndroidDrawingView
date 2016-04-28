@@ -57,6 +57,7 @@ public abstract class ShapeBrush extends DrawingBrush {
     public enum FillType {
         Hollow, Solid;
     }
+    @JsonKey("FT")
     protected FillType fillType;
     public FillType getFillType() {
         if (isEraser()) {
@@ -77,6 +78,7 @@ public abstract class ShapeBrush extends DrawingBrush {
     /**
      * 边缘交点是否圆角
      */
+    @JsonKey("ER")
     protected boolean edgeRounded;
     public boolean isEdgeRounded() {
         return this.edgeRounded;

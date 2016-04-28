@@ -55,6 +55,7 @@ public class DrawingPoint extends JsonModel {
      * 每一轮touch事件（即从开始触摸Action_Down到结束触摸Action_Up、Action_Cancel）与其他轮的ID不同
      * 每一轮touch事件内的每一点ID都相同
      */
+    @JsonKey("ID")
     public int pointerID;
 
     // x，y坐标
@@ -68,6 +69,7 @@ public class DrawingPoint extends JsonModel {
     }
 
     // 触摸事件发生的时间
+    @JsonKey("M")
     public long moment;
 
     /**

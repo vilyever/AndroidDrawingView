@@ -95,6 +95,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * 层级
      */
+    @JsonKey("H")
     private int hierarchy;
     public DrawingLayer setHierarchy(int hierarchy) {
         this.hierarchy = hierarchy;
@@ -110,6 +111,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     public enum LayerType {
         Unknown, BaseDrawing, BaseText, LayerDrawing, LayerText;
     }
+    @JsonKey("LT")
     private LayerType layerType;
     public DrawingLayer setLayerType(LayerType layerType) {
         this.layerType = layerType;
@@ -125,6 +127,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * 背景色
      */
+    @JsonKey("BC")
     private int backgroundColor;
     public DrawingLayer setBackgroundColor(int backgroundColor) {
         this.backgroundColor = backgroundColor;
@@ -137,6 +140,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * 背景图片标识
      */
+    @JsonKey("BII")
     private String backgroundImageIdentifier;
     public DrawingLayer setBackgroundImageIdentifier(String backgroundImageIdentifier) {
         this.backgroundImageIdentifier = backgroundImageIdentifier;
@@ -149,6 +153,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * text图层的内容
      */
+    @JsonKey("TXT")
     private String text;
     public DrawingLayer setText(String text) {
         this.text = text;
@@ -161,6 +166,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * left坐标
      */
+    @JsonKey("L")
     private float left;
     public DrawingLayer setLeft(float left) {
         this.left = left;
@@ -173,6 +179,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * top坐标
      */
+    @JsonKey("T")
     private float top;
     public DrawingLayer setTop(float top) {
         this.top = top;
@@ -185,6 +192,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * right坐标
      */
+    @JsonKey("R")
     private float right;
     public DrawingLayer setRight(float right) {
         this.right = right;
@@ -197,6 +205,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * bottom坐标
      */
+    @JsonKey("B")
     private float bottom;
     public DrawingLayer setBottom(float bottom) {
         this.bottom = bottom;
@@ -209,6 +218,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * 图层缩放比例，xy同等
      */
+    @JsonKey("SC")
     private float scale;
     public DrawingLayer setScale(float scale) {
         this.scale = scale;
@@ -221,6 +231,7 @@ public class DrawingLayer extends JsonModel implements Comparable<DrawingLayer> 
     /**
      * 图层旋转角度
      */
+    @JsonKey("RO")
     private float rotation;
     public DrawingLayer setRotation(float rotation) {
         this.rotation = rotation;
