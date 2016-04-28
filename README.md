@@ -17,7 +17,7 @@ Step 2. Add the dependency in the form
 
 ```gradle
 dependencies {
-  compile 'com.github.vilyever:AndroidDrawingView:1.6.4'
+  compile 'com.github.vilyever:AndroidDrawingView:1.6.5'
 }
 ```
 
