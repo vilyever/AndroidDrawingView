@@ -47,6 +47,23 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
         }
     }
 
+    public void drawTextStep(DrawingStep step) {
+        // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
+        DrawingLayerTextView textView = new DrawingLayerTextView(getContext(), 0);
+        textView.appendWithDrawingStep(step);
+
+        textView.measure(MeasureSpec.makeMeasureSpec(getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
+        int left = (int) Math.floor(step.getDrawingLayer().getLeft());
+        int top = (int) Math.floor(step.getDrawingLayer().getTop());
+        textView.layout(left, top, left + textView.getMeasuredWidth(), top + textView.getMeasuredHeight());
+
+        getDrawingCanvas().save();
+        getDrawingCanvas().translate(step.getDrawingLayer().getLeft(), step.getDrawingLayer().getTop());
+
+        textView.draw(getDrawingCanvas());
+        getDrawingCanvas().restore();
+    }
+
     /* Properties */
     public interface BusyStateDelegate {
         /**
@@ -451,22 +468,5 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
                 }
             }
         }
-    }
-
-    private void drawTextStep(DrawingStep step) {
-        // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
-        DrawingLayerTextView textView = new DrawingLayerTextView(getContext(), 0);
-        textView.appendWithDrawingStep(step);
-
-        textView.measure(MeasureSpec.makeMeasureSpec(getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
-        int left = (int) Math.floor(step.getDrawingLayer().getLeft());
-        int top = (int) Math.floor(step.getDrawingLayer().getTop());
-        textView.layout(left, top, left + textView.getMeasuredWidth(), top + textView.getMeasuredHeight());
-
-        getDrawingCanvas().save();
-        getDrawingCanvas().translate(step.getDrawingLayer().getLeft(), step.getDrawingLayer().getTop());
-
-        textView.draw(getDrawingCanvas());
-        getDrawingCanvas().restore();
     }
 }

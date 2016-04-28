@@ -1169,31 +1169,40 @@ public class DrawingView extends RelativeLayout implements View.OnLayoutChangeLi
                     break;
                 }
                 case BaseText: {
-                    DrawingLayerTextView textView = (DrawingLayerTextView) getHandlingLayerView();
-                    textView.endEdit();
-                    if (textView.isChangedSinceLastStep()) {
-                        // 记录文本，删除临时图层，在base图层绘制
-                        getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
+                    if (getHandlingLayerView() instanceof DrawingLayerTextView) {
+                        DrawingLayerTextView textView = (DrawingLayerTextView) getHandlingLayerView();
+                        textView.endEdit();
+                        if (textView.isChangedSinceLastStep()) {
+                            // 记录文本，删除临时图层，在base图层绘制
+                            getCurrentDrawingStep().getDrawingLayer().setText(textView.getText().toString());
 
-                        // 拓印textView到baseLayer上，之后调用finishDraw虽然会传入baseLayer当前的step，但其state是VeryEnd，并不作画
-                        textView.setHandling(false);
-                        getBaseLayerImageView().drawView(textView);
+                            // 拓印textView到baseLayer上，之后调用finishDraw虽然会传入baseLayer当前的step，但其state是VeryEnd，并不作画
+                            textView.setHandling(false);
+                            getBaseLayerImageView().drawView(textView);
 
-                        getLayerContainer().removeLayerView(textView);
-                        getLayerViews().remove(textView);
+                            getLayerContainer().removeLayerView(textView);
+                            getLayerViews().remove(textView);
 
-                        getCurrentDrawingStep().setHandlingLayer(getBaseLayerImageView());
-                        handleLayer(getCurrentDrawingStep().getDrawingLayer().getHierarchy());
+                            getCurrentDrawingStep().setHandlingLayer(getBaseLayerImageView());
+                            handleLayer(getCurrentDrawingStep().getDrawingLayer().getHierarchy());
+
+                            getDrawingStepDelegate().onDrawingStepChange(this, getCurrentDrawingStep());
+
+                            finishDraw();
+                        }
+                        else {
+                            // 若未开始编辑，撤销此step
+                            getLayerContainer().removeLayerView(textView);
+                            getLayerViews().remove(textView);
+                            cancelCurrentStep();
+                        }
+                    }
+                    else {
+                        getBaseLayerImageView().drawTextStep(getCurrentDrawingStep());
 
                         getDrawingStepDelegate().onDrawingStepChange(this, getCurrentDrawingStep());
 
                         finishDraw();
-                    }
-                    else {
-                        // 若未开始编辑，撤销此step
-                        getLayerContainer().removeLayerView(textView);
-                        getLayerViews().remove(textView);
-                        cancelCurrentStep();
                     }
                     break;
                 }
