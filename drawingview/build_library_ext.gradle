@@ -1,6 +1,6 @@
 ext {
     buildVersionName = {
-        "1.6.6"
+        "1.6.7"
     }
     
     /**
