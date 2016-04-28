@@ -9,6 +9,7 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -52,9 +53,15 @@ public class DrawingLayerBaseView extends ImageView implements Runnable, Drawing
         // 拓印text图层到base图层，省去实现与editText相同效果的绘制计算
         DrawingLayerTextView textView = new DrawingLayerTextView(getContext(), 0);
 
+        float ratioX = step.getDrawingLayer().getDrawingRatioX();
+        float ratioY = step.getDrawingLayer().getDrawingRatioY();
+        step.getDrawingLayer().setDrawingRatioX(1.0f);
+        step.getDrawingLayer().setDrawingRatioY(1.0f);
         RectF frame = step.getDrawingLayer().getFrame();
         textView.appendWithDrawingStep(step);
         step.getDrawingLayer().setFrame(frame);
+        step.getDrawingLayer().setDrawingRatioX(ratioX);
+        step.getDrawingLayer().setDrawingRatioY(ratioY);
 
         textView.measure(MeasureSpec.makeMeasureSpec(getDrawingCanvas().getWidth(), MeasureSpec.UNSPECIFIED), MeasureSpec.makeMeasureSpec(getDrawingCanvas().getHeight(), MeasureSpec.UNSPECIFIED));
         int left = (int) Math.floor(step.getDrawingLayer().getLeft());
